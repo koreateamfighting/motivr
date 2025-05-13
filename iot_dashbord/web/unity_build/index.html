@@ -14,12 +14,15 @@
       overflow: hidden;
       width: 100%;
       height: 100%;
+        display: flex;
+  justify-content: center;
+  align-items: center;
     }
-    #unity-container {
-      width: 100vw;
-      height: 100vh;
-      position: relative;
-    }
+   #unity-container {
+  width: 100%;      /* ← 변경 */
+  height: 100%;     /* ← 변경 */
+  position: relative;
+}
     #unity-canvas {
       width: 100%;
       height: 100%;
@@ -55,11 +58,11 @@
 
   <script>
     const buildUrl = "Build";
-    const loaderUrl = buildUrl + "/0512.loader.js";
+    const loaderUrl = buildUrl + "/0513.loader.js";
     const config = {
-      dataUrl: buildUrl + "/0512.data",
-      frameworkUrl: buildUrl + "/0512.framework.js",
-      codeUrl: buildUrl + "/0512.wasm",
+      dataUrl: buildUrl + "/0513.data",
+      frameworkUrl: buildUrl + "/0513.framework.js",
+      codeUrl: buildUrl + "/0513.wasm",
       streamingAssetsUrl: "StreamingAssets",
       companyName: "DefaultCompany",
       productName: "Hanlim_Motivr",
