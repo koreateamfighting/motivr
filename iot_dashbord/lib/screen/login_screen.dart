@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'dart:html' as html;
-import 'dart:ui' as ui; // 반드시 필요!
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'home_screen.dart';
-import 'dashboard_screen.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iot_dashbord/component/top_app_bar.dart'; // ✅ 추가
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -26,33 +23,19 @@ class LoginScreen extends StatelessWidget {
             body: Center(
               child: Column(
                 children: [
-                  Container(
-                      width: designWidth.toDouble(),
-                      height: 100.h,
-                      color: Color(0xff0b2144),
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: 275.w,
-                          ),
-                          Text(
-                            'Digital Twin CMS',
-                            style: TextStyle(
-                              fontFamily: 'PretendardGOV',
-                              fontWeight: FontWeight.w800,
-                              fontSize: 40.sp,
-                              color: Color(0xffffffff),
-                            ),
-                          ),
-                        ],
-                      )),
+                  TopAppBar(
+                    onMenuPressed: () {},
+                    isMenuVisible: false, // 🔒 로그인 화면에선 항상 닫힌 상태
+                  ),
+
                   SizedBox(
                     height: 70.h,
                   ),
                   Container(
                     width: 1406.w,
                     height: 372.h,
-                    child: Image.asset('assets/images/company_logo.png'),
+
+                    child: Image.asset('assets/images/company_logo_big.png',),
                   ),
                   SizedBox(
                     height: 16.h,
@@ -152,7 +135,8 @@ class LoginScreen extends StatelessWidget {
                                 border: InputBorder.none, // 밑줄 제거
                                 hintText: "아이디", // optional
                               ),
-                              style: TextStyle(fontSize: 36.sp,color: Color(0xffA0AEC0)),
+                              style: TextStyle(
+                                  fontSize: 36.sp, color: Color(0xffA0AEC0)),
                             ),
                           ),
                         ),
@@ -193,7 +177,8 @@ class LoginScreen extends StatelessWidget {
                                 border: InputBorder.none, // 밑줄 제거
                                 hintText: "비밀번호", // optional
                               ),
-                              style: TextStyle(fontSize: 36.sp,color: Color(0xffA0AEC0)),
+                              style: TextStyle(
+                                  fontSize: 36.sp, color: Color(0xffA0AEC0)),
                             ),
                           ),
                         ),
@@ -203,7 +188,7 @@ class LoginScreen extends StatelessWidget {
                         Container(
                             width: 600.w,
                             height: 80.h,
-                            padding: EdgeInsets.only(top:16.h,bottom: 16.h),
+                            padding: EdgeInsets.only(top: 12.h),
                             decoration: BoxDecoration(
                               color: Color(0xff2d3748),
 

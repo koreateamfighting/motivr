@@ -1,4 +1,3 @@
-// base_layout.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'top_app_bar.dart';
@@ -28,13 +27,16 @@ class _BaseLayoutState extends State<BaseLayout> {
                 isMenuVisible = !isMenuVisible;
               });
             },
+            isMenuVisible: isMenuVisible, // ✅ 추가
           ),
+
           Expanded(
             child: Row(
               children: [
+                // 👉 사이드 메뉴는 그대로
                 AnimatedContainer(
                   duration: Duration(milliseconds: 300),
-                  width: isMenuVisible ? 500.w : 0,
+                  width: isMenuVisible ? 203.w : 0,
                   child: isMenuVisible
                       ? SideNavigationMenu(
                     onClose: () {
@@ -46,8 +48,29 @@ class _BaseLayoutState extends State<BaseLayout> {
                   )
                       : const SizedBox(),
                 ),
+
+                // 👉 오른쪽 콘텐츠에만 Stack을 적용
                 Expanded(
-                  child: widget.child,
+                  child: Stack(
+                    children: [
+                      widget.child,
+
+                      // ✅ 메뉴 열렸을 때만 오버레이
+                      if (isMenuVisible)
+                        Positioned.fill(
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                isMenuVisible = false;
+                              });
+                            },
+                            child: Container(
+                              color: Colors.black.withOpacity(0.4),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ],
             ),
