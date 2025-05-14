@@ -75,7 +75,7 @@ class TopAppBar extends StatelessWidget {
                 width: 300.w,
                 height: 100.h,
                 color: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 24.w,vertical: 8.h), // ✅ 내부 여백 추가
+                padding: EdgeInsets.symmetric(horizontal: 42.w,vertical: 8.h), // ✅ 내부 여백 추가
                 child: Image.asset(
                   'assets/images/company_logo_small.png',
                   fit: BoxFit.contain, // ✅ 비율 유지하면서 컨테이너 안에 맞춤

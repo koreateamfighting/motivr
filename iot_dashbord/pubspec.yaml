@@ -38,6 +38,7 @@ dependencies:
   flutter_screenutil: ^5.9.3
   go_router: ^15.1.2
   xml2json: ^6.2.6
+  fl_chart: ^0.71.0
 
 dev_dependencies:
   flutter_test:

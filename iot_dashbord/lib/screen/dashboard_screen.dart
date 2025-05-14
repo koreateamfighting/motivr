@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:iot_dashbord/component/dashboard/iot_control_status.dart';
 import 'package:iot_dashbord/component/unity_webgl_frame.dart';
 import 'package:iot_dashbord/component/base_layout.dart';
 import 'package:iot_dashbord/component/hlsplayer_view.dart'; // ✅ 이름 통일
 import 'package:iot_dashbord/services/cctv_service.dart';
 import 'package:iot_dashbord/theme/colors.dart';
 import 'package:iot_dashbord/component/dashboard/iot_status.dart';
+
 
 class DashBoard extends StatefulWidget {
   const DashBoard({Key? key}) : super(key: key);
@@ -65,10 +67,14 @@ class _DashBoardState extends State<DashBoard> {
               ),
               // ✅ 헤더 하단 선
               Container(
+                padding: EdgeInsets.symmetric(horizontal: 50.w),
+                width: 3712.w,
                 height: 2.h,
-                width: double.infinity,
-                color: const Color(0xff3CBFAD),
+
+                color:  Color(0xff3CBFAD),
               ),
+
+
               Container(
                 height: 10.h,
                 color: AppColors.main2,
@@ -92,11 +98,7 @@ class _DashBoardState extends State<DashBoard> {
                           children: [
                             IotStatus(),
                             SizedBox(height: 9.h,),
-                            Container(
-                              width: 1542.w,
-                              height: 554.h,
-                              color: AppColors.main1,
-                            ),
+                            IotControlStatus(),
                           ],
                         ),
                         SizedBox(
