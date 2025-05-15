@@ -47,7 +47,7 @@ class _LiveClockState extends State<LiveClock> {
               style: TextStyle(
                 fontSize: 24.sp,
                 fontFamily: 'PretendardGOV',
-                fontWeight: FontWeight.w400,
+                fontWeight: FontWeight.w300,
                 color: Colors.white,
               ),
             ),
@@ -56,7 +56,7 @@ class _LiveClockState extends State<LiveClock> {
               style: TextStyle(
                 fontSize: 39.sp,
                 fontFamily: 'PretendardGOV',
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w400,
                 color: Colors.white,
               ),
             ),
