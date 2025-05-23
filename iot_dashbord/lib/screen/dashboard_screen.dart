@@ -4,10 +4,10 @@ import 'package:iot_dashbord/component/dashboard/iot_control_status.dart';
 import 'package:iot_dashbord/component/unity_webgl_frame.dart';
 import 'package:iot_dashbord/component/base_layout.dart';
 import 'package:iot_dashbord/component/hlsplayer_view.dart'; // ✅ 이름 통일
-import 'package:iot_dashbord/services/cctv_service.dart';
 import 'package:iot_dashbord/theme/colors.dart';
 import 'package:iot_dashbord/component/dashboard/iot_status.dart';
-
+import 'dart:ui' as ui;
+import 'dart:html' as html;
 
 class DashBoard extends StatefulWidget {
   const DashBoard({Key? key}) : super(key: key);
@@ -20,15 +20,14 @@ class DashBoard extends StatefulWidget {
 }
 
 class _DashBoardState extends State<DashBoard> {
-  late Future<List<CctvInfo>> _cctvs;
+
 
   @override
   void initState() {
     super.initState();
-    _cctvs = CctvService.fetchCctvList(); // ✅ CCTV 리스트 가져오기
+
   }
 
-  @override
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
@@ -66,20 +65,23 @@ class _DashBoardState extends State<DashBoard> {
                 ),
               ),
               // ✅ 헤더 하단 선
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 50.w),
-                width: 3712.w,
-                height: 2.h,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
 
-                color:  Color(0xff3CBFAD),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 50.w),
+                    width: 3712.w,
+                    height: 2.h,
+
+                    color:  Color(0xff3CBFAD),
+                  ),
+                ],
               ),
 
 
-              Container(
-                height: 10.h,
-                color: AppColors.main2,
 
-              ),
+              // ),
               // ✅ 본문 내용
               Expanded(
                 child: Container(
@@ -106,11 +108,29 @@ class _DashBoardState extends State<DashBoard> {
                         ),
                         Column(
                           children: [
+                            // Container(
+                            //   width: 1102.w,
+                            //   height: 1924.h,
+                            //   color: Colors.white,
+                            //
+                            // ),
                             Container(
                               width: 1102.w,
                               height: 1924.h,
-                              color: AppColors.main1,
-                            ),
+                              color: Colors.white,
+                              child:  Container(
+                                  width: 967.w,
+                                  height: 725.h,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black,
+                                    border: Border.all(color: Colors.grey),
+                                  ),
+                                  child:  HlsPlayerIframe (), // ✅ iframe 기반 영상 삽입
+                                ),
+
+                            )
+
+
 
                           ],
                         ),
@@ -158,63 +178,24 @@ class _DashBoardState extends State<DashBoard> {
   }
 }
 
-//  return BaseLayout(
-//           child: FutureBuilder<List<CctvInfo>>(
-//             future: _cctvs,
-//             builder: (context, snapshot) {
-//               if (snapshot.connectionState == ConnectionState.waiting) {
-//                 return const Center(child: CircularProgressIndicator());
-//               } else if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
-//                 return const Center(child: Text('CCTV 불러오기 실패'));
-//               }
-//
-//               final cctv = snapshot.data!.first;
-//
-//               return Column(
-//                 children: [
-//                   Expanded(
-//                     child: Row(
-//                       children: [
-//
-//                         Expanded(child: UnityWebGLFrame()),
-//                         Expanded(
-//                           child: Column(
-//                             children: [
-//                               Container(
-//                                 color: Colors.black,
-//                                 padding: EdgeInsets.all(16.w),
-//                                 alignment: Alignment.centerLeft,
-//                                 child: Text(
-//                                   cctv.name,
-//                                   style: TextStyle(
-//                                     color: Colors.white,
-//                                     fontSize: 28.sp,
-//                                     fontWeight: FontWeight.bold,
-//                                   ),
-//                                 ),
-//                               ),
-//                               // Expanded(
-//                               //   child: HlsPlayerView(
-//                               //     videoUrl: cctv.url,
-//                               //   ),
-//                               // ),
-//                               Expanded(child: Container(color: Colors.yellow)),
-//                             ],
-//                           ),
-//                         ),
-//                       ],
-//                     ),
-//                   ),
-//                   Expanded(
-//                     child: Row(
-//                       children: [
-//                         Expanded(child: Container(color: Colors.blue)),
-//                         Expanded(child: Container(color: Colors.orange)),
-//                       ],
-//                     ),
-//                   ),
-//                 ],
-//               );
-//             },
-//           ),
-//         );
+
+class HlsPlayerIframe extends StatelessWidget {
+  const HlsPlayerIframe({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    const viewId = 'hls-player-iframe';
+
+    html.IFrameElement _iframe = html.IFrameElement()
+      ..width = '100%'
+      ..height = '100%'
+      ..src = 'https://hanlimtwin.kr:3030/hls_player.html'
+      ..style.border = 'none';
+
+    // ignore: undefined_prefixed_name
+    ui.platformViewRegistry.registerViewFactory(viewId, (int viewId) => _iframe);
+
+    return const HtmlElementView(viewType: viewId);
+  }
+}
+

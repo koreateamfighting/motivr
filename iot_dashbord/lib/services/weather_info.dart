@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:iot_dashbord/services/weather_api1.dart';
-import 'package:iot_dashbord/services/weather_api3.dart';
+import 'package:iot_dashbord/services/weather_api.dart';
+import 'package:iot_dashbord/services/weather_api2.dart';
 
 class WeatherInfoBar extends StatefulWidget {
   const WeatherInfoBar({super.key});
@@ -24,12 +24,13 @@ class _WeatherInfoBarState extends State<WeatherInfoBar> {
     _loadWeatherData();
   }
   Future<void> _loadWeatherData() async {
-    final weather = await WeatherApiService.fetchWeatherData(); // 온도, 습도 , 풍속 호출
+    final weather = await WeatherApiService.fetchWeatherData(city: 'Daegu');
     final dust = await FineDustApiService.fetchFineDust(); //  미세먼지 호출
     setState(() {
-      temperature = weather['TMP'] ?? '--';
-      humidity = weather['REH'] ?? '--';
-      windSpeed = weather['WSD'] ?? '--';
+      temperature = weather['temperature'] ?? '--';
+      humidity = weather['humidity'] ?? '--';
+      windSpeed = weather['windSpeed'] ?? '--';
+      pressure = weather['pressure'] ?? '--';
       fineDust = dust ?? '--';
       isLoading = false;
     });
@@ -47,7 +48,7 @@ class _WeatherInfoBarState extends State<WeatherInfoBar> {
           _weatherItem('assets/icons/temprature_icon.png', temperature),
           _weatherItem('assets/icons/humidity_icon.png', humidity),
           _weatherItem('assets/icons/wind_speed_icon.png', windSpeed),
-          _weatherItem('assets/icons/pressure_icon.png', '1024hPa'), //기압 추후 적용
+          _weatherItem('assets/icons/pressure_icon.png', pressure),
           _weatherItem('assets/icons/dust_icon.png', fineDust),
         ],
       ),

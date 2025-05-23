@@ -3,7 +3,7 @@ import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'services/router.dart';
 
 void main() {
-  setUrlStrategy(PathUrlStrategy());
+  //setUrlStrategy(PathUrlStrategy());
   runApp(const MyApp());
 }
 

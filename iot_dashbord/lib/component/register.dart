@@ -1,0 +1,453 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:http/http.dart' as http;
+import 'package:iot_dashbord/component/privacy_policy_page.dart';
+import 'package:iot_dashbord/component/term_of_use_page.dart';
+import 'dart:convert';
+import 'package:iot_dashbord/controller/user_controller.dart';
+import 'package:iot_dashbord/model/user_model.dart';
+import 'package:iot_dashbord/component/register_success_dialog.dart';
+
+class RegisterWidget extends StatefulWidget {
+  const RegisterWidget({super.key});
+
+  @override
+  State<RegisterWidget> createState() => _RegisterWidgetState();
+}
+
+class _RegisterWidgetState extends State<RegisterWidget> {
+  final _idController = TextEditingController();
+  final _pwController = TextEditingController();
+  final _pwConfirmController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _companyController = TextEditingController();
+  final _deptController = TextEditingController();
+  final _positionController = TextEditingController();
+  final _roleController = TextEditingController();
+
+  @override
+  void dispose() {
+    _idController.dispose();
+    _pwController.dispose();
+    _pwConfirmController.dispose();
+    _nameController.dispose();
+    _phoneController.dispose();
+    _emailController.dispose();
+    _companyController.dispose();
+    _deptController.dispose();
+    _positionController.dispose();
+    _roleController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onRegisterTap() async {
+    // 👉 ID, PW 둘 다 필수 검사
+    if (_idController.text.trim().isEmpty || _pwController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('아이디와 비밀번호는 필수입니다.')),
+      );
+      return;
+    }
+
+    if (_pwController.text != _pwConfirmController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('비밀번호가 일치하지 않습니다.')),
+      );
+      return;
+    }
+
+    // 나머지는 선택입력
+    final user = UserModel(
+      userID: _idController.text.trim(),
+      password: _pwController.text,
+      name: _nameController.text,
+      phoneNumber: _phoneController.text,
+      email: _emailController.text,
+      company: _companyController.text,
+      department: _deptController.text,
+      position: _positionController.text,
+      role: _roleController.text,
+    );
+
+    final errorMessage = await UserController.registerUser(user, context);
+
+    if (errorMessage == null) {
+      showDialog(
+        context: context,
+        barrierDismissible: false, // 바깥 클릭 시 닫히지 않도록
+        builder: (_) => RegisterSuccessDialog(),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage)),
+      );
+    }
+  }
+
+  static const designWidth = 3812;
+  static const designHeight = 2144;
+
+  @override
+  Widget build(BuildContext context) {
+    return ScreenUtilInit(
+      designSize: Size(designWidth.toDouble(), designHeight.toDouble()),
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) {
+        return WillPopScope(
+          child: Material(
+            color: Colors.transparent, // ✅ 전체 배경 제거
+            child: Center(
+              child: Container(
+                width: 1276.w,
+                height: 1984.h,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Container(
+                          alignment: Alignment.center,
+                          child: Text(
+                            'Digital Twin CMS',
+                            style: TextStyle(
+                              fontFamily: 'PretendardGOV',
+                              fontWeight: FontWeight.w800,
+                              fontSize: 64.sp,
+                              color: Color(0xff0B2144),
+                            ),
+                          )),
+                      SizedBox(
+                        height: 64.h,
+                      ),
+                      Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 800.w,
+                              height: 62.h,
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Color(0xffd9d9d9), // 선 색상
+                                    width: 2.w, // 선 두께
+                                  ),
+                                ),
+                              ),
+                              child: Text(
+                                '회원 가입',
+                                style: TextStyle(
+                                  fontFamily: 'PretendardGOV',
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 36.sp,
+                                  color: Color(0xff0B2144),
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              height: 44.h,
+                            ),
+                            formLabel('아이디'),
+                            formTextField('아이디 입력 (6~20자)', _idController,
+                                borderColor: Color(0xff67788e)),
+                            formLabel('비밀번호'),
+                            formTextField('비밀번호 입력 (문자, 숫자 포함)', _pwController,
+                                borderColor: Color(0xff67788e)),
+                            formLabel('비밀번호 확인'),
+                            formTextField('비밀번호 재입력', _pwConfirmController,
+                                borderColor: Color(0xff67788e)),
+                            SizedBox(
+                              height: 37.h,
+                            ),
+                            Container(
+                              width: 800.w,
+                              height: 2.h,
+                              color: Color(0xffd9d9d9),
+                            ),
+                            SizedBox(
+                              height: 24.h,
+                            ),
+                            formLabel('이름'),
+                            formTextField('이름을 입력해주세요', _nameController),
+                            formLabel('연락처'),
+                            formTextField('연락처', _phoneController),
+                            formLabel('이메일 주소'),
+                            formTextField('이메일 주소 입력', _emailController),
+                            formLabel('회사명'),
+                            formTextField('회사명을 입력해주세요', _companyController),
+                            formLabel('부서명'),
+                            formTextField('부서명을 입력해주세요', _deptController),
+                            formLabel('직급'),
+                            formTextField('직급을 입력해주세요', _positionController),
+                            formLabel('담당업무'),
+                            formTextField('담당업무를 입력해주세요', _roleController),
+                            SizedBox(
+                              height: 54.h,
+                            ),
+                            Container(
+                              width: 800.w,
+                              height: 80.h,
+                              child: Row(
+                                children: [
+                                  InkWell(
+                                    onTap: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: Container(
+                                      width: 380.w,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: Color(0xffffd900),
+                                        borderRadius: BorderRadius.circular(
+                                            8.r), // 둥근 모서리
+                                      ),
+                                      child: Text(
+                                        '가입취소',
+                                        style: TextStyle(
+                                          fontFamily: 'PretendardGOV',
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 36.sp,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Spacer(),
+                                  InkWell(
+                                    onTap: () {
+                                      _onRegisterTap();
+                                    },
+                                    child: Container(
+                                      width: 380.w,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: Color(0xff84bf3c),
+                                        borderRadius: BorderRadius.circular(
+                                            8.r), // 둥근 모서리
+                                      ),
+                                      child: Text(
+                                        '가입하기',
+                                        style: TextStyle(
+                                          fontFamily: 'PretendardGOV',
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 36.sp,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(
+                              height: 46.h,
+                            ),
+                            Container(
+                              width: 800.w,
+                              height: 2.h,
+                              color: Color(0xffd9d9d9),
+                            ),
+                            SizedBox(
+                              height: 12.h,
+                            ),
+                            Container(
+                              width: 800.w,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  InkWell(
+                                    onTap: () {
+                                      showDialog(
+                                        context: context,
+                                        barrierDismissible: false, // 바깥 클릭 시 닫히지 않도록
+                                        builder: (_) => TermOfUsePage(),
+                                      );
+                                    },
+                                    child: Container(
+                                      width: 109.w,
+                                      height: 50.h,
+                                      child: Text(
+                                        "이용약관",
+                                        style: TextStyle(
+                                          fontFamily: 'PretendardGOV',
+                                          fontSize: 24.sp,
+                                          fontWeight: FontWeight.w400,
+                                          color: Color(0xff0b2144),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Transform.translate(
+                                    offset: Offset(0, -4.h),
+                                    child: Container(
+                                      width: 1.w,
+                                      height: 22.h,
+                                      color: Color(0xff0b2144),
+                                    ),
+                                  ),
+                                  InkWell(
+                                    onTap: () {
+                                      showDialog(
+                                        context: context,
+                                        barrierDismissible: false, // 바깥 클릭 시 닫히지 않도록
+                                        builder: (_) => PrivacyPolicyPage(),
+                                      );
+                                    },
+                                    child: Container(
+                                      width: 186.w,
+                                      height: 50.h,
+                                      child: Text(
+                                        "개인정보처리방침",
+                                        textAlign: TextAlign.end,
+                                        style: TextStyle(
+                                          fontFamily: 'PretendardGOV',
+                                          fontSize: 24.sp,
+                                          fontWeight: FontWeight.w400,
+                                          color: Color(0xff0b2144),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: 18.h,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                                width: 800.w,
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 130.w,
+                                    ),
+                                    Container(
+                                      width: 151.83.w,
+                                      height: 52.68.h,
+                                      child: Image.asset(
+                                        'assets/images/company_logo_small.png',
+                                        fit: BoxFit.contain,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 53.w,
+                                    ),
+
+                                    // Copyright (C) 2025 by HANLIM. All rights reserved.
+                                    Container(
+                                        padding: EdgeInsets.only(top: 16.h),
+                                        height: 52.68.h,
+                                        child: RichText(
+                                          text: TextSpan(
+                                            style: TextStyle(
+                                              // 기본 스타일
+                                              fontSize: 24,
+                                              color: Colors.black,
+                                            ),
+                                            children: [
+                                              TextSpan(
+                                                  text:
+                                                      'Copyright (C) 2025 by ',
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w300,
+                                                      fontSize: 16.sp,
+                                                      color: Colors.black,
+                                                      fontFamily:
+                                                          'PretendardGOV')),
+                                              TextSpan(
+                                                  text: 'HANLIM. ',
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                      fontSize: 16.sp,
+                                                      color: Colors.black,
+                                                      fontFamily:
+                                                          'PretendardGOV')),
+                                              TextSpan(
+                                                  text: 'All rights reserved.',
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w300,
+                                                      fontSize: 16.sp,
+                                                      color: Colors.black,
+                                                      fontFamily:
+                                                          'PretendardGOV')),
+                                            ],
+                                          ),
+                                        ))
+                                  ],
+                                ))
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          onWillPop: () async {
+            Navigator.of(context).pop(); // ESC 또는 Android back 버튼 시 닫힘
+            return false; // 기본 동작 막기
+          },
+        );
+      },
+    );
+  }
+}
+
+Widget formLabel(String text) {
+  return Container(
+    width: 800.w,
+    height: 50.h,
+    padding: EdgeInsets.only(top: 4.h),
+    child: Text(
+      text,
+      style: TextStyle(
+        fontFamily: 'PretendardGOV',
+        fontWeight: FontWeight.w400,
+        fontSize: 24.sp,
+        color: Color(0xff0B2144),
+      ),
+    ),
+  );
+}
+
+Widget formTextField(
+  String hintText,
+  TextEditingController controller, {
+  Color borderColor = const Color(0xffe2e8f0), // 기본 border 색상
+}) {
+  return Container(
+    width: 800.w,
+    height: 80.h,
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(2.r), // 둥근 모서리
+      border: Border.all(color: borderColor, width: 2.0.w), // 또는 Border.none
+    ),
+    child: TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        border: InputBorder.none,
+        hintText: hintText,
+        hintStyle: TextStyle(
+          color: Color(0xffA0AEC0),
+          fontSize: 32.sp,
+          fontWeight: FontWeight.w400,
+          fontFamily: 'PretendardGOV',
+        ),
+        isDense: true,
+        // 👈 여백 자동 줄이기
+        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+      ),
+    ),
+  );
+}

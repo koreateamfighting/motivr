@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:iot_dashbord/theme/colors.dart';
 import 'top_app_bar.dart';
 import 'side_navigation_menu.dart';
+import 'package:go_router/go_router.dart'; // ✅ 라우트 정보 얻기 위해 필요
 
 class BaseLayout extends StatefulWidget {
   final Widget child;
@@ -17,8 +19,15 @@ class _BaseLayoutState extends State<BaseLayout> {
 
   @override
   Widget build(BuildContext context) {
+
+    final currentPath = GoRouter.of(context).routerDelegate.currentConfiguration.fullPath;; // ✅ 현재 라우트 경로
+
+    // ✅ 특정 페이지라면 white, 아니면 main2 색상
+    final backgroundColor =
+    currentPath.contains('/twin') ? Colors.white : AppColors.main2;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: backgroundColor,
       body: Column(
         children: [
           TopAppBar(

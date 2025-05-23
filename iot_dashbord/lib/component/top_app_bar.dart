@@ -62,7 +62,7 @@ class TopAppBar extends StatelessWidget {
                 height: 80.h,
                 padding: EdgeInsets.fromLTRB(4.0.w,4.0.h,4.0.w,4.0.h),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF091427),
+                   color:  Color(0xFF091427),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Image.asset('assets/icons/lock.png',),
