@@ -12,7 +12,7 @@ class IotStatus extends StatelessWidget {
       width: 1542.w,
       height: 1360.h,
       decoration: BoxDecoration(
-        color: AppColors.main1,
+        color:  Color(0xff1b254b),
         borderRadius: BorderRadius.circular(12.r),
         // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
       ),

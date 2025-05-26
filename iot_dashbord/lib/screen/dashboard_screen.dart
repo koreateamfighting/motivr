@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iot_dashboard/component/dashboard/iot_control_status.dart';
+import 'package:iot_dashboard/component/dashboard/work_process.dart';
 import 'package:iot_dashboard/component/unity_webgl_frame.dart';
 import 'package:iot_dashboard/component/base_layout.dart';
 import 'package:iot_dashboard/component/hlsplayer_view.dart'; // ✅ 이름 통일
 import 'package:iot_dashboard/theme/colors.dart';
 import 'package:iot_dashboard/component/dashboard/iot_status.dart';
+import 'package:iot_dashboard/component/dashboard/weather_info2.dart';
 import 'dart:ui' as ui;
 import 'dart:html' as html;
 
@@ -42,24 +44,24 @@ class _DashBoardState extends State<DashBoard> {
             children: [
               // ✅ 대시보드 헤더
               Container(
-                height: 98.h,
-                color: AppColors.main2,
-                padding: EdgeInsets.symmetric(horizontal: 275.w),
+                height: 69.h,
+                color: Color(0xff1b254b),
+                padding: EdgeInsets.symmetric(horizontal: 66.w),
                 child: Row(
                   children: [
                     Image.asset(
-                      'assets/icons/color_dashboard.png',
-                      width: 80.w,
-                      height: 80.h,
+                      'assets/icons/uncolor_dashboard.png',
+                      width: 40.w,
+                      height: 40.h,
                     ),
-                    SizedBox(width: 20.w),
+                    SizedBox(width: 8.w),
                     Text(
                       '대시보드',
                       style: TextStyle(
                         fontFamily: 'PretendardGOV',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 48.sp,
-                        color: Color(0xff3CBFAD),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 36.sp,
+                        color: Colors.white,
                       ),
                     ),
                   ],
@@ -73,13 +75,13 @@ class _DashBoardState extends State<DashBoard> {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 50.w),
                     width: 3712.w,
-                    height: 2.h,
+                    height: 4.h,
 
-                    color:  Color(0xff3CBFAD),
+                    color:  Colors.white,
                   ),
                 ],
               ),
-
+              SizedBox(height: 10.h,),
 
 
               // ),
@@ -87,7 +89,7 @@ class _DashBoardState extends State<DashBoard> {
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.main2,
+                    color:  Color(0xff1b254b),
                     border: Border.all(color: Colors.transparent), // 또는 Border.none
                   ),
 
@@ -98,10 +100,16 @@ class _DashBoardState extends State<DashBoard> {
                           width: 53.w,
                         ),
                         Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            IotStatus(),
-                            SizedBox(height: 9.h,),
                             IotControlStatus(),
+
+                            SizedBox(height: 46.h,),
+                            WorkProcessStatus(),
+                            SizedBox(height: 6.h,),
+                            WeatherInfo(),
+
+                            // IotStatus(),
                           ],
                         ),
                         SizedBox(

@@ -163,216 +163,221 @@ class _LoginScreenState extends State<LoginScreen> {
                                     SizedBox(
                                       height: 73.5.h,
                                     ),
-                                    Container(
-                                      width: 600.w,
-                                      child: Column(
-                                          mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                          children: [
-                                            Container(
-                                              height: 50.h,
-                                              child: Text(
-                                                '아이디',
-                                                style: TextStyle(
-                                                  fontFamily: 'PretendardGOV',
-                                                  fontWeight: FontWeight.w400,
-                                                  fontSize: 24.sp,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                            Container(
-                                              width: 600.w,
-                                              height: 80.h,
-                                              // 고정된 입력창 높이
-                                              padding: EdgeInsets.symmetric(
-                                                  horizontal: 16.w),
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                border: Border.all(
-                                                  color: const Color(0xFFE2E8F0),
-                                                  width: 1.w,
-                                                ),
-                                                borderRadius:
-                                                BorderRadius.circular(8.r),
-                                              ),
-                                              child: Center(
-                                                child: TextField(
-                                                  controller: _idController,
-                                                  decoration: InputDecoration(
-                                                    border: InputBorder.none,
-                                                    hintText: "아이디 입력",
-                                                    hintStyle: TextStyle(
-                                                      color: Color(0xffA0AEC0),
-                                                      fontSize: 32.sp,
-                                                      fontWeight: FontWeight.w400,
+                                    AutofillGroup(child: Column(
+                                      children: [
+                                        Container(
+                                          width: 600.w,
+                                          child: Column(
+                                              mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                              crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                              children: [
+                                                Container(
+                                                  height: 50.h,
+                                                  child: Text(
+                                                    '아이디',
+                                                    style: TextStyle(
                                                       fontFamily: 'PretendardGOV',
+                                                      fontWeight: FontWeight.w400,
+                                                      fontSize: 24.sp,
+                                                      color: Colors.white,
                                                     ),
-                                                    isDense: true,
-                                                    // 👈 여백 자동 줄이기
-                                                    contentPadding: EdgeInsets
-                                                        .zero, // 👈 여백 제거
                                                   ),
-                                                  style: TextStyle(
-                                                    fontSize: 36.sp,
-                                                    color: Color(0xff2d3748),
-                                                  ),
-                                                  textAlignVertical:
-                                                  TextAlignVertical
-                                                      .center, // 👈 수직 정렬 핵심
                                                 ),
-                                              ),
-                                            ),
+                                                Container(
+                                                  width: 600.w,
+                                                  height: 80.h,
+                                                  // 고정된 입력창 높이
+                                                  padding: EdgeInsets.symmetric(
+                                                      horizontal: 16.w),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    border: Border.all(
+                                                      color: const Color(0xFFE2E8F0),
+                                                      width: 1.w,
+                                                    ),
+                                                    borderRadius:
+                                                    BorderRadius.circular(8.r),
+                                                  ),
+                                                  child: Center(
+                                                    child: TextField(
+                                                      controller: _idController,
+                                                      decoration: InputDecoration(
+                                                        border: InputBorder.none,
+                                                        hintText: "아이디 입력",
+                                                        hintStyle: TextStyle(
+                                                          color: Color(0xffA0AEC0),
+                                                          fontSize: 32.sp,
+                                                          fontWeight: FontWeight.w400,
+                                                          fontFamily: 'PretendardGOV',
+                                                        ),
+                                                        isDense: true,
+                                                        // 👈 여백 자동 줄이기
+                                                        contentPadding: EdgeInsets
+                                                            .zero, // 👈 여백 제거
+                                                      ),
+                                                      style: TextStyle(
+                                                        fontSize: 36.sp,
+                                                        color: Color(0xff2d3748),
+                                                      ),
+                                                      textAlignVertical:
+                                                      TextAlignVertical
+                                                          .center, // 👈 수직 정렬 핵심
+                                                    ),
+                                                  ),
+                                                ),
 
-                                            Container(
-                                              alignment: Alignment.centerRight,
+                                                Container(
+                                                  alignment: Alignment.centerRight,
 
-                                              height: 50.h,
-                                              child: InkWell(
-                                                onTap: (){
-                                                  // 아이디 찾기 클릭 시
-                                                  context.go('/find_account?tab=id');
+                                                  height: 50.h,
+                                                  child: InkWell(
+                                                    onTap: (){
+                                                      // 아이디 찾기 클릭 시
+                                                      context.go('/find_account?tab=id');
 
 // 비밀번호 찾기 클릭 시
 
 
-                                                  // showDialog(
-                                                  //   context: context,
-                                                  //   barrierDismissible: false,
-                                                  //   builder: (_) => DialogForm(mainText:"준비중입니다.",btnText: "확인",),
-                                                  // );
-                                                },
-                                                child: Text(
-                                                  '아이디 찾기',
-                                                  style: TextStyle(
-                                                    fontFamily: 'PretendardGOV',
-                                                    fontWeight: FontWeight.w400,
-                                                    fontSize: 20.sp,
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                              ),
-                                            )
-
-
-
-                                          ]),
-                                    ),
-                                    Container(
-                                      width: 600.w,
-                                      child: Column(
-                                          mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                          children: [
-                                            Container(
-                                              height: 50.h,
-                                              child: Text(
-                                                '비밀번호',
-                                                style: TextStyle(
-                                                  fontFamily: 'PretendardGOV',
-                                                  fontWeight: FontWeight.w400,
-                                                  fontSize: 24.sp,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                            Container(
-                                              width: 600.w,
-                                              height: 80.h,
-                                              // 고정된 입력창 높이
-                                              padding: EdgeInsets.symmetric(
-                                                  horizontal: 16.w),
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                border: Border.all(
-                                                  color: const Color(0xFFE2E8F0),
-                                                  width: 1.w,
-                                                ),
-                                                borderRadius:
-                                                BorderRadius.circular(8.r),
-                                              ),
-                                              child: Center(
-                                                child: TextField(
-                                                  controller: _pwController,
-                                                  obscureText: true,
-                                                  decoration: InputDecoration(
-                                                    border: InputBorder.none,
-
-                                                    hintText: "비밀번호 입력",
-                                                    hintStyle: TextStyle(
-                                                      color: Color(0xffA0AEC0),
-                                                      fontSize: 32.sp,
-                                                      fontWeight: FontWeight.w400,
-                                                      fontFamily: 'PretendardGOV',
+                                                      // showDialog(
+                                                      //   context: context,
+                                                      //   barrierDismissible: false,
+                                                      //   builder: (_) => DialogForm(mainText:"준비중입니다.",btnText: "확인",),
+                                                      // );
+                                                    },
+                                                    child: Text(
+                                                      '아이디 찾기',
+                                                      style: TextStyle(
+                                                        fontFamily: 'PretendardGOV',
+                                                        fontWeight: FontWeight.w400,
+                                                        fontSize: 20.sp,
+                                                        color: Colors.white,
+                                                      ),
                                                     ),
-                                                    isDense: true,
-                                                    // 👈 여백 자동 줄이기
-                                                    contentPadding: EdgeInsets
-                                                        .zero, // 👈 여백 제거
                                                   ),
-                                                  style: TextStyle(
-                                                    fontSize: 36.sp,
-                                                    color: Color(0xff2d3748),
+                                                )
+
+
+
+                                              ]),
+                                        ),
+                                        Container(
+                                          width: 600.w,
+                                          child: Column(
+                                              mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                              crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                              children: [
+                                                Container(
+                                                  height: 50.h,
+                                                  child: Text(
+                                                    '비밀번호',
+                                                    style: TextStyle(
+                                                      fontFamily: 'PretendardGOV',
+                                                      fontWeight: FontWeight.w400,
+                                                      fontSize: 24.sp,
+                                                      color: Colors.white,
+                                                    ),
                                                   ),
-                                                  textAlignVertical:
-                                                  TextAlignVertical
-                                                      .center, // 👈 수직 정렬 핵심
                                                 ),
-                                              ),
-                                            ),
-
-
-                                            Container(
-                                              alignment: Alignment.centerRight,
-
-                                              height: 50.h,
-                                              child: InkWell(
-                                                onTap: (){
-                                                  context.go('/find_account?tab=pw');
-                                                },
-                                                child: Text(
-                                                  '비밀번호 찾기',
-                                                  style: TextStyle(
-                                                    fontFamily: 'PretendardGOV',
-                                                    fontWeight: FontWeight.w400,
-                                                    fontSize: 20.sp,
+                                                Container(
+                                                  width: 600.w,
+                                                  height: 80.h,
+                                                  // 고정된 입력창 높이
+                                                  padding: EdgeInsets.symmetric(
+                                                      horizontal: 16.w),
+                                                  decoration: BoxDecoration(
                                                     color: Colors.white,
+                                                    border: Border.all(
+                                                      color: const Color(0xFFE2E8F0),
+                                                      width: 1.w,
+                                                    ),
+                                                    borderRadius:
+                                                    BorderRadius.circular(8.r),
+                                                  ),
+                                                  child: Center(
+                                                    child: TextField(
+                                                      controller: _pwController,
+                                                      obscureText: true,
+                                                      decoration: InputDecoration(
+                                                        border: InputBorder.none,
+
+                                                        hintText: "비밀번호 입력",
+                                                        hintStyle: TextStyle(
+                                                          color: Color(0xffA0AEC0),
+                                                          fontSize: 32.sp,
+                                                          fontWeight: FontWeight.w400,
+                                                          fontFamily: 'PretendardGOV',
+                                                        ),
+                                                        isDense: true,
+                                                        // 👈 여백 자동 줄이기
+                                                        contentPadding: EdgeInsets
+                                                            .zero, // 👈 여백 제거
+                                                      ),
+                                                      style: TextStyle(
+                                                        fontSize: 36.sp,
+                                                        color: Color(0xff2d3748),
+                                                      ),
+                                                      textAlignVertical:
+                                                      TextAlignVertical
+                                                          .center, // 👈 수직 정렬 핵심
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                            )
+
+
+                                                Container(
+                                                  alignment: Alignment.centerRight,
+
+                                                  height: 50.h,
+                                                  child: InkWell(
+                                                    onTap: (){
+                                                      context.go('/find_account?tab=pw');
+                                                    },
+                                                    child: Text(
+                                                      '비밀번호 찾기',
+                                                      style: TextStyle(
+                                                        fontFamily: 'PretendardGOV',
+                                                        fontWeight: FontWeight.w400,
+                                                        fontSize: 20.sp,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                )
 
 
 
-                                            // InkWell(
-                                            //   onTap: (){
-                                            //     showDialog(
-                                            //       context: context,
-                                            //       barrierDismissible: false, // 바깥 클릭 시 닫히지 않도록
-                                            //       builder: (_) => DialogForm(mainText:"준비중입니다.",btnText: "확인",),
-                                            //     );
-                                            //   },
-                                            //   child:         Container(
-                                            //     alignment: Alignment.centerRight,
-                                            //     width: 112.w,
-                                            //     height: 50.h,
-                                            //     child: Text(
-                                            //       '비밀번호 찾기',
-                                            //       style: TextStyle(
-                                            //         fontFamily: 'PretendardGOV',
-                                            //         fontWeight: FontWeight.w400,
-                                            //         fontSize: 20.sp,
-                                            //         color: Colors.white,
-                                            //       ),
-                                            //     ),
-                                            //   ),
-                                            // )
-                                          ]),
-                                    ),
+                                                // InkWell(
+                                                //   onTap: (){
+                                                //     showDialog(
+                                                //       context: context,
+                                                //       barrierDismissible: false, // 바깥 클릭 시 닫히지 않도록
+                                                //       builder: (_) => DialogForm(mainText:"준비중입니다.",btnText: "확인",),
+                                                //     );
+                                                //   },
+                                                //   child:         Container(
+                                                //     alignment: Alignment.centerRight,
+                                                //     width: 112.w,
+                                                //     height: 50.h,
+                                                //     child: Text(
+                                                //       '비밀번호 찾기',
+                                                //       style: TextStyle(
+                                                //         fontFamily: 'PretendardGOV',
+                                                //         fontWeight: FontWeight.w400,
+                                                //         fontSize: 20.sp,
+                                                //         color: Colors.white,
+                                                //       ),
+                                                //     ),
+                                                //   ),
+                                                // )
+                                              ]),
+                                        ),
+                                      ],
+                                    )),
+
                                     SizedBox(
                                       height: 31.h,
                                     ),

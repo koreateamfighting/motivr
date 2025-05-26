@@ -4,14 +4,14 @@ import 'package:iot_dashboard/theme/colors.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class IotControlStatus extends StatelessWidget {
-  const IotControlStatus({super.key});
+class WorkProcessStatus extends StatelessWidget {
+  const WorkProcessStatus({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 613.w,
-      height: 641.h,
+      height: 602.h,
       decoration: BoxDecoration(
         color: Color(0xff111c44),
         border: Border.all(
@@ -34,19 +34,31 @@ class IotControlStatus extends StatelessWidget {
                   Container(
                     width: 30.w,
                     height: 30.h,
-                    child: Image.asset('assets/icons/iot_control.png'),
+                    child: Image.asset('assets/icons/work_process.png'),
                   ),
                   SizedBox(
                     width: 12.w,
                   ),
                   Text(
-                    'IoT 작동 현황',
+                    '오늘 작업 공정',
                     style: TextStyle(
                         fontFamily: 'PretendardGOV',
                         fontWeight: FontWeight.w500,
                         fontSize: 36.sp,
                         color: Colors.white),
-                  )
+                  ),
+                  SizedBox(
+                    width: 70.w,
+                  ),
+                  Text(
+                    _getFormattedDate(),
+                    style: TextStyle(
+                      fontFamily: 'PretendardGOV',
+                      fontWeight: FontWeight.w400,
+                      fontSize: 24.sp,
+                      color: Colors.white,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -55,102 +67,156 @@ class IotControlStatus extends StatelessWidget {
               height: 1.h,
               color: Colors.white,
             ),
-            SizedBox(
-              height: 25.h,
-            ),
-            Row(
-              children: [
-                SizedBox(
-                  width: 64.w,
-                ),
-                // 전체 수치
-                Container(
-                  width: 141.26.w,
-                  height: 143.71.h,
-                  child: PieChart(
-                    PieChartData(
-                      centerSpaceRadius: 60.w,
-                      sectionsSpace: 0,
-                      startDegreeOffset: -90,
-                      sections: [
-                        PieChartSectionData(
-                          value: 19,
-                          color: const Color(0xFF2FA365), // 정상
-                          radius: 20.w,
-                          showTitle: false,
+            SizedBox(height: 54.h,),
+            Container(
+              height: 481.h,
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: 334.45.w,
+                    height: 340.w,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        PieChart(
+                          PieChartData(
+                            centerSpaceRadius: 120.w,
+                            startDegreeOffset: -90,
+                            sectionsSpace: 0,
+
+                            sections: [
+                              PieChartSectionData(
+
+                                color: const Color(0xff2980ff), // 완료
+                                value: 60,
+                                showTitle: false,
+                                radius: 50.w,
+                              ),
+                              PieChartSectionData(
+                                color: const Color(0xffa0aec0), // 미완료
+                                value: 40,
+                                showTitle: false,
+                                radius: 50.w,
+                              ),
+                            ],
+                          ),
                         ),
-                        PieChartSectionData(
-                          value: 2,
-                          color: const Color(0xFFFBD50F), // 주의
-                          radius: 20.w,
-                          showTitle: false,
-                        ),
-                        PieChartSectionData(
-                          value: 2,
-                          color: const Color(0xFFFF6060), // 경고
-                          radius: 20.w,
-                          showTitle: false,
-                        ),
-                        PieChartSectionData(
-                          value: 1,
-                          color: const Color(0xFF83C2F1), // 점검 필요
-                          radius: 20.w,
-                          showTitle: false,
-                        ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(height: 20.h,),
+                            Text(
+                              '60%',
+                              style: TextStyle(
+                                fontSize: 80.sp,
+                                fontFamily: 'PretendardGOV',
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
+                            ),
+                            Text(
+                              '공정률',
+                              style: TextStyle(
+                                fontSize: 32.sp,
+                                fontFamily: 'PretendardGOV',
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        )
                       ],
                     ),
                   ),
-                ),
-                SizedBox(
-                  width: 160.w,
-                ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '24',
-                      style: TextStyle(
-                        fontFamily: 'PretendardGOV',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 64.sp,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Text(
-                      '전체',
-                      style: TextStyle(
-                        fontFamily: 'PretendardGOV',
-                        fontWeight: FontWeight.w500,
-                        fontSize: 32.sp,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                  SizedBox(height: 33.h,),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _legendItem(Color(0xff414c67), '미완료'), // 단색 처리
+                      SizedBox(width: 32.w),
+                      _legendItem( Color(0xff030A64), '완료'), // 상단 밝음 → 하단 어두움
+                    ],
+                  ),
+                  SizedBox(height: 24.h,),
+                  Container(
+                    width: 1542.w,
+                    height: 1.h,
+                    color: Colors.white,
+                  ),
+                  SizedBox(height: 8.h,),
+               Container(
+
+                        width: 140.w,
+                        height: 40.h,
+                        decoration: BoxDecoration(
+                          color:  Color(0xff3182ce),
+                          borderRadius: BorderRadius.circular(4.r),
+                        ),
+                        child: Center(
+                          child: Text(
+                            '공정률 입력',
+                            style: TextStyle(
+                              fontFamily: 'PretendardGOV',
+                              fontSize: 20.sp,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      )
+                ],
+              ),
             ),
-            SizedBox(
-              height: 32.h,
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _statusRow('정상', 19, const Color(0xFF2FA365),
-                    'assets/icons/status_normal_icon.png'),
-                _statusRow('주의', 2, const Color(0xFFFBD50F),
-                    'assets/icons/status_caution_icon.png'),
-                _statusRow('경고', 2, const Color(0xFFFF6060),
-                    'assets/icons/status_warning_icon.png'),
-                _statusRow('점검 필요', 1, const Color(0xFF83C2F1),
-                    'assets/icons/status_inspection_icon.png'),
-              ],
-            ),
+
+
           ],
         ),
       ),
     );
   }
 }
+
+String _getFormattedDate() {
+  final now =
+      DateTime.now().toUtc().add(const Duration(hours: 9)); // KST = UTC+9
+  return '${now.year}년 ${now.month.toString().padLeft(2, '0')}월 ${now.day.toString().padLeft(2, '0')}일 현재';
+}
+
+Widget  _legendItem(Color baseColor, String label) {
+  return Row(
+    children: [
+      ClipOval(
+        child: Container(
+          width: 16.w,
+          height: 16.w,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                darken(baseColor, 0.2),
+                baseColor,
+                brighten(baseColor, 0.2),
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+        ),
+      ),
+      SizedBox(width: 8.w),
+      Text(
+        label,
+        style: TextStyle(
+          fontFamily: 'PretendardGOV',
+          fontSize: 21.sp,
+          fontWeight: FontWeight.w400,
+          color: Colors.white,
+        ),
+      ),
+    ],
+  );
+}
+
+
 
 Widget _statusRow(String label, int count, Color color, String iconName) {
   return Padding(

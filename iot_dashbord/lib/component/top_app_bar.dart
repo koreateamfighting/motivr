@@ -49,7 +49,7 @@ class TopAppBar extends StatelessWidget {
                     icon:  Icon(Icons.menu_rounded,size: 70.w,),
                     color: isMenuVisible
                         ? const Color(0xFF3182ce) // 열렸을 때
-                        :  Color(0xFFB99764)         // 닫혔을 때
+                        :  Color(0xFF3182ce)         // 닫혔을 때
                   ),
 
 
@@ -97,7 +97,7 @@ class TopAppBar extends StatelessWidget {
                 height: 60.h,
                 padding: EdgeInsets.fromLTRB(4.0.w,4.0.h,4.0.w,4.0.h),
                 decoration: BoxDecoration(
-                   color:  Color(0xFFb99764),
+                   color:  Color(0xFF3182ce),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Image.asset('assets/icons/max.png',),
@@ -134,7 +134,7 @@ class TopAppBar extends StatelessWidget {
                 height: 60.h,
                 padding: EdgeInsets.fromLTRB(4.0.w,4.0.h,4.0.w,4.0.h),
                 decoration: BoxDecoration(
-                  color:  Color(0xFFb99764),
+                  color:  Color(0xFF3182ce),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Image.asset('assets/icons/logout.png',),
