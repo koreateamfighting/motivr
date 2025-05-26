@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:iot_dashbord/services/live_clock.dart';
-import 'package:iot_dashbord/services/weather_info.dart';
-import 'package:iot_dashbord/theme/colors.dart';
+import 'package:iot_dashboard/services/live_clock.dart';
+import 'package:iot_dashboard/services/weather_info.dart';
+import 'package:iot_dashboard/utils/auth_service.dart';
+import 'package:iot_dashboard/component/dialog_form2.dart';
+import 'package:go_router/go_router.dart';
+import 'package:iot_dashboard/controller/user_controller.dart';
+import 'dart:html' as html;
+import 'package:iot_dashboard/utils/iframe_visibility.dart';
 
 class TopAppBar extends StatelessWidget {
   final VoidCallback? onMenuPressed;
@@ -14,75 +19,127 @@ class TopAppBar extends StatelessWidget {
     required this.isMenuVisible, // ✅ 필수값으로 지정
   }) : super(key: key);
 
+
+
+
+  void toggleFullScreen() {
+    final doc = html.document;
+
+    if (doc.fullscreenElement != null) {
+      doc.exitFullscreen(); // 전체화면 종료
+    } else {
+      doc.documentElement?.requestFullscreen(); // 전체화면 요청
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 3812.w,
-      height: 100.h,
-      color: const Color(0xff272E3F),
+      height: 140.h,
+      color: Colors.white,
       child: Row(
         children: [
           SizedBox(width: 50.w),
-          Transform.translate(
-            offset: Offset(0, 0.h),
-            child: Transform.scale(
-              scale: 4.w,
-              child: SizedBox(
-                width: 100.w,
-                height: 100.h,
-                child: IconButton(
-                  onPressed: onMenuPressed,
-                  icon: const Icon(Icons.menu_rounded),
-                  color: isMenuVisible
-                      ? const Color(0xFF3CBFAD) // 열렸을 때
-                      : Colors.white,           // 닫혔을 때
-                ),
+          Container(
+            padding: EdgeInsets.only(top: 20.h),
+            width: 60.w,
+                  child: IconButton(
+                    onPressed: onMenuPressed,
+                    icon:  Icon(Icons.menu_rounded,size: 70.w,),
+                    color: isMenuVisible
+                        ? const Color(0xFF3182ce) // 열렸을 때
+                        :  Color(0xFFB99764)         // 닫혔을 때
+                  ),
+
+
+          ),
+          SizedBox(width: 100.w),
+          Container(
+            alignment: Alignment.centerRight, // 내부에서 우측 정렬
+            child: Container(
+              width: 350.w,
+              height: 120.h,
+              color: Colors.white,
+              padding: EdgeInsets.symmetric(horizontal: 42.w,vertical: 8.h), // ✅ 내부 여백 추가
+              child: Image.asset(
+                'assets/images/company_logo_small.png',
+                fit: BoxFit.fill, // ✅ 비율 유지하면서 컨테이너 안에 맞춤
               ),
             ),
           ),
-          SizedBox(width: 50.w),
-          Text(
-            'Digital Twin CMS',
-            style: TextStyle(
-              fontFamily: 'PretendardGOV',
-              fontWeight: FontWeight.w800,
-              fontSize: 50.sp,
-              color: Color(0xffffffff),
+          SizedBox(width: 169.w,),
+          LiveClock(),
+          SizedBox(width: 264.w,),
+          Container(
+            width: 1500.w ,
+            child: Text(
+              'Digital Twin CMS',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'PretendardGOV',
+                fontWeight: FontWeight.w700,
+                fontSize: 70.sp,
+                color: Color(0xff0b1437)
+              ),
             ),
           ),
-          SizedBox(width: 1146.w),
-          LiveClock(),
-          SizedBox(width: 540.w),
-          WeatherInfoBar(),
-          SizedBox(width: 83.w),
+          SizedBox(width: 840.w),
+
+          // WeatherInfoBar(),
+
           InkWell(
-              onTap: () {},
+              onTap: ()  {
+                toggleFullScreen();
+              },
               child: Container(
-                width: 80.w,
-                height: 80.h,
+                width: 60.w,
+                height: 60.h,
                 padding: EdgeInsets.fromLTRB(4.0.w,4.0.h,4.0.w,4.0.h),
                 decoration: BoxDecoration(
-                   color:  Color(0xFF091427),
+                   color:  Color(0xFFb99764),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
-                child: Image.asset('assets/icons/lock.png',),
+                child: Image.asset('assets/icons/max.png',),
               )),
-          SizedBox(width: 34.w),
-          Expanded( // ✅ 가장 끝까지 밀기 위해 Expanded 사용
-            child: Container(
-              alignment: Alignment.centerRight, // 내부에서 우측 정렬
-              child: Container(
-                width: 300.w,
-                height: 100.h,
-                color: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 42.w,vertical: 8.h), // ✅ 내부 여백 추가
-                child: Image.asset(
-                  'assets/images/company_logo_small.png',
-                  fit: BoxFit.contain, // ✅ 비율 유지하면서 컨테이너 안에 맞춤
+          SizedBox(width: 63.w),
+          InkWell(
+            onTap: () async {
+              hideIframes();
+
+              await showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (_) => DialogForm2(
+                  mainText: "로그아웃 하시겠습니까?",
+                  btnText1: "아니오",
+                  btnText2: "네",
+                  onConfirm: () async {
+                    final userID = await AuthService.getUserID();
+                    if (userID != null) {
+                      await UserController.logout(userID);
+                    }
+                    if (context.mounted) {
+                      context.go('/login');
+                    }
+                  },
                 ),
-              ),
-            ),
-          ),
+              );
+
+              showIframes(); // ✅ 다이얼로그 닫히고 나서 실행됨
+            },
+
+            child: Container(
+                width: 60.w,
+                height: 60.h,
+                padding: EdgeInsets.fromLTRB(4.0.w,4.0.h,4.0.w,4.0.h),
+                decoration: BoxDecoration(
+                  color:  Color(0xFFb99764),
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Image.asset('assets/icons/logout.png',),
+              )),
+
 
 
         ],

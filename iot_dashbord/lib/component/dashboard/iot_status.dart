@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:iot_dashbord/theme/colors.dart';
-import 'package:iot_dashbord/component/unity_webgl_frame.dart'; // ✅ WebGL 연동
+import 'package:iot_dashboard/theme/colors.dart';
+import 'package:iot_dashboard/component/unity_webgl_frame.dart'; // ✅ WebGL 연동
 
 class IotStatus extends StatelessWidget {
   const IotStatus({super.key});

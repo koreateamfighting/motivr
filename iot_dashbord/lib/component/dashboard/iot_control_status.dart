@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:iot_dashbord/theme/colors.dart';
+import 'package:iot_dashboard/theme/colors.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class IotControlStatus extends StatelessWidget {

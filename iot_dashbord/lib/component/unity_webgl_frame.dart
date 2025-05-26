@@ -18,6 +18,7 @@ class _UnityWebGLFrameState extends State<UnityWebGLFrame> {
 
     // ✅ 핵심: iframe이 부모 크기를 제대로 채우도록 스타일을 명시
     _iframe = html.IFrameElement()
+      ..id = 'unity-webgl-iframe'
       ..src = '/unity_build/index.html'
       ..style.border = 'none'
       ..style.position = 'absolute' // 중요

@@ -3,14 +3,18 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:iot_dashboard/utils/keyboard_handler.dart';
 
-class RegisterSuccessDialog extends StatefulWidget {
-  const RegisterSuccessDialog({super.key});
+
+class DialogForm extends StatefulWidget {
+  final String mainText;
+  final String btnText;
+
+  DialogForm({Key? key, required this.mainText,required this.btnText}) : super(key: key);
 
   @override
-  State<RegisterSuccessDialog> createState() => _RegisterSuccessDialogState();
+  State<DialogForm> createState() => _DialogFormState();
 }
 
-class _RegisterSuccessDialogState extends State<RegisterSuccessDialog> {
+class _DialogFormState extends State<DialogForm> {
   final FocusNode _focusNode = FocusNode();
   static const designWidth = 3812;
   static const designHeight = 2144;
@@ -30,12 +34,6 @@ class _RegisterSuccessDialogState extends State<RegisterSuccessDialog> {
     super.dispose();
   }
 
-  void _handleKey(RawKeyEvent event) {
-    if (event is RawKeyDownEvent &&
-        event.logicalKey == LogicalKeyboardKey.escape) {
-      Navigator.of(context).pop(); // ESC 키 눌렀을 때 닫기
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,11 +43,11 @@ class _RegisterSuccessDialogState extends State<RegisterSuccessDialog> {
         return RawKeyboardListener(
             focusNode: _focusNode,
             onKey: (event) {
+
               handleEscapeKey(event, context); // ESC → 닫기
             },
             child: WillPopScope(
-                child: MaterialApp(
-                    home: Dialog(
+                child: Dialog(
                   backgroundColor: Colors.transparent,
                   child: Center(
                     child: Container(
@@ -58,7 +56,7 @@ class _RegisterSuccessDialogState extends State<RegisterSuccessDialog> {
                       decoration: BoxDecoration(
                         color: Color(0xff414c67),
                         border:
-                            Border.all(color: Color(0xff9b9c9d), width: 10.w),
+                        Border.all(color: Color(0xff9b9c9d), width: 10.w),
                         borderRadius: BorderRadius.circular(5.r),
                       ),
                       child: Column(
@@ -78,7 +76,7 @@ class _RegisterSuccessDialogState extends State<RegisterSuccessDialog> {
                                   width: 60.w,
                                   height: 60.h,
                                   child:
-                                      Image.asset('assets/icons/download.png'),
+                                  Image.asset('assets/icons/download.png'),
                                 ),
                                 Spacer(),
                                 InkWell(
@@ -89,7 +87,7 @@ class _RegisterSuccessDialogState extends State<RegisterSuccessDialog> {
                                     width: 70.w,
                                     height: 70.h,
                                     child:
-                                        Image.asset('assets/icons/close.png'),
+                                    Image.asset('assets/icons/close.png'),
                                   ),
                                 ),
                                 SizedBox(
@@ -106,7 +104,7 @@ class _RegisterSuccessDialogState extends State<RegisterSuccessDialog> {
                             height: 62.h,
                           ),
                           Text(
-                            '회원 가입이 완료 되었습니다.',
+                            widget.mainText,
                             style: TextStyle(
                                 fontFamily: 'PretendardGOV',
                                 fontWeight: FontWeight.w500,
@@ -129,7 +127,7 @@ class _RegisterSuccessDialogState extends State<RegisterSuccessDialog> {
                                   borderRadius: BorderRadius.circular(5.r),
                                 ),
                                 child: Text(
-                                  '완료',
+                                  widget.btnText,
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                       fontFamily: 'PretendardGOV',
@@ -142,7 +140,7 @@ class _RegisterSuccessDialogState extends State<RegisterSuccessDialog> {
                       ),
                     ),
                   ),
-                )),
+                ),
                 onWillPop: () async {
                   Navigator.of(context).pop(); // ESC 또는 Android back 버튼 시 닫힘
                   return false; // 기본 동작 막기

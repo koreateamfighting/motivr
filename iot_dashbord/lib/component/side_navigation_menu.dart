@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iot_dashbord/theme/colors.dart';
+import 'package:iot_dashboard/theme/colors.dart';
 
 class SideNavigationMenu extends StatelessWidget {
   final void Function()? onClose;
@@ -22,13 +22,13 @@ class SideNavigationMenu extends StatelessWidget {
       // backgroundColor: Colors.transparent, // 투명하게
       child: Container(
         margin: EdgeInsets.only(top: 0.h), // ✅ 전체 위젯 자체를 아래로 이동
-        color: AppColors.main1,
+        color: Color(0xff0b1437),
         child: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(
-                height: 188.h,
+                height: 140.h,
               ),
               _buildMenuItem(
                   context, 'dashboard', '대시보드', '/dashboard0', currentPath),
@@ -73,7 +73,7 @@ class SideNavigationMenu extends StatelessWidget {
     String currentPath, // ✅ 현재 경로 전달
   ) {
     final isSelected = currentPath == routePath;
-    final Color activeColor = const Color(0xFF3CBFAD);
+    final Color activeColor = Color(0xFF3182ce);
     final iconAsset = isSelected
         ? 'assets/icons/color_$iconName.png'
         : 'assets/icons/uncolor_$iconName.png';
@@ -93,7 +93,7 @@ class SideNavigationMenu extends StatelessWidget {
                 width: 80.w, // 적절한 크기로 조절
                 height: 80.h,
               ),
-              SizedBox(height: 25.h,),
+              SizedBox(height: 28.h,),
               Text(
                 title,
                 textAlign: TextAlign.center,
@@ -101,7 +101,7 @@ class SideNavigationMenu extends StatelessWidget {
                   fontFamily: 'PretendardGOV',
                   fontSize: 30.sp,
                   color: isSelected ? activeColor : Colors.white,
-                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
                 ),
               )
             ],

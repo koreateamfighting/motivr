@@ -1,4 +1,4 @@
-# iot_dashbord
+# iot_dashboard
 
 A new Flutter project.
 

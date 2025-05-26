@@ -1,6 +1,6 @@
 {
-    "name": "iot_dashbord",
-    "short_name": "iot_dashbord",
+    "name": "iot_dashboard",
+    "short_name": "iot_dashboard",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

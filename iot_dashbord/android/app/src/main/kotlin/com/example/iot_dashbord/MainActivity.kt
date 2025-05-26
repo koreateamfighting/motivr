@@ -1,4 +1,4 @@
-package com.example.iot_dashbord
+package com.example.iot_dashboard
 
 import io.flutter.embedding.android.FlutterActivity
 

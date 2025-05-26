@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:http/http.dart' as http;
-import 'package:iot_dashbord/component/privacy_policy_page.dart';
-import 'package:iot_dashbord/component/term_of_use_page.dart';
+import 'package:iot_dashboard/component/privacy_policy_page.dart';
+import 'package:iot_dashboard/component/term_of_use_page.dart';
 import 'dart:convert';
-import 'package:iot_dashbord/controller/user_controller.dart';
-import 'package:iot_dashbord/model/user_model.dart';
-import 'package:iot_dashbord/component/register_success_dialog.dart';
+import 'package:iot_dashboard/controller/user_controller.dart';
+import 'package:iot_dashboard/model/user_model.dart';
+import 'package:iot_dashboard/component/register_success_dialog.dart';
+import 'package:iot_dashboard/component/dialog_form.dart';
+import 'package:flutter/services.dart';
 
 class RegisterWidget extends StatefulWidget {
   const RegisterWidget({super.key});
@@ -26,7 +28,7 @@ class _RegisterWidgetState extends State<RegisterWidget> {
   final _deptController = TextEditingController();
   final _positionController = TextEditingController();
   final _roleController = TextEditingController();
-
+  bool checkedID = false;
   @override
   void dispose() {
     _idController.dispose();
@@ -45,18 +47,32 @@ class _RegisterWidgetState extends State<RegisterWidget> {
   Future<void> _onRegisterTap() async {
     // 👉 ID, PW 둘 다 필수 검사
     if (_idController.text.trim().isEmpty || _pwController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('아이디와 비밀번호는 필수입니다.')),
+      showDialog(
+        context: context,
+        barrierDismissible: false, // 바깥 클릭 시 닫히지 않도록
+        builder: (_) => DialogForm(mainText:"필수항목을 입력해주세요.",btnText: "닫기",),
       );
       return;
     }
 
     if (_pwController.text != _pwConfirmController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('비밀번호가 일치하지 않습니다.')),
+      showDialog(
+        context: context,
+        barrierDismissible: false, // 바깥 클릭 시 닫히지 않도록
+        builder: (_) => DialogForm(mainText:"비밀번호가 일치 하지 않습니다..",btnText: "닫기",),
       );
       return;
     }
+
+    if(checkedID == false){
+      showDialog(
+        context: context,
+        barrierDismissible: false, // 바깥 클릭 시 닫히지 않도록
+        builder: (_) => DialogForm(mainText:"아이디 중복체크를 확인 해주세요.",btnText: "닫기",),
+      );
+      return;
+    }
+
 
     // 나머지는 선택입력
     final user = UserModel(
@@ -74,14 +90,17 @@ class _RegisterWidgetState extends State<RegisterWidget> {
     final errorMessage = await UserController.registerUser(user, context);
 
     if (errorMessage == null) {
+      Navigator.of(context).pop();
       showDialog(
         context: context,
         barrierDismissible: false, // 바깥 클릭 시 닫히지 않도록
         builder: (_) => RegisterSuccessDialog(),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
+      showDialog(
+        context: context,
+        barrierDismissible: false, // 바깥 클릭 시 닫히지 않도록
+        builder: (_) => DialogForm(mainText:"${errorMessage}",btnText: "닫기",),
       );
     }
   }
@@ -154,14 +173,89 @@ class _RegisterWidgetState extends State<RegisterWidget> {
                               height: 44.h,
                             ),
                             formLabel('아이디'),
-                            formTextField('아이디 입력 (6~20자)', _idController,
-                                borderColor: Color(0xff67788e)),
+                            Container(
+                              width: 800.w,
+                              child: Row(
+                                children: [
+                                  formTextField(
+                                    '아이디 입력 (6~20자)',
+                                    _idController,
+                                    borderColor: Color(0xff67788e),
+                                    fieldType: FormFieldType.id,
+                                    width: 550,
+                                  ),
+                                  SizedBox(width: 40.w),
+                                  InkWell(
+                                    onTap: () async {
+                                      final userID = _idController.text.trim();
+
+                                      if (userID.isEmpty) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text('아이디를 입력해주세요.')),
+                                        );
+                                        return;
+                                      }
+
+                                      final isAvailable = await UserController.checkDuplicateUserID(userID);
+
+                                      if (isAvailable) {
+                                        setState(() {
+                                          checkedID = true;
+                                          showDialog(
+                                            context: context,
+                                            barrierDismissible: false, // 바깥 클릭 시 닫히지 않도록
+                                            builder: (_) => DialogForm(mainText:"사용가능한 아이디입니다.",btnText: "확인",),
+                                          );
+
+                                        });
+
+                                      } else {
+                                        setState(() {
+                                          checkedID = false;
+                                          showDialog(
+                                            context: context,
+                                            barrierDismissible: false, // 바깥 클릭 시 닫히지 않도록
+                                            builder: (_) => DialogForm(mainText:"이미 사용 중인 아이디입니다.",btnText: "닫기",),
+                                          );
+                                        });
+
+                                      }
+                                    },
+
+                                    child: Container(
+                                      width: 210.w,
+                                      height: 80.h,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: Color(0xff3182ce),
+                                        borderRadius: BorderRadius.circular(
+                                            8.r), // 둥근 모서리
+                                      ),
+                                      child: Text(
+                                        '중복체크',
+                                        style: TextStyle(
+                                          fontFamily: 'PretendardGOV',
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 36.sp,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
+                                ],
+                              ),
+                            ),
+
+
                             formLabel('비밀번호'),
                             formTextField('비밀번호 입력 (문자, 숫자 포함)', _pwController,
-                                borderColor: Color(0xff67788e)),
+                                borderColor: Color(0xff67788e),
+                                fieldType: FormFieldType.password),
                             formLabel('비밀번호 확인'),
                             formTextField('비밀번호 재입력', _pwConfirmController,
-                                borderColor: Color(0xff67788e)),
+                                borderColor: Color(0xff67788e),
+                                fieldType: FormFieldType.password),
                             SizedBox(
                               height: 37.h,
                             ),
@@ -174,19 +268,26 @@ class _RegisterWidgetState extends State<RegisterWidget> {
                               height: 24.h,
                             ),
                             formLabel('이름'),
-                            formTextField('이름을 입력해주세요', _nameController),
+                            formTextField('이름을 입력해주세요', _nameController,
+                                fieldType: FormFieldType.name),
                             formLabel('연락처'),
-                            formTextField('연락처', _phoneController),
+                            formTextField('연락처', _phoneController,
+                                fieldType: FormFieldType.phone),
                             formLabel('이메일 주소'),
-                            formTextField('이메일 주소 입력', _emailController),
+                            formTextField('이메일 주소 입력', _emailController,
+                                fieldType: FormFieldType.name),
                             formLabel('회사명'),
-                            formTextField('회사명을 입력해주세요', _companyController),
+                            formTextField('회사명을 입력해주세요', _companyController,
+                                fieldType: FormFieldType.normal),
                             formLabel('부서명'),
-                            formTextField('부서명을 입력해주세요', _deptController),
+                            formTextField('부서명을 입력해주세요', _deptController,
+                                fieldType: FormFieldType.normal),
                             formLabel('직급'),
-                            formTextField('직급을 입력해주세요', _positionController),
+                            formTextField('직급을 입력해주세요', _positionController,
+                                fieldType: FormFieldType.normal),
                             formLabel('담당업무'),
-                            formTextField('담당업무를 입력해주세요', _roleController),
+                            formTextField('담당업무를 입력해주세요', _roleController,
+                                fieldType: FormFieldType.normal),
                             SizedBox(
                               height: 54.h,
                             ),
@@ -265,7 +366,8 @@ class _RegisterWidgetState extends State<RegisterWidget> {
                                     onTap: () {
                                       showDialog(
                                         context: context,
-                                        barrierDismissible: false, // 바깥 클릭 시 닫히지 않도록
+                                        barrierDismissible: false,
+                                        // 바깥 클릭 시 닫히지 않도록
                                         builder: (_) => TermOfUsePage(),
                                       );
                                     },
@@ -295,7 +397,8 @@ class _RegisterWidgetState extends State<RegisterWidget> {
                                     onTap: () {
                                       showDialog(
                                         context: context,
-                                        barrierDismissible: false, // 바깥 클릭 시 닫히지 않도록
+                                        barrierDismissible: false,
+                                        // 바깥 클릭 시 닫히지 않도록
                                         builder: (_) => PrivacyPolicyPage(),
                                       );
                                     },
@@ -420,21 +523,65 @@ Widget formLabel(String text) {
   );
 }
 
+enum FormFieldType {
+  normal,
+  id,
+  password,
+  name,
+  phone,
+}
+
 Widget formTextField(
   String hintText,
   TextEditingController controller, {
-  Color borderColor = const Color(0xffe2e8f0), // 기본 border 색상
+  FormFieldType fieldType = FormFieldType.normal,
+  Color borderColor = const Color(0xffe2e8f0),
+  double width = 800,
+  double height = 80,
 }) {
+  TextInputType keyboardType = TextInputType.text;
+  List<TextInputFormatter> inputFormatters = [];
+
+  // 필드별 입력 제약 설정
+  switch (fieldType) {
+    case FormFieldType.id:
+      inputFormatters
+          .add(FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')));
+      break;
+    case FormFieldType.password:
+      // 비밀번호는 obscureText 처리만 별도로
+      break;
+    case FormFieldType.name:
+      // inputFormatters
+      //     .add(FilteringTextInputFormatter.allow(RegExp(r'[가-힣a-zA-Z]')));
+      break;
+    case FormFieldType.phone:
+      keyboardType = TextInputType.number;
+      inputFormatters.add(FilteringTextInputFormatter.digitsOnly);
+      break;
+    case FormFieldType.normal:
+      inputFormatters.add(FilteringTextInputFormatter.deny(RegExp(r'\s')));
+      break;
+  }
+
+  // 공백 제거 formatter는 전 필드 공통 적용
+  inputFormatters.add(FilteringTextInputFormatter.deny(RegExp(r'\s')));
+
   return Container(
-    width: 800.w,
-    height: 80.h,
+    // width: 800.w,
+    // height: 80.h,
+    width: width.w,
+    height: height.h,
     decoration: BoxDecoration(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(2.r), // 둥근 모서리
-      border: Border.all(color: borderColor, width: 2.0.w), // 또는 Border.none
+      borderRadius: BorderRadius.circular(2.r),
+      border: Border.all(color: borderColor, width: 2.0.w),
     ),
     child: TextField(
       controller: controller,
+      keyboardType: keyboardType,
+      obscureText: fieldType == FormFieldType.password,
+      inputFormatters: inputFormatters,
       decoration: InputDecoration(
         border: InputBorder.none,
         hintText: hintText,
@@ -445,7 +592,6 @@ Widget formTextField(
           fontFamily: 'PretendardGOV',
         ),
         isDense: true,
-        // 👈 여백 자동 줄이기
         contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
       ),
     ),

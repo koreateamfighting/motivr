@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:iot_dashbord/theme/colors.dart';
+import 'package:iot_dashboard/theme/colors.dart';
 import 'top_app_bar.dart';
 import 'side_navigation_menu.dart';
 import 'package:go_router/go_router.dart'; // ✅ 라우트 정보 얻기 위해 필요

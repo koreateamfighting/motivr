@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:iot_dashbord/component/dashboard/iot_control_status.dart';
-import 'package:iot_dashbord/component/unity_webgl_frame.dart';
-import 'package:iot_dashbord/component/base_layout.dart';
-import 'package:iot_dashbord/component/hlsplayer_view.dart'; // ✅ 이름 통일
-import 'package:iot_dashbord/theme/colors.dart';
-import 'package:iot_dashbord/component/dashboard/iot_status.dart';
+import 'package:iot_dashboard/component/dashboard/iot_control_status.dart';
+import 'package:iot_dashboard/component/unity_webgl_frame.dart';
+import 'package:iot_dashboard/component/base_layout.dart';
+import 'package:iot_dashboard/component/hlsplayer_view.dart'; // ✅ 이름 통일
+import 'package:iot_dashboard/theme/colors.dart';
+import 'package:iot_dashboard/component/dashboard/iot_status.dart';
 import 'dart:ui' as ui;
 import 'dart:html' as html;
+
 
 class DashBoard extends StatefulWidget {
   const DashBoard({Key? key}) : super(key: key);
@@ -187,6 +188,7 @@ class HlsPlayerIframe extends StatelessWidget {
     const viewId = 'hls-player-iframe';
 
     html.IFrameElement _iframe = html.IFrameElement()
+      ..id = 'hls-player-iframe'
       ..width = '100%'
       ..height = '100%'
       ..src = 'https://hanlimtwin.kr:3030/hls_player.html'

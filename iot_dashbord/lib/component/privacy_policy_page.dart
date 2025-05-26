@@ -3,7 +3,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter/services.dart';
-
+import 'package:iot_dashboard/utils/keyboard_handler.dart';
 
 class PrivacyPolicyPage extends StatefulWidget {
   const PrivacyPolicyPage({super.key});
@@ -62,10 +62,7 @@ class _PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
           focusNode: _focusNode,
           autofocus: true,
           onKey: (event) {
-            if (event.logicalKey == LogicalKeyboardKey.escape &&
-                event.runtimeType.toString() == 'RawKeyDownEvent') {
-              Navigator.of(context).pop(); // ESC 키로 닫기
-            }
+            handleEscapeKey(event, context); // ESC → 닫기
           },
           child: WillPopScope(
             onWillPop: () async {

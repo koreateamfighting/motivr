@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:iot_dashbord/component/base_layout.dart';
-import 'package:iot_dashbord/theme/colors.dart';
+import 'package:iot_dashboard/component/base_layout.dart';
+import 'package:iot_dashboard/theme/colors.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
 

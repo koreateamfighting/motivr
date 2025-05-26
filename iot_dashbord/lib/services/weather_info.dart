@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:iot_dashbord/services/weather_api.dart';
-import 'package:iot_dashbord/services/weather_api2.dart';
+import 'package:iot_dashboard/services/weather_api.dart';
+import 'package:iot_dashboard/services/weather_api2.dart';
 
 class WeatherInfoBar extends StatefulWidget {
   const WeatherInfoBar({super.key});
