@@ -7,10 +7,9 @@ import 'package:iot_dashboard/component/base_layout.dart';
 import 'package:iot_dashboard/component/hlsplayer_view.dart'; // ✅ 이름 통일
 import 'package:iot_dashboard/theme/colors.dart';
 import 'package:iot_dashboard/component/dashboard/iot_status.dart';
-import 'package:iot_dashboard/component/dashboard/weather_info2.dart';
+import 'package:iot_dashboard/component/dashboard/weather_info.dart';
 import 'dart:ui' as ui;
 import 'dart:html' as html;
-
 
 class DashBoard extends StatefulWidget {
   const DashBoard({Key? key}) : super(key: key);
@@ -23,12 +22,9 @@ class DashBoard extends StatefulWidget {
 }
 
 class _DashBoardState extends State<DashBoard> {
-
-
   @override
   void initState() {
     super.initState();
-
   }
 
   @override
@@ -71,109 +67,253 @@ class _DashBoardState extends State<DashBoard> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 50.w),
                     width: 3712.w,
                     height: 4.h,
-
-                    color:  Colors.white,
+                    color: Colors.white,
                   ),
                 ],
               ),
-              SizedBox(height: 10.h,),
-
+              SizedBox(
+                height: 10.h,
+              ),
 
               // ),
               // ✅ 본문 내용
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color:  Color(0xff1b254b),
-                    border: Border.all(color: Colors.transparent), // 또는 Border.none
+                    color: Color(0xff1b254b),
+                    border:
+                        Border.all(color: Colors.transparent), // 또는 Border.none
                   ),
-
                   child: Center(
                     child: Row(
                       children: [
                         SizedBox(
                           width: 53.w,
                         ),
+                        //첫번째 콘텐츠
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             IotControlStatus(),
 
-                            SizedBox(height: 46.h,),
+                            SizedBox(
+                              height: 46.h,
+                            ),
                             WorkProcessStatus(),
-                            SizedBox(height: 6.h,),
+                            SizedBox(
+                              height: 6.h,
+                            ),
                             WeatherInfo(),
 
                             // IotStatus(),
                           ],
                         ),
                         SizedBox(
-                          width: 29.w,
+                          width: 9.w,
                         ),
+                        //두번째 콘텐츠
                         Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Container(
-                            //   width: 1102.w,
-                            //   height: 1924.h,
-                            //   color: Colors.white,
-                            //
-                            // ),
                             Container(
-                              width: 1102.w,
-                              height: 1924.h,
-                              color: Colors.white,
-                              child:  Container(
-                                  width: 967.w,
-                                  height: 725.h,
-                                  decoration: BoxDecoration(
-                                    color: Colors.black,
-                                    border: Border.all(color: Colors.grey),
-                                  ),
-                                  child:  HlsPlayerIframe (), // ✅ iframe 기반 영상 삽입
+                              width: 2165.w,
+                              height: 1288.h,
+                              decoration: BoxDecoration(
+                                //color: Color(0xff111c44),
+                                color: Color(0xff1b254b),
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 1.w,
                                 ),
+                                borderRadius: BorderRadius.circular(5.r),
+                                // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: 2163.w,
+                                    height: 59.h,
 
+                                    child: Row(
+                                      children: [
+                                        SizedBox(
+                                          width: 24.w,
+                                        ),
+                                        Container(
+                                          width: 30.w,
+                                          height: 30.h,
+                                          child:
+                                          Image.asset('assets/icons/iot.png'),
+                                        ),
+                                        SizedBox(
+                                          width: 12.w,
+                                        ),
+                                        Text(
+                                          'IoT 현황',
+                                          style: TextStyle(
+                                              fontFamily: 'PretendardGOV',
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 36.sp,
+                                              color: Colors.white),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    width: 2165.w,
+                                    height: 1.h,
+                                    color: Colors.white,
+                                  ),
+                                  Container(
+                                    width: 2129.w,
+                                    height: 1197.h,
+                                    padding: EdgeInsets.only(top:14.h,left: 17.w,right: 19.w),
+
+                                    color: Color(0xff1b254b),
+                                    child: Container(
+                                      width: 967.w,
+                                      height: 725.h,
+                                      decoration: BoxDecoration(
+                                        color: Colors.black,
+                                        border: Border.all(color: Colors.grey),
+                                      ),
+                                      child:  UnityWebGLFrame(),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+
+                            Container(
+                              height: 8.h,
+                              color: Colors.red,
+                            ),
+                            Row(
+                              children: [
+                                Container(width: 987.w,height: 602.h,color: Colors.red,),
+                                SizedBox(width: 9.w,),
+                                Container(width: 1168.w,height: 602.h,color: Colors.yellow,)
+                              ],
                             )
-
-
 
                           ],
                         ),
                         SizedBox(
-                          width: 36.w,
+                          width: 8.w,
                         ),
+                        //세번째 콘텐츠
                         Column(
                           children: [
                             Container(
-                              width: 1000.w,
-                              height: 814.h,
-                              color: AppColors.main1,
+                              width: 881.w,
+                              height: 1709.h,
+                              decoration: BoxDecoration(
+                                //color: Color(0xff111c44),
+                                color: Color(0xff1b254b),
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 1.w,
+                                ),
+                                borderRadius: BorderRadius.circular(5.r),
+                                // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
+                              ),
+                              child: Column(
+                                children: [
+                                  Container(
+
+                                    height: 59.h,
+
+                                    child: Row(
+                                      children: [
+                                        SizedBox(
+                                          width: 24.w,
+                                        ),
+                                        Container(
+                                          width: 30.w,
+                                          height: 30.h,
+                                          child:
+                                          Image.asset('assets/icons/cctv.png'),
+                                        ),
+                                        SizedBox(
+                                          width: 12.w,
+                                        ),
+                                        Text(
+                                          'CCTV 현황',
+                                          style: TextStyle(
+                                              fontFamily: 'PretendardGOV',
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 36.sp,
+                                              color: Colors.white),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+
+                                    height: 1.h,
+                                    color: Colors.white,
+                                  ),
+                                
+                                  Container(
+                                    width: 859.w,
+                                    height: 503.h,
+                                    padding: EdgeInsets.fromLTRB(11.w, 10.h, 11.w, 10.h),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black,
+                                      border: Border.all(color: Colors.grey),
+                                    ),
+                                    child:  const HlsPlayerIframe(cam: 'cam1'),
+                                  ),
+                                  Container(
+
+                                    height: 1.h,
+                                    color: Colors.white,
+                                  ),
+                                  Container(
+                                    height: 320.h,
+                                    color: Colors.yellow,
+                                  ),
+                                  Container(
+                                    width: 859.w,
+                                    height: 503.h,
+                                    padding: EdgeInsets.fromLTRB(11.w, 10.h, 11.w, 10.h),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black,
+                                      border: Border.all(color: Colors.grey),
+                                    ),
+                                    child:  const HlsPlayerIframe(cam: 'cam2'),
+                                  ),
+                                  Container(
+
+                                    height: 1.h,
+                                    color: Colors.white,
+                                  ),
+                                  Container(
+
+                                    color: Colors.yellow,
+                                  ),
+
+                                ]
+
+                              ),
                             ),
-                            SizedBox(height: 10.h,),
-                            Container(
-                              width: 1000.w,
-                              height: 360.h,
-                              color: AppColors.main1,
+                            SizedBox(
+                              height: 10.h,
                             ),
-                            SizedBox(height: 13.h,),
                             Container(
-                              width: 1000.w,
-                              height: 360.h,
-                              color: AppColors.main1,
-                            ),
-                            SizedBox(height: 7.h,),
-                            Container(
-                              width: 1000.w,
-                              height: 360.h,
+                              width: 881.w,
+                              height: 181.h,
                               color: AppColors.main1,
                             ),
                           ],
                         ),
-
                       ],
                     ),
                   ),
@@ -187,25 +327,24 @@ class _DashBoardState extends State<DashBoard> {
   }
 }
 
-
 class HlsPlayerIframe extends StatelessWidget {
-  const HlsPlayerIframe({super.key});
+  final String cam;
+  const HlsPlayerIframe({super.key, this.cam = 'cam1'});
 
   @override
   Widget build(BuildContext context) {
-    const viewId = 'hls-player-iframe';
+    final String viewId = 'hls-player-iframe-$cam';
 
-    html.IFrameElement _iframe = html.IFrameElement()
-      ..id = 'hls-player-iframe'
-      ..width = '100%'
-      ..height = '100%'
-      ..src = 'https://hanlimtwin.kr:3030/hls_player.html'
-      ..style.border = 'none';
+    final iframe = html.IFrameElement()
+      ..src = 'https://hanlimtwin.kr:3030/hls_player.html?cam=$cam'
+      ..style.border = 'none'
+      ..allowFullscreen = true  // ✅ 핵심
+      ..setAttribute('allowfullscreen', ''); // ✅ 일부 브라우저 대응
 
     // ignore: undefined_prefixed_name
-    ui.platformViewRegistry.registerViewFactory(viewId, (int viewId) => _iframe);
+    ui.platformViewRegistry.registerViewFactory(viewId, (int viewId) => iframe);
 
-    return const HtmlElementView(viewType: viewId);
+    return HtmlElementView(viewType: viewId);
   }
 }
 

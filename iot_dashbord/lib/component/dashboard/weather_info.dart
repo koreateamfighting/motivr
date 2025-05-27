@@ -12,6 +12,8 @@ class WeatherInfo extends StatefulWidget {
 
 class _WeatherInfoState extends State<WeatherInfo> {
   String temperature = '--';
+  String tempMin = '--';
+  String tempMax = '--';
   String humidity = '--';
   String windSpeed = '--';
   String pressure = '--';
@@ -29,6 +31,8 @@ class _WeatherInfoState extends State<WeatherInfo> {
     final dust = await FineDustApiService.fetchFineDust(); //  미세먼지 호출
     setState(() {
       temperature = weather['temperature'] ?? '--';
+      tempMin = weather['tempMin'] ?? '--';
+      tempMax = weather['tempMax'] ?? '--';
       humidity = weather['humidity'] ?? '--';
       windSpeed = weather['windSpeed'] ?? '--';
       pressure = weather['pressure'] ?? '--';
@@ -97,7 +101,12 @@ class _WeatherInfoState extends State<WeatherInfo> {
                     height: 160.h,
                     color: Color(0xff1b254b),
                     child: _weatherItem(
-                        '기온', 'assets/icons/temprature_icon.png', temperature),
+                      '기온',
+                      'assets/icons/temprature_icon.png',
+                      temperature,
+                      tempMin: tempMin,
+                      tempMax: tempMax,
+                    ),
                   ),
                   SizedBox(
                     height: 14.h,
@@ -159,7 +168,7 @@ class _WeatherInfoState extends State<WeatherInfo> {
   }
 }
 
-Widget _weatherItem(String typeName, String iconName, String value) {
+Widget _weatherItem(String typeName, String iconName, String value,{String? tempMin, String? tempMax}) {
   return Container(
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -217,7 +226,7 @@ Widget _weatherItem(String typeName, String iconName, String value) {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        '최저 -3°C',
+                        '최저 $tempMin',
                         style: TextStyle(
                           fontSize: 24.sp,
                           color: Color(0xff018dff),
@@ -237,7 +246,7 @@ Widget _weatherItem(String typeName, String iconName, String value) {
                       ),
                       SizedBox(width: 40.w,),
                       Text(
-                        '최고 2°C',
+                        '최고 $tempMax',
                         style: TextStyle(
                           fontSize: 24.sp,
                           color: Color(0xffff0000),

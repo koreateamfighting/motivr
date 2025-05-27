@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iot_dashboard/services/live_clock.dart';
-import 'package:iot_dashboard/services/weather_info.dart';
 import 'package:iot_dashboard/utils/auth_service.dart';
 import 'package:iot_dashboard/component/dialog_form2.dart';
 import 'package:go_router/go_router.dart';
@@ -42,7 +41,7 @@ class TopAppBar extends StatelessWidget {
         children: [
           SizedBox(width: 50.w),
           Container(
-            padding: EdgeInsets.only(top: 20.h),
+            padding: EdgeInsets.only(top: 0.h),
             width: 60.w,
                   child: IconButton(
                     onPressed: onMenuPressed,
