@@ -17,7 +17,8 @@ class _WeatherInfoState extends State<WeatherInfo> {
   String humidity = '--';
   String windSpeed = '--';
   String pressure = '--';
-  String fineDust = '--';
+  String fineDustPm10 = '--';
+  String fineDustPm25 = '--';
   bool isLoading = true;
 
   @override
@@ -36,7 +37,8 @@ class _WeatherInfoState extends State<WeatherInfo> {
       humidity = weather['humidity'] ?? '--';
       windSpeed = weather['windSpeed'] ?? '--';
       pressure = weather['pressure'] ?? '--';
-      fineDust = dust ?? '--';
+      fineDustPm10 = dust?['pm10'] ?? '--';
+      fineDustPm25 = dust?['pm25'] ?? '--';
       isLoading = false;
     });
   }
@@ -148,13 +150,15 @@ class _WeatherInfoState extends State<WeatherInfo> {
                         height: 166.h,
                         color: Color(0xff1b254b),
                         child: _weatherItem(
-                            '미세먼지', 'assets/icons/dust_icon.png', fineDust),
+                            '미세먼지', 'assets/icons/dust_icon.png', fineDustPm10),
                       ),
                       Spacer(),
                       Container(
                         width: 279.99.w,
                         height: 166.h,
                         color: Color(0xff1b254b),
+                        child: _weatherItem(
+                            '미세먼지', 'assets/icons/dust_icon.png', fineDustPm25),
                       ),
                     ],
                   ),

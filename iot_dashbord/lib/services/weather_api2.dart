@@ -13,7 +13,7 @@ class FineDustApiService {
       'bW8uwKE3u%2B7F9ESDv%2F0hlv9hkyyRoR6od6QAZ%2F74FR8bvJCZNYXtC6HbuJINGUTxNy8Jl1WDx0%2BsSt4hm%2Bpmvw%3D%3D';
 
   /// 미세먼지 농도 (㎍/㎥) 를 문자열로 반환
-  static Future<String?> fetchFineDust({
+  static Future<Map<String, String?>> fetchFineDust({
     String sidoName = '대구',
     String stationName = '신암동',
   }) async {
@@ -33,7 +33,6 @@ class FineDustApiService {
 
         print('📦 수신된 미세먼지 측정소 목록 수: ${items.length}');
 
-        // stationName 기준 필터링
         final targetStation = items.firstWhere(
               (el) => el['stationName'] == stationName,
           orElse: () => null,
@@ -41,8 +40,14 @@ class FineDustApiService {
 
         if (targetStation != null) {
           final pm10Value = targetStation['pm10Value'];
-          print('✅ [$stationName] 미세먼지(PM10): $pm10Value');
-          return pm10Value != null ? '${pm10Value}pm' : null;
+          final pm25Value = targetStation['pm25Value'];
+
+          print('✅ [$stationName] PM10: $pm10Value / PM2.5: $pm25Value');
+
+          return {
+            'pm10': pm10Value != null ? '${pm10Value}㎍/㎥' : null,
+            'pm25': pm25Value != null ? '${pm25Value}㎍/㎥' : null,
+          };
         } else {
           print('⚠️ "$stationName" 측정소를 찾을 수 없습니다.');
         }
@@ -53,6 +58,9 @@ class FineDustApiService {
       print('❗ 미세먼지 API 예외 발생: $e');
     }
 
-    return null;
+    return {
+      'pm10': null,
+      'pm25': null,
+    };
   }
 }
