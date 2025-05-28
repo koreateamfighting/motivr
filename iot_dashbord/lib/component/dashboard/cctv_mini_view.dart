@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iot_dashboard/theme/colors.dart';
 import 'package:iot_dashboard/services/hls_player_iframe.dart';
-
+import 'package:google_fonts/google_fonts.dart';
 class CctvMiniView extends StatefulWidget {
   const CctvMiniView({super.key});
   @override
@@ -79,7 +79,7 @@ class _CctvMiniViewState extends State<CctvMiniView> {
           child: Column(
             children: [
               Container(
-                height: 80.h,
+                height: 69.h,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -100,7 +100,77 @@ class _CctvMiniViewState extends State<CctvMiniView> {
               ),
               Container(
                 height: 240.h,
-                color: Colors.blueAccent,
+                decoration: BoxDecoration(
+                  //color: Color(0xff111c44),
+                  color: Color(0xffac8ee3),
+                  border: Border.all(
+                    color: Colors.white,
+                    width: 1.w,
+                  ),
+                  borderRadius: BorderRadius.circular(5.r),
+                  // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    SizedBox(width: 81.65.w,),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '추진구 / CCTV',
+                          style: GoogleFonts.inter(
+                            color: Color(0xff262d33),
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+
+                        ),
+                        Text(
+                          '2025-05-23',
+                          style: GoogleFonts.inter(
+                            color: Color(0xff939699),
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w400,
+                          ),
+
+                        ),
+                        SizedBox(height: 10.h,),
+                        Text(
+                          '1.1921',
+                          style: GoogleFonts.inter(
+                            color: Color(0xff262d33),
+                            fontSize: 30.sp,
+                            fontWeight: FontWeight.w400,
+                          ),
+
+                        ),
+                        Text(
+                          '+0.0015 (+0.13%)',
+                          style: GoogleFonts.inter(
+                            color: Color(0xff4b5157),
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w400,
+                          ),
+
+                        ),
+                        SizedBox(height: 15.h,),
+                        Text(
+                          '0.00 USD',
+                          style: GoogleFonts.inter(
+                            color: Color(0xff4b5157),
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w400,
+                          ),
+
+                        ),
+
+
+                      ],
+                    )
+                  ],
+                ),
               ),
             ],
           ),
@@ -146,10 +216,80 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                   ],
                 ),
               ),
-              Container(
-                height: 265.h,
-                color: Colors.pinkAccent,
+          Container(
+            height: 248.h,
+            decoration: BoxDecoration(
+              //color: Color(0xff111c44),
+              color: Color(0xffffc4c9),
+              border: Border.all(
+                color: Colors.white,
+                width: 1.w,
               ),
+              borderRadius: BorderRadius.circular(5.r),
+              // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                SizedBox(width: 81.65.w,),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '도달구 / CCTV',
+                      style: GoogleFonts.inter(
+                        color: Color(0xff262d33),
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+
+                    ),
+                    Text(
+                      '2025-05-23',
+                      style: GoogleFonts.inter(
+                        color: Color(0xff939699),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w400,
+                      ),
+
+                    ),
+                    SizedBox(height: 10.h,),
+                    Text(
+                      '1.1763',
+                      style: GoogleFonts.inter(
+                        color: Color(0xff262d33),
+                        fontSize: 30.sp,
+                        fontWeight: FontWeight.w400,
+                      ),
+
+                    ),
+                    Text(
+                      '+0.0015 (+0.13%)',
+                      style: GoogleFonts.inter(
+                        color: Color(0xff4b5157),
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w400,
+                      ),
+
+                    ),
+                    SizedBox(height: 15.h,),
+                    Text(
+                      '기준치',
+                      style: GoogleFonts.inter(
+                        color: Color(0xff4b5157),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w400,
+                      ),
+
+                    ),
+
+
+                  ],
+                )
+              ],
+            ),
+          ),
             ],
           ),
         ),

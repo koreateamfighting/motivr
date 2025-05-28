@@ -108,6 +108,8 @@ class _WeatherInfoState extends State<WeatherInfo> {
                       temperature,
                       tempMin: tempMin,
                       tempMax: tempMax,
+                      iconWidth: 19.24.w,
+                      iconHeight: 40.h
                     ),
                   ),
                   SizedBox(
@@ -120,7 +122,7 @@ class _WeatherInfoState extends State<WeatherInfo> {
                         height: 160.h,
                         color: Color(0xff1b254b),
                         child: _weatherItem(
-                            '습도', 'assets/icons/humidity_icon.png', humidity),
+                            '습도', 'assets/icons/humidity_icon.png', humidity,       iconWidth: 20.w,                            iconHeight: 30.h),
                       ),
                       Spacer(),
                       Container(
@@ -128,7 +130,8 @@ class _WeatherInfoState extends State<WeatherInfo> {
                         height: 160.h,
                         color: Color(0xff1b254b),
                         child: _weatherItem('풍향/풍속',
-                            'assets/icons/humidity_icon.png', windSpeed),
+                            'assets/icons/wind_speed_icon.png', windSpeed,       iconWidth: 43.23.w,
+                            iconHeight: 30.h),
                       ),
                       Spacer(),
                       Container(
@@ -136,7 +139,8 @@ class _WeatherInfoState extends State<WeatherInfo> {
                         height: 160.h,
                         color: Color(0xff1b254b),
                         child: _weatherItem(
-                            '기압', 'assets/icons/pressure_icon.png', pressure),
+                            '기압', 'assets/icons/pressure_icon.png', pressure,       iconWidth: 43.17.w,
+                            iconHeight: 30.h),
                       ),
                     ],
                   ),
@@ -150,7 +154,8 @@ class _WeatherInfoState extends State<WeatherInfo> {
                         height: 166.h,
                         color: Color(0xff1b254b),
                         child: _weatherItem(
-                            '미세먼지', 'assets/icons/dust_icon.png', fineDustPm10),
+                            '미세먼지', 'assets/icons/dust_icon.png', fineDustPm10,       iconWidth: 37.21.w,
+                            iconHeight: 40.h),
                       ),
                       Spacer(),
                       Container(
@@ -158,7 +163,8 @@ class _WeatherInfoState extends State<WeatherInfo> {
                         height: 166.h,
                         color: Color(0xff1b254b),
                         child: _weatherItem(
-                            '미세먼지', 'assets/icons/dust_icon.png', fineDustPm25),
+                            '초미세먼지', 'assets/icons/dust_icon.png', fineDustPm25,       iconWidth: 37.21.w,
+                            iconHeight: 40.h),
                       ),
                     ],
                   ),
@@ -172,7 +178,8 @@ class _WeatherInfoState extends State<WeatherInfo> {
   }
 }
 
-Widget _weatherItem(String typeName, String iconName, String value,{String? tempMin, String? tempMax}) {
+Widget _weatherItem(String typeName, String iconName, String value,{String? tempMin, String? tempMax,  double? iconWidth,    // <- 추가
+double? iconHeight}) {
   return Container(
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,8 +285,8 @@ Widget _weatherItem(String typeName, String iconName, String value,{String? temp
                     ),
                     SizedBox(height: 12.48.h),
                     Container(
-                      width: 20.w,
-                      height: 30.h,
+                      width:iconWidth,
+                      height: iconHeight,
                       child: Image.asset(iconName),
                     ),
                   ],
