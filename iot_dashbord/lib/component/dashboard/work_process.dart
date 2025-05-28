@@ -195,238 +195,237 @@ class _WorkProcessStatusState extends State<WorkProcessStatus> {
         borderRadius: BorderRadius.circular(5.r),
         // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
       ),
-      child: 
-          Container(
-            color: Color.fromRGBO(65, 76, 103, 0.9),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Container(
-                  height: 49.51.h,
-                  color: Color.fromRGBO(29, 34, 46, 0.8),
-                  child: Row(
-                    children: [
-                      SizedBox(width: 24.w),
-                      Container(
-                        width: 24.75.w,
-                        height: 24.75.h,
-                        child: Image.asset('assets/icons/work_process.png'),
-                      ),
-                      Container(
-                        width: 298.51.w,
-                        height: 30.95.h,
-                        child: Text(
-                          '오늘 작업 공정률을 입력하세요',
-                          style: TextStyle(
-                            fontFamily: 'PretendardGOV',
-                            fontWeight: FontWeight.w400,
-                            fontSize: 24.sp,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      Spacer(),
-                      Container(
-                        width: 43.32.w,
-                        height: 43.32.h,
-                        child: Image.asset('assets/icons/color_close.png'),
-                      ),
-                      SizedBox(width: 10.w),
-                      // Text(
-                      //   _getFormattedDate(),
-                      //   style: TextStyle(
-                      //     fontFamily: 'PretendardGOV',
-                      //     fontWeight: FontWeight.w400,
-                      //     fontSize: 24.sp,
-                      //     color: Colors.white,
-                      //   ),
-                      // ),
-                    ],
+      child: Container(
+        color: Color.fromRGBO(65, 76, 103, 0.9),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Container(
+              height: 49.51.h,
+              color: Color.fromRGBO(29, 34, 46, 0.8),
+              child: Row(
+                children: [
+                  SizedBox(width: 24.w),
+                  Container(
+                    width: 24.75.w,
+                    height: 24.75.h,
+                    child: Image.asset('assets/icons/work_process.png'),
                   ),
-                ),
-                SizedBox(
-                  height: 82.87.h,
-                ),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    SizedBox(width: 66.w),
-                    Container(
-                        width: 68.w,
-                        height: 29.h,
-                        child : Text(
-                            '0%',
-                            style: TextStyle(
-                              fontFamily: 'PretendardGOV',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 24.sp,
-                              color: Colors.white,
-                            )
-                        )
-                    ),
-                    SizedBox(width: 343.w),
-                    Container(
-                        width: 68.w,
-                        height: 29.h,
-                        child : Text(
-                            '100%',
-                            style: TextStyle(
-                              fontFamily: 'PretendardGOV',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 24.sp,
-                              color: Colors.white,
-                            )
-                        )
-                    ),
-                  ],
-                ),
-                buildGradientBar(progress),
-                SizedBox(height: 34.79.h,),
-                Container(
-                  width: 247.55.w,
-                  height: 49.51.h,
-                  child: TextField(
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly, // ✅ 숫자만 허용
-                    ],
-                    controller: _controller,
-                    onChanged: (value) {
-                      // 공백 입력되면 0 처리
-                      if (value.trim().isEmpty) {
-                        setState(() {
-                          progress = 0;
-                        });
-                        return;
-                      }
-
-                      final input = double.tryParse(value);
-                      if (input != null) {
-                        double clamped = input.clamp(0, 100);
-                        setState(() {
-                          progress = clamped / 100;
-                        });
-                      }
-                    },
-
-                    style: TextStyle(
-                      fontFamily: 'PretendardGOV',
-                      fontWeight: FontWeight.w500,
-                      fontSize: 32.sp,
-                      color: Colors.black,
-                    ),
-                    decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        hintText: '\t예 : 50',
-                        hintStyle: TextStyle(
-                          fontFamily: 'PretendardGOV',
-                          fontWeight: FontWeight.w500,
-                          fontSize: 32.sp,
-                          color: Color(0xff9ea3a2),
-                        ),
-                        suffixText: '%',
-                        suffixStyle: TextStyle(
-                          fontFamily: 'PretendardGOV',
-                          fontWeight: FontWeight.w500,
-                          fontSize: 32.sp,
-                          color: Color(0xff1d222e),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.r),
-                          borderSide: BorderSide(color: Colors.white),
-                        ),
-                        contentPadding: EdgeInsets.only(bottom: 25.h,right: 50.w,left: 50.w)
+                  Container(
+                    width: 298.51.w,
+                    height: 30.95.h,
+                    child: Text(
+                      '오늘 작업 공정률을 입력하세요',
+                      style: TextStyle(
+                        fontFamily: 'PretendardGOV',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 24.sp,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
-                ),
-                SizedBox(height: 39.7.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 100.w,
-                      height: 40.h,
-
-                      // padding: EdgeInsets.only(top:),
-                      decoration: BoxDecoration(
-                        color: Color(0xff3182ce),
-                        borderRadius: BorderRadius.circular(5.r),
-                      ),
-                      child: InkWell(
+                  Spacer(),
+                  Container(
+                    width: 43.32.w,
+                    height: 43.32.h,
+                    child: InkWell(
                         onTap: () {
                           setState(() {
                             isEditing = false;
                           });
                         },
-                        child: Text(
-                          '취소',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontFamily: 'PretendardGOV',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 24.sp,
-                              color: Colors.white),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 47.w),
-                    Container(
-                      width: 100.w,
-                      height: 40.h,
-
-                      // padding: EdgeInsets.only(top:),
-                      decoration: BoxDecoration(
-                        color: Color(0xff3182ce),
-                        borderRadius: BorderRadius.circular(5.r),
-                      ),
-                      child: InkWell(
-                        onTap: () {
-                          double? input = double.tryParse(_controller.text);
-                          if (input != null && input >= 0 && input <= 100) {
-                            setState(() {
-                              progress = input / 100;
-                              isEditing = false;
-                            });
-                          }
-                        },
-                        child: Text(
-                          '완료',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontFamily: 'PretendardGOV',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 24.sp,
-                              color: Colors.white),
-                        ),
-                      ),
-                    ),
-
-                    // ElevatedButton(
-                    //   onPressed: () {
-                    //     double? input = double.tryParse(_controller.text);
-                    //     if (input != null && input >= 0 && input <= 100) {
-                    //       setState(() {
-                    //         progress = input / 100;
-                    //         isEditing = false;
-                    //       });
-                    //     }
-                    //   },
-                    //   style: ElevatedButton.styleFrom(
-                    //     backgroundColor: const Color(0xff3182ce),
-                    //   ),
-                    //   child: Text('확인'),
-                    // ),
-                  ],
-                )
+                        child: Image.asset('assets/icons/color_close.png')),
+                  ),
+                  SizedBox(width: 10.w),
+                  // Text(
+                  //   _getFormattedDate(),
+                  //   style: TextStyle(
+                  //     fontFamily: 'PretendardGOV',
+                  //     fontWeight: FontWeight.w400,
+                  //     fontSize: 24.sp,
+                  //     color: Colors.white,
+                  //   ),
+                  // ),
+                ],
+              ),
+            ),
+            SizedBox(
+              height: 82.87.h,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                SizedBox(width: 66.w),
+                Container(
+                    width: 68.w,
+                    height: 29.h,
+                    child: Text('0%',
+                        style: TextStyle(
+                          fontFamily: 'PretendardGOV',
+                          fontWeight: FontWeight.w500,
+                          fontSize: 24.sp,
+                          color: Colors.white,
+                        ))),
+                SizedBox(width: 343.w),
+                Container(
+                    width: 68.w,
+                    height: 29.h,
+                    child: Text('100%',
+                        style: TextStyle(
+                          fontFamily: 'PretendardGOV',
+                          fontWeight: FontWeight.w500,
+                          fontSize: 24.sp,
+                          color: Colors.white,
+                        ))),
               ],
             ),
-          ),
-      
+            buildGradientBar(progress),
+            SizedBox(
+              height: 34.79.h,
+            ),
+            Container(
+              width: 247.55.w,
+              height: 49.51.h,
+              child: TextField(
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly, // ✅ 숫자만 허용
+                ],
+                controller: _controller,
+                onChanged: (value) {
+                  // 공백 입력되면 0 처리
+                  if (value.trim().isEmpty) {
+                    setState(() {
+                      progress = 0;
+                    });
+                    return;
+                  }
+
+                  final input = double.tryParse(value);
+                  if (input != null) {
+                    double clamped = input.clamp(0, 100);
+                    setState(() {
+                      progress = clamped / 100;
+                    });
+                  }
+                },
+                style: TextStyle(
+                  fontFamily: 'PretendardGOV',
+                  fontWeight: FontWeight.w500,
+                  fontSize: 32.sp,
+                  color: Colors.black,
+                ),
+                decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
+                    hintText: '\t예 : 50',
+                    hintStyle: TextStyle(
+                      fontFamily: 'PretendardGOV',
+                      fontWeight: FontWeight.w500,
+                      fontSize: 32.sp,
+                      color: Color(0xff9ea3a2),
+                    ),
+                    suffixText: '%',
+                    suffixStyle: TextStyle(
+                      fontFamily: 'PretendardGOV',
+                      fontWeight: FontWeight.w500,
+                      fontSize: 32.sp,
+                      color: Color(0xff1d222e),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.r),
+                      borderSide: BorderSide(color: Colors.white),
+                    ),
+                    contentPadding:
+                        EdgeInsets.only(bottom: 25.h, right: 50.w, left: 50.w)),
+              ),
+            ),
+            SizedBox(height: 39.7.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 100.w,
+                  height: 40.h,
+
+                  // padding: EdgeInsets.only(top:),
+                  decoration: BoxDecoration(
+                    color: Color(0xff3182ce),
+                    borderRadius: BorderRadius.circular(5.r),
+                  ),
+                  child: InkWell(
+                    onTap: () {
+                      setState(() {
+                        isEditing = false;
+                      });
+                    },
+                    child: Text(
+                      '취소',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontFamily: 'PretendardGOV',
+                          fontWeight: FontWeight.w500,
+                          fontSize: 24.sp,
+                          color: Colors.white),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 47.w),
+                Container(
+                  width: 100.w,
+                  height: 40.h,
+
+                  // padding: EdgeInsets.only(top:),
+                  decoration: BoxDecoration(
+                    color: Color(0xff3182ce),
+                    borderRadius: BorderRadius.circular(5.r),
+                  ),
+                  child: InkWell(
+                    onTap: () {
+                      double? input = double.tryParse(_controller.text);
+                      if (input != null && input >= 0 && input <= 100) {
+                        setState(() {
+                          progress = input / 100;
+                          isEditing = false;
+                        });
+                      }
+                    },
+                    child: Text(
+                      '완료',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontFamily: 'PretendardGOV',
+                          fontWeight: FontWeight.w500,
+                          fontSize: 24.sp,
+                          color: Colors.white),
+                    ),
+                  ),
+                ),
+
+                // ElevatedButton(
+                //   onPressed: () {
+                //     double? input = double.tryParse(_controller.text);
+                //     if (input != null && input >= 0 && input <= 100) {
+                //       setState(() {
+                //         progress = input / 100;
+                //         isEditing = false;
+                //       });
+                //     }
+                //   },
+                //   style: ElevatedButton.styleFrom(
+                //     backgroundColor: const Color(0xff3182ce),
+                //   ),
+                //   child: Text('확인'),
+                // ),
+              ],
+            )
+          ],
+        ),
+      ),
     );
   }
 }
+
 Widget buildGradientBar(double percent) {
   return Container(
     width: 432.w,
@@ -456,7 +455,6 @@ Widget buildGradientBar(double percent) {
     ),
   );
 }
-
 
 String _getFormattedDate() {
   final now = DateTime.now().toUtc().add(const Duration(hours: 9));

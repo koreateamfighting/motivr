@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
+import 'package:iot_dashboard/component/dashboard/expand_duty_search.dart';
+import 'package:iot_dashboard/utils/iframe_visibility.dart';
 class DutySection extends StatelessWidget {
   final bool isExpanded;
   final VoidCallback onTap;
@@ -77,7 +78,37 @@ class DutySection extends StatelessWidget {
                   // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                 ),
                 child: InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    hideIframes();
+                    showGeneralDialog(
+                      context: context,
+                      barrierDismissible: true,
+                      barrierLabel: '',
+                      barrierColor: Colors.black.withOpacity(0.5),
+                      transitionDuration: Duration(milliseconds: 200),
+                      pageBuilder: (context, animation, secondaryAnimation) {
+                        return Align(
+                          alignment: Alignment.centerLeft,
+                          child: Padding(
+                            padding: EdgeInsets.only(left: 841.w),
+                            child: Material( // ✅ 이게 없으면 버튼 인식이 안 될 수도 있음
+                              color: Colors.transparent,
+                              child: SizedBox(
+                                width: 2750.w,
+                                height: 1803.h,
+                                child: ExpandDutySearch(),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+
+
+                    showIframes(); // ✅ 다이얼로그 닫히고 나서 실행됨
+
+
+                  },
                   child: Text(
                     '전체 보기',
                     textAlign: TextAlign.center,
