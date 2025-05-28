@@ -30,7 +30,6 @@ class _AlarmListViewState extends State<AlarmListView> {
     return Container(
       width: 1168.w,
       height: 602.h,
-      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         //color: Color(0xff111c44),
         color: Color(0xff1b254b),
@@ -46,6 +45,7 @@ class _AlarmListViewState extends State<AlarmListView> {
         children: [
           Container(
             height: 60.h,
+            color: Color(0xff111c44),
             child: Row(
               children: [
                 SizedBox(
@@ -77,6 +77,7 @@ class _AlarmListViewState extends State<AlarmListView> {
 
           Container(
             height: 59.h,
+            color: Color(0xff0b1437),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -111,20 +112,22 @@ class _AlarmListViewState extends State<AlarmListView> {
             ),
           ),
 
-          // TextButton(
-          //   onPressed: () {
-          //     // 전체 알람 페이지로 이동
-          //     Navigator.pushNamed(context, '/alarms'); // or context.go('/alarms') if using go_router
-          //   },
-          //   child: Text('전체 보기', style: TextStyle(color: Colors.white)),
-          // ),
-
           Container(
             height: 1.h,
             color: Colors.white,
           ),
           Container(
             height: 59.h,
+            decoration: BoxDecoration(
+              //color: Color(0xff111c44),
+              color: Color(0xff0b1437),
+              border: Border.all(
+                color: Colors.white,
+                width: 1.w,
+              ),
+              borderRadius: BorderRadius.circular(5.r),
+              // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
@@ -190,9 +193,9 @@ class _AlarmListViewState extends State<AlarmListView> {
                   itemBuilder: (context, index) {
                     final alarm = alarms[index];
                     return Container(
-                      height: 59.h,
+                      height: 54.h,
                       padding:
-                          EdgeInsets.symmetric(vertical: 6.h, horizontal: 8.w),
+                          EdgeInsets.symmetric(horizontal: 8.w),
                       margin: EdgeInsets.symmetric(vertical: 3.h),
                       color: Color(0xff0b1437),
                       child: Row(

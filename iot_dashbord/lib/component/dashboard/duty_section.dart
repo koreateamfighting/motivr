@@ -13,49 +13,184 @@ class DutySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return Column(
       children: [
         // 항상 보이는 헤더
         InkWell(
           onTap: onTap,
           child: Container(
-            height: 50.h,
-            padding: EdgeInsets.symmetric(horizontal: 16.w),
-            color: Colors.transparent,
+            height: 60.h,
+            decoration: BoxDecoration(
+              //color: Color(0xff111c44),
+              color: Color(0xff111c44),
+              border: Border.all(
+                color: Colors.white,
+                width: 1.w,
+              ),
+            ),
             child: Row(
               children: [
-                Icon(Icons.work, color: Colors.white),
-                SizedBox(width: 8.w),
-                Text('작업명',
-                    style: TextStyle(
-                        fontSize: 24.sp,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500)),
+                SizedBox(width: 26.w,),
+                Container(width: 40.16.w,
+                  height: 40.h,
+                  child: Image.asset('assets/icons/duty.png'),),
+                SizedBox(width: 5.w),
+                Text(
+                  '작업명',
+                  style: TextStyle(
+                      fontFamily: 'PretendardGOV',
+                      fontWeight: FontWeight.w500,
+                      fontSize: 36.sp,
+                      color: Colors.white
+                  ),
+                ),
                 Spacer(),
-                Icon(
+                Container(width: 60.w, height: 60.h, child: Icon(
                   isExpanded
                       ? Icons.keyboard_arrow_down
                       : Icons.keyboard_arrow_right,
-                  color: Colors.white,
-                )
+                  color: Color(0xff3d91ff),
+                  size: 70.sp,
+                ),)
+
               ],
             ),
           ),
         ),
         if (isExpanded)
+        Container(
+          height: 59.h,
+          color: Color(0xff0b1437),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Container(
+                width: 120.48.w,
+                height: 40.h,
+                padding: EdgeInsets.only(top:5.71.h),
+                decoration: BoxDecoration(
+                  //color: Color(0xff111c44),
+                  color: Color(0xff3182ce),
+
+                  borderRadius: BorderRadius.circular(5.r),
+                  // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
+                ),
+                child: InkWell(
+                  onTap: () {},
+                  child: Text(
+                    '전체 보기',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontFamily: 'PretendardGOV',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 20.sp,
+                        color: Colors.white),
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: 21.52.w,
+              )
+            ],
+          ),
+        ),
+
+        // TextButton(
+        //   onPressed: () {
+        //     // 전체 알람 페이지로 이동
+        //     Navigator.pushNamed(context, '/alarms'); // or context.go('/alarms') if using go_router
+        //   },
+        //   child: Text('전체 보기', style: TextStyle(color: Colors.white)),
+        // ),
+
+        Container(
+          height: 1.h,
+          color: Colors.white,
+        ),
+        if (isExpanded)
+        Container(
+          height: 59.h,
+          decoration: BoxDecoration(
+            //color: Color(0xff111c44),
+            color: Color(0xff0b1437),
+            border: Border.all(
+              color: Colors.white,
+              width: 1.w,
+            ),
+
+            // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+
+              SizedBox(width: 25.w,),
+              SizedBox(
+                  width: 80.32.w,
+                  child: Text('작업명',
+                      overflow: TextOverflow.ellipsis, // 넘치면 "..." 처리
+                      maxLines: 1,                      // 최대 한 줄로 제한
+                      softWrap: false,                 // 줄바꿈 비활성화
+                      style: TextStyle(
+                          fontFamily: 'PretendardGOV',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 24.sp,
+                          color: Colors.white))),
+              SizedBox(width: 318.68.w,),
+              SizedBox(
+                  width: 81.32.w,
+                  child: Text('진행률',
+                      style: TextStyle(
+                          fontFamily: 'PretendardGOV',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 24.sp,
+                          color: Colors.white))),
+              SizedBox(width: 81.68.w,),
+              SizedBox(
+                  width: 46.18.w,
+                  child: Text('시작',
+                      style: TextStyle(
+                          fontFamily: 'PretendardGOV',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 24.sp,
+                          color: Colors.white))),
+              SizedBox(width:194.82.w,),
+              Expanded(
+                  child: Text('완료',
+                      style: TextStyle(
+                          fontFamily: 'PretendardGOV',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 24.sp,
+                          color: Colors.white))),
+            ],
+          ),
+        ),
+        if (isExpanded)
           Container(
             padding: EdgeInsets.symmetric(horizontal: 16.w),
-            height: 220.h,
-            child: ListView(
-              children: const [
-                DataRowWidget('옹벽 철근 설치', '90%', '2025-04-22', '2025-04-23'),
-                DataRowWidget('콘크리트 타일', '75%', '2025-04-23', '2025-04-24'),
-                DataRowWidget('배수관 매설', '50%', '2025-04-23', '2025-04-25'),
-                DataRowWidget('옹벽 철근 설치', '90%', '2025-04-22', '2025-04-23'),
-                DataRowWidget('콘크리트 타일', '75%', '2025-04-23', '2025-04-24'),
-                DataRowWidget('배수관 매설', '50%', '2025-04-23', '2025-04-25'),
-              ],
-            ),
+            height: 354.h,
+            color: Color(0xff0b1437),
+            child: ListView.separated(
+              itemCount: 6,
+              separatorBuilder: (context, index) => Container(
+                height: 1.h,
+                color: Colors.white,
+              ),
+              itemBuilder: (context, index) {
+                final data = [
+                  ['옹벽 철근 설치', '90%', '2025-04-22', '2025-04-23'],
+                  ['콘크리트 타일', '75%', '2025-04-23', '2025-04-24'],
+                  ['배수관 매설', '50%', '2025-04-23', '2025-04-25'],
+                  ['옹벽 철근 설치', '90%', '2025-04-22', '2025-04-23'],
+                  ['콘크리트 타일', '75%', '2025-04-23', '2025-04-24'],
+                  ['배수관 매설', '50%', '2025-04-23', '2025-04-25'],
+                ];
+                final item = data[index];
+                return DataRowWidget(item[0], item[1], item[2], item[3]);
+              },
+            )
+
           ),
       ],
     );
@@ -73,14 +208,48 @@ class DataRowWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return Container(
       padding: EdgeInsets.symmetric(vertical: 6.h),
+      height: 59.h,
+      color: Color(0xff0b1437),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Expanded(flex: 3, child: Text(task, style: TextStyle(color: Colors.white))),
-          Expanded(flex: 2, child: Text(progress, style: TextStyle(color: Colors.white))),
-          Expanded(flex: 2, child: Text(start, style: TextStyle(color: Colors.white))),
-          Expanded(flex: 2, child: Text(end, style: TextStyle(color: Colors.white))),
+
+         Container(
+           width: 400.w,height: 29.h,
+              child: Text(task,
+                  style: TextStyle(
+                      fontFamily: 'PretendardGOV',
+                      fontWeight: FontWeight.w500,
+                      fontSize: 24.sp,
+                      color: Colors.white))),
+          Container(
+              width: 70.w,height: 29.h,
+              child: Text(progress,
+                  style: TextStyle(
+                      fontFamily: 'PretendardGOV',
+                      fontWeight: FontWeight.w500,
+                      fontSize: 24.sp,
+                      color: Colors.white))),
+          SizedBox(width: 90.w,),
+          Container(
+              width: 140.56.w,height: 29.h,
+              child: Text(start,
+                  style: TextStyle(
+                      fontFamily: 'PretendardGOV',
+                      fontWeight: FontWeight.w500,
+                      fontSize: 24.sp,
+                      color: Colors.white))),
+          SizedBox(width: 100.44.w,),
+          Container(
+              width: 140.56.w,height: 29.h,
+              child: Text(end,
+              style: TextStyle(
+                  fontFamily: 'PretendardGOV',
+                  fontWeight: FontWeight.w500,
+                  fontSize: 24.sp,
+                  color: Colors.white))),
         ],
       ),
     );

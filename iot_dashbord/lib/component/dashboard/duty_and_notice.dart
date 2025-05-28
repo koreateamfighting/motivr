@@ -39,7 +39,7 @@ class _DutyAndNoticeState extends State<DutyAndNotice> {
       height: 602.h,
       decoration: BoxDecoration(
         color: Color(0xff1b254b),
-        border: Border.all(color: Colors.white),
+        border: Border.all(color: Colors.white,width: 1.w),
         borderRadius: BorderRadius.circular(5.r),
       ),
       child: Column(
