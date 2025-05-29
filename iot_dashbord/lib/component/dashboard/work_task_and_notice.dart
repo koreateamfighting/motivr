@@ -3,31 +3,31 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../controller/alarm_controller.dart';
 import '../../model/alarm_model.dart';
 import 'package:intl/intl.dart';
-import 'duty_section.dart';
+import 'work_task_section.dart';
 import 'notice_section.dart';
 
 
-class DutyAndNotice extends StatefulWidget {
-  const DutyAndNotice({super.key});
+class WorkTaskAndNotice extends StatefulWidget {
+  const WorkTaskAndNotice({super.key});
 
   @override
-  State<DutyAndNotice> createState() => _DutyAndNoticeState();
+  State<WorkTaskAndNotice> createState() => _WorkTaskAndNoticeState();
 }
 
-class _DutyAndNoticeState extends State<DutyAndNotice> {
-  bool showDuty = true;
+class _WorkTaskAndNoticeState extends State<WorkTaskAndNotice> {
+  bool showWorkTask = true;
   bool showNotice = false;
 
-  void toggleDuty() {
+  void toggleWorkTask() {
     setState(() {
-      showDuty = true;
+      showWorkTask = true;
       showNotice = false;
     });
   }
 
   void toggleNotice() {
     setState(() {
-      showDuty = false;
+      showWorkTask = false;
       showNotice = true;
     });
   }
@@ -44,7 +44,7 @@ class _DutyAndNoticeState extends State<DutyAndNotice> {
       ),
       child: Column(
         children: [
-          DutySection(isExpanded: showDuty, onTap: toggleDuty),
+          WorkTaskSection(isExpanded: showWorkTask, onTap: toggleWorkTask),
           NoticeSection(isExpanded: showNotice, onTap: toggleNotice),
         ],
       ),

@@ -7,7 +7,7 @@ class WeatherApiService {
 
   static Future<Map<String, String?>> fetchWeatherData({String city = 'Daegu'}) async {
     final url = Uri.parse('$_baseUrl?q=$city&appid=$_apiKey&units=metric&lang=kr');
-    //print("url은? ${url}");
+    print("url은? ${url}");
     try {
       final response = await http.get(url);
 

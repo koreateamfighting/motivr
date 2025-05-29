@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:iot_dashboard/controller/worktask_controller.dart';
+import 'package:iot_dashboard/model/worktask_model.dart';
 import 'package:flutter/services.dart';
 import 'package:iot_dashboard/utils/keyboard_handler.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:iot_dashboard/controller/alarm_controller.dart';
-import 'package:iot_dashboard/model/alarm_model.dart';
-import 'package:iot_dashboard/utils/format_timestamp.dart';
+import 'package:intl/intl.dart';
 
-class ExpandAlarmSearch extends StatefulWidget {
-  const ExpandAlarmSearch({super.key});
+class ExpandWorkTaskSearch extends StatefulWidget {
+  const ExpandWorkTaskSearch({super.key});
 
   @override
-  State<ExpandAlarmSearch> createState() => _ExpandAlarmSearchState();
+  State<ExpandWorkTaskSearch> createState() => _ExpandWorkTaskSearchState();
 }
 
-class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
+class _ExpandWorkTaskSearchState extends State<ExpandWorkTaskSearch> {
   final FocusNode _focusNode = FocusNode();
+  final dateFormat = DateFormat('yyyy-MM-dd');
   bool onCalendar = false;
-  List<Alarm> allAlarms = [];
-  List<Alarm> filteredAlarms = [];
+  List<WorkTask> allWorkTask = [];
+  List<WorkTask> filteredWorkTask = [];
   int currentPage = 0;
   static const int itemsPerPage = 14;
   TextEditingController _searchController = TextEditingController();
@@ -30,10 +31,10 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
       _focusNode.requestFocus();
     });
 
-    AlarmController.fetchAlarms().then((data) {
+    WorkTaskController.fetchTasks().then((data) {
       setState(() {
-        allAlarms = data;
-        filteredAlarms = data; // ✅ 초기에는 전체 데이터
+        allWorkTask = data;
+        filteredWorkTask = data; // ✅ 초기에는 전체 데이터
       });
     });
   }
@@ -43,38 +44,35 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
     _focusNode.dispose();
     super.dispose();
   }
-
-  List<Alarm> getCurrentPageItems() {
+  List<WorkTask> getCurrentPageItems() {
     final start = currentPage * itemsPerPage;
-    final end = (start + itemsPerPage).clamp(0, filteredAlarms.length);
-    return filteredAlarms.sublist(start, end);
+    final end = (start + itemsPerPage).clamp(0, filteredWorkTask.length);
+    return filteredWorkTask.sublist(start, end);
   }
 
-  void _filterAlarms() {
+  void _filterWorkTask() {
     final query = _searchController.text.trim().toLowerCase();
     setState(() {
       currentPage = 0; // 검색 시 첫 페이지로 초기화
-      filteredAlarms = allAlarms
-          .where((alarm) => alarm.message.toLowerCase().contains(query))
+      filteredWorkTask = allWorkTask
+          .where((worktask) => worktask.title.toLowerCase().contains(query))
           .toList();
     });
   }
-
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         ScreenUtil.init(context,
             designSize: Size(3812, 2144), minTextAdapt: true);
-
         return RawKeyboardListener(
           focusNode: _focusNode,
           onKey: (event) {
             handleEscapeKey(event, context);
-            handleEnterKey(event, _filterAlarms); // ✅ 엔터키 처리 추가
+            handleEnterKey(event, _filterWorkTask); // ✅ 엔터키 처리 추가
           },
           child: Material(
-            // ✅ 필수
+// ✅ 필수
             color: Colors.transparent,
             child: Container(
               width: 2750.w,
@@ -106,20 +104,53 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
                                     Container(
                                       width: 50.w,
                                       height: 50.h,
-                                      child:
-                                          Image.asset('assets/icons/alarm.png'),
+                                      child: Image.asset('assets/icons/work_task.png'),
                                     ),
                                     SizedBox(
                                       width: 14.w,
                                     ),
                                     Container(
-                                      width: 210.w,
-                                      child: Text('최근 알람',
+                                      width: 160.w,
+                                      child: Text('작업명',
                                           style: TextStyle(
                                               fontFamily: 'PretendardGOV',
                                               fontWeight: FontWeight.w700,
                                               fontSize: 48.sp,
                                               color: Colors.white)),
+                                    ),
+                                    Container(
+                                      width: 250.w,
+                                      height: 60.h,
+                                      color: Color(0xff3182ce),
+                                      alignment: Alignment.center,
+                                      child: InkWell(
+                                        onTap: () {},
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            Container(
+                                              width: 50.w,
+                                              height: 50.h,
+                                              child: Image.asset(
+                                                  'assets/icons/upload.png'),
+                                            ),
+
+                                            Text(
+                                              '파일 업로드',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                fontFamily: 'PretendardGOV',
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 36.sp,
+                                                color: Colors.white,
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 34.w,
                                     ),
                                     Container(
                                         width: 400.w,
@@ -152,31 +183,83 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
                                               ),
                                               border: OutlineInputBorder(
                                                 borderRadius:
-                                                    BorderRadius.circular(5.r),
-                                                borderSide: BorderSide(
-                                                    color: Colors.white),
+                                                BorderRadius.circular(5.r),
+                                                borderSide:
+                                                BorderSide(color: Colors.white),
                                               ),
                                               contentPadding: EdgeInsets.only(
                                                 bottom: 25.h,
                                               )),
                                         )),
                                     SizedBox(
-                                      width: 29.w,
+                                      width: 16.w,
                                     ),
                                     Container(
-                                      width: 140.w,
+                                      width: 50.w,
+                                      height: 50.h,
+                                      child:
+                                      Image.asset('assets/icons/calendar.png'),
+                                    ),
+                                    SizedBox(
+                                      width: 11.w,
+                                    ),
+                                    Container(
+                                      width: 141.w,
+                                      height: 50.h,
+                                      color: Colors.transparent,
+                                      child: Text(
+                                        '기간 선택',
+                                        style: GoogleFonts.inter(
+                                          color: Colors.white,
+                                          fontSize: 32.sp,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 11.w,
+                                    ),
+                                    Container(
+                                      width: 200.w,
+                                      height: 60.h,
+                                      color: Colors.white,
+                                    ),
+                                    Container(
+                                      width: 50.w,
+                                      height: 50.h,
+                                      alignment: Alignment.center,
+                                      color: Colors.transparent,
+                                      child: Text(
+                                        '~',
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.inter(
+                                          color: Colors.white,
+                                          fontSize: 32.sp,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      width: 200.w,
+                                      height: 60.h,
+                                      color: Colors.white,
+                                    ),
+                                    SizedBox(
+                                      width: 8.w,
+                                    ),
+                                    Container(
+                                      width: 100.w,
                                       height: 60.h,
                                       alignment: Alignment.center,
                                       decoration: BoxDecoration(
-                                        //color: Color(0xff111c44),
+//color: Color(0xff111c44),
                                         color: Color(0xff3182ce),
 
-                                        borderRadius:
-                                            BorderRadius.circular(4.r),
-                                        // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
+                                        borderRadius: BorderRadius.circular(4.r),
+// child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                                       ),
                                       child: InkWell(
-                                          onTap: _filterAlarms,
+                                          onTap:_filterWorkTask,
                                           child: Text(
                                             '검색',
                                             textAlign: TextAlign.center,
@@ -194,12 +277,11 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
                                       height: 60.h,
                                       alignment: Alignment.center,
                                       decoration: BoxDecoration(
-                                        //color: Color(0xff111c44),
+//color: Color(0xff111c44),
                                         color: Color(0xff3182ce),
 
-                                        borderRadius:
-                                            BorderRadius.circular(4.r),
-                                        // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
+                                        borderRadius: BorderRadius.circular(4.r),
+// child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                                       ),
                                       child: InkWell(
                                           onTap: () {},
@@ -243,25 +325,25 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
                               child: Row(
                                 children: [
                                   SizedBox(
-                                    width: 92.w,
+                                    width: 88.w,
                                   ),
                                   Container(
                                     width: 314.w,
                                     height: 60.h,
                                     padding: EdgeInsets.only(left: 15.w),
                                     decoration: BoxDecoration(
-                                      //color: Color(0xff111c44),
+//color: Color(0xff111c44),
                                       color: Colors.transparent,
                                       border: Border.all(
                                         color: Color(0xff3182ce),
                                         width: 4.w,
                                       ),
                                       borderRadius: BorderRadius.circular(5.r),
-                                      // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
+// child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                                     ),
                                     child: InkWell(
                                       onTap: () {},
-                                      child: Text('시간',
+                                      child: Text('작업명',
                                           style: TextStyle(
                                               fontFamily: 'PretendardGOV',
                                               fontWeight: FontWeight.w700,
@@ -277,18 +359,18 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
                                     height: 60.h,
                                     padding: EdgeInsets.only(left: 15.w),
                                     decoration: BoxDecoration(
-                                      //color: Color(0xff111c44),
+//color: Color(0xff111c44),
                                       color: Colors.transparent,
                                       border: Border.all(
                                         color: Color(0xff3182ce),
                                         width: 4.w,
                                       ),
                                       borderRadius: BorderRadius.circular(5.r),
-                                      // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
+// child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                                     ),
                                     child: InkWell(
                                       onTap: () {},
-                                      child: Text('유형',
+                                      child: Text('진행률',
                                           style: TextStyle(
                                               fontFamily: 'PretendardGOV',
                                               fontWeight: FontWeight.w700,
@@ -297,25 +379,25 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
                                     ),
                                   ),
                                   SizedBox(
-                                    width: 234.w,
+                                    width: 293.w,
                                   ),
                                   Container(
-                                    width: 838.w,
+                                    width: 213.w,
                                     height: 60.h,
                                     padding: EdgeInsets.only(left: 15.w),
                                     decoration: BoxDecoration(
-                                      //color: Color(0xff111c44),
+//color: Color(0xff111c44),
                                       color: Colors.transparent,
                                       border: Border.all(
                                         color: Color(0xff3182ce),
                                         width: 4.w,
                                       ),
                                       borderRadius: BorderRadius.circular(5.r),
-                                      // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
+// child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                                     ),
                                     child: InkWell(
                                       onTap: () {},
-                                      child: Text('메세지',
+                                      child: Text('시작',
                                           style: TextStyle(
                                               fontFamily: 'PretendardGOV',
                                               fontWeight: FontWeight.w700,
@@ -323,108 +405,156 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
                                               color: Color(0xff3182ce))),
                                     ),
                                   ),
+                                  SizedBox(
+                                    width: 228.w,
+                                  ),
+                                  Container(
+                                    width: 213.w,
+                                    height: 60.h,
+                                    padding: EdgeInsets.only(left: 15.w),
+                                    decoration: BoxDecoration(
+//color: Color(0xff111c44),
+                                      color: Colors.transparent,
+                                      border: Border.all(
+                                        color: Color(0xff3182ce),
+                                        width: 4.w,
+                                      ),
+                                      borderRadius: BorderRadius.circular(5.r),
+// child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
+                                    ),
+                                    child: InkWell(
+                                      onTap: () {},
+                                      child: Text('완료',
+                                          style: TextStyle(
+                                              fontFamily: 'PretendardGOV',
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 36.sp,
+                                              color: Color(0xff3182ce))),
+                                    ),
+                                  )
                                 ],
                               ),
+                            ),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Container(
+                              height: 2.h,
+                              color: Colors.white,
                             ),
                             Expanded(
-                              child: Column(
-                                children: [
-                                  Container(
-                                    height: 2.h,
+                              child: filteredWorkTask.isEmpty
+                                  ? Center(
+                                child: Text(
+                                  '검색 결과가 없습니다.',
+                                  style: TextStyle(
+                                    fontFamily: 'PretendardGOV',
+                                    fontSize: 36.sp,
+                                    fontWeight: FontWeight.w500,
                                     color: Colors.white,
                                   ),
-                                  Expanded(
-                                    child: filteredAlarms.isEmpty
-                                        ? Center(
-                                            child: Text(
-                                              '검색 결과가 없습니다.',
+                                ),
+                              )
+                                  : ListView.separated(
+                                itemCount:
+                                getCurrentPageItems().length,
+                                itemBuilder: (context, index) {
+                                  final workTask =
+                                  getCurrentPageItems()[index];
+                                  return Container(
+                                    height: 100.h,
+                                    // padding: EdgeInsets.symmetric(horizontal: 0.w),
+                                    alignment: Alignment.centerLeft,
+                                    child: Row(
+                                      children: [
+                                        SizedBox(
+                                          width: 97.w,
+                                        ),
+                                        SizedBox(
+                                          width: 359.w,
+                                          child: Text(
+                                              workTask.title,
                                               style: TextStyle(
-                                                fontFamily: 'PretendardGOV',
-                                                fontSize: 36.sp,
-                                                fontWeight: FontWeight.w500,
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                          )
-                                        : ListView.separated(
-                                            itemCount:
-                                                getCurrentPageItems().length,
-                                            itemBuilder: (context, index) {
-                                              final alarm =
-                                                  getCurrentPageItems()[index];
-                                              return Container(
-                                                height: 100.h,
-                                                // padding: EdgeInsets.symmetric(horizontal: 0.w),
-                                                alignment: Alignment.centerLeft,
-                                                child: Row(
-                                                  children: [
-                                                    SizedBox(
-                                                      width: 97.w,
-                                                    ),
-                                                    SizedBox(
-                                                      width: 359.w,
-                                                      child: Text(
-                                                          formatTimestamp(
-                                                              alarm.timestamp),
-                                                          style: TextStyle(
-                                                              fontFamily:
-                                                                  'PretendardGOV',
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontSize: 36.sp,
-                                                              color: Colors
-                                                                  .white)),
-                                                    ),
-                                                    SizedBox(
-                                                      width: 255.w,
-                                                    ),
-                                                    SizedBox(
-                                                      width: 125.w,
-                                                      child: Text(alarm.level,
-                                                          style: TextStyle(
-                                                              fontFamily:
-                                                                  'PretendardGOV',
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontSize: 36.sp,
-                                                              color: Colors
-                                                                  .white)),
-                                                    ),
-                                                    SizedBox(
-                                                      width: 255.w,
-                                                    ),
-                                                    Expanded(
-                                                      child: Text(alarm.message,
-                                                          style: TextStyle(
-                                                              fontFamily:
-                                                                  'PretendardGOV',
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontSize: 36.sp,
-                                                              color: Colors
-                                                                  .white)),
-                                                    ),
-                                                  ],
-                                                ),
-                                              );
-                                            },
-                                            separatorBuilder:
-                                                (context, index) => Container(
-                                              height: 2.h,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                  ),
-                                  Container(
-                                    height: 2.h,
-                                    color: Colors.white,
-                                  ),
-                                ],
+                                                  fontFamily:
+                                                  'PretendardGOV',
+                                                  fontWeight:
+                                                  FontWeight
+                                                      .w500,
+                                                  fontSize: 36.sp,
+                                                  color: Colors
+                                                      .white)),
+                                        ),
+                                        SizedBox(
+                                          width: 255.w,
+                                        ),
+                                        SizedBox(
+                                          width: 125.w,
+                                          child: Text('${workTask.progress.toString()}%',
+                                              textAlign: TextAlign.end,
+                                              style: TextStyle(
+                                                  fontFamily:
+                                                  'PretendardGOV',
+                                                  fontWeight:
+                                                  FontWeight
+                                                      .w500,
+                                                  fontSize: 36.sp,
+                                                  color: Colors
+                                                      .white)),
+                                        ),
+                                        SizedBox(
+                                          width: 305.w,
+                                        ),
+                                        SizedBox(
+                                          width: 220.w,
+                                          child: Text(workTask.startDate != null
+                                              ? dateFormat.format(DateTime.parse(workTask.startDate!))
+                                              : '',
+                                              style: TextStyle(
+                                                  fontFamily:
+                                                  'PretendardGOV',
+                                                  fontWeight:
+                                                  FontWeight
+                                                      .w500,
+                                                  fontSize: 36.sp,
+                                                  color: Colors
+                                                      .white)),
+                                        ),
+                                        SizedBox(
+                                          width: 220.w,
+                                        ),
+
+                                        Expanded(
+                                          child: Text(workTask.endDate != null
+                                              ? dateFormat.format(DateTime.parse(workTask.endDate!))
+                                              : '',
+                                              style: TextStyle(
+                                                  fontFamily:
+                                                  'PretendardGOV',
+                                                  fontWeight:
+                                                  FontWeight
+                                                      .w500,
+                                                  fontSize: 36.sp,
+                                                  color: Colors
+                                                      .white)),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                                separatorBuilder:
+                                    (context, index) => Container(
+                                  height: 2.h,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
+                            Container(
+                              height: 2.h,
+                              color: Colors.white,
+                            ),
+                          ],
+                        ),
+                      ),
                             Container(
                               height: 100.h,
                               child: Row(
@@ -445,7 +575,7 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
                                     width: 184.w,
                                     height: 42.h,
                                     child: Text(
-                                      '${currentPage * itemsPerPage + 1}-${(currentPage + 1) * itemsPerPage > filteredAlarms.length ? filteredAlarms.length : (currentPage + 1) * itemsPerPage} of ${filteredAlarms.length}',
+                                      '${currentPage * itemsPerPage + 1}-${(currentPage + 1) * itemsPerPage > filteredWorkTask.length ? filteredWorkTask.length : (currentPage + 1) * itemsPerPage} of ${filteredWorkTask.length}',
                                       style: GoogleFonts.inter(
                                         color: Colors.white,
                                         fontSize: 32.sp,
@@ -477,7 +607,7 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
                                     child: InkWell(
                                       onTap: () {
                                         if ((currentPage + 1) * itemsPerPage <
-                                            allAlarms.length) {
+                                            allWorkTask.length) {
                                           setState(() {
                                             currentPage++;
                                           });
@@ -489,28 +619,30 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
                                   ),
                                   SizedBox(
                                     width: 27.w,
-                                  ),
+                                  )
                                 ],
                               ),
                             )
                           ],
                         )),
                   ),
-                  // SizedBox(width: 20.w),
-                  // Visibility(
-                  //   child: Container(
-                  //     width: 650.w,
-                  //     height: 742.h,
-                  //     color: Color(0xff414c67),
-                  //   ),
-                  //   visible: onCalendar,
-                  // ),
+                  SizedBox(width: 20.w),
+                  Container(
+                    width: 650.w,
+                    height: 742.h,
+                    color: Color(0xff414c67),
+                  ),
+
+
                 ],
               ),
             ),
           ),
         );
+
       },
     );
   }
 }
+
+

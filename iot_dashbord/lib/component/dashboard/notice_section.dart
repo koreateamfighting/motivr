@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iot_dashboard/component/dashboard/expand_notice_search.dart';
+import 'package:iot_dashboard/controller/notice_controller.dart';
+import 'package:iot_dashboard/model/notice_model.dart';
 import 'package:iot_dashboard/utils/iframe_visibility.dart';
-class NoticeSection extends StatelessWidget {
+
+
+class NoticeSection extends StatefulWidget {
   final bool isExpanded;
   final VoidCallback onTap;
 
@@ -13,12 +17,31 @@ class NoticeSection extends StatelessWidget {
   });
 
   @override
+  State<NoticeSection> createState() => _NoticeSectionState();
+}
+
+class _NoticeSectionState extends State<NoticeSection> {
+  List<Notice> notices = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchNoticeData();
+  }
+
+  void _fetchNoticeData() async {
+    final data = await NoticeController.fetchNotices();
+    setState(() {
+      notices = data;
+    });
+  }
+  @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         // 항상 보이는 헤더
         InkWell(
-          onTap: onTap,
+          onTap: widget.onTap,
           child: Container(
             height: 60.h,
             decoration: BoxDecoration(
@@ -47,7 +70,7 @@ class NoticeSection extends StatelessWidget {
                 ),
                 Spacer(),
                 Container(width: 60.w, height: 60.h, child: Icon(
-                  isExpanded
+                  widget.isExpanded
                       ? Icons.keyboard_arrow_down
                       : Icons.keyboard_arrow_right,
                     color: Color(0xff3d91ff),
@@ -58,7 +81,7 @@ class NoticeSection extends StatelessWidget {
             ),
           ),
         ),
-        if (isExpanded)
+        if (widget.isExpanded)
           Container(
             height: 59.h,
             color: Color(0xff0b1437),
@@ -138,7 +161,7 @@ class NoticeSection extends StatelessWidget {
           height: 1.h,
           color: Colors.white,
         ),
-        if (isExpanded)
+        if (widget.isExpanded)
           Container(
             height: 59.h,
             decoration: BoxDecoration(
@@ -158,7 +181,7 @@ class NoticeSection extends StatelessWidget {
                 SizedBox(width: 25.w,),
                 SizedBox(
                     width: 80.32.w,
-                    child: Text('작업명',
+                    child: Text('시간',
                         overflow: TextOverflow.ellipsis, // 넘치면 "..." 처리
                         maxLines: 1,                      // 최대 한 줄로 제한
                         softWrap: false,                 // 줄바꿈 비활성화
@@ -168,26 +191,8 @@ class NoticeSection extends StatelessWidget {
                             fontSize: 24.sp,
                             color: Colors.white))),
                 SizedBox(width: 318.68.w,),
-                SizedBox(
-                    width: 81.32.w,
-                    child: Text('진행률',
-                        style: TextStyle(
-                            fontFamily: 'PretendardGOV',
-                            fontWeight: FontWeight.w800,
-                            fontSize: 24.sp,
-                            color: Colors.white))),
-                SizedBox(width: 81.68.w,),
-                SizedBox(
-                    width: 46.18.w,
-                    child: Text('시작',
-                        style: TextStyle(
-                            fontFamily: 'PretendardGOV',
-                            fontWeight: FontWeight.w800,
-                            fontSize: 24.sp,
-                            color: Colors.white))),
-                SizedBox(width:194.82.w,),
                 Expanded(
-                    child: Text('완료',
+                    child: Text('내용',
                         style: TextStyle(
                             fontFamily: 'PretendardGOV',
                             fontWeight: FontWeight.w800,
@@ -196,30 +201,20 @@ class NoticeSection extends StatelessWidget {
               ],
             ),
           ),
-        if (isExpanded)
+        if (widget.isExpanded)
           Container(
             padding: EdgeInsets.symmetric(horizontal: 16.w),
             height: 354.h,
-              color: Color(0xff0b1437),
-              child: ListView.separated(
-                itemCount: 6,
-                separatorBuilder: (context, index) => Container(
-                  height: 1.h,
-                  color: Colors.white,
-                ),
-                itemBuilder: (context, index) {
-                  final data = [
-                    ['옹벽 철근 설치', '90%', '2025-04-22', '2025-04-23'],
-                    ['콘크리트 타일', '75%', '2025-04-23', '2025-04-24'],
-                    ['배수관 매설', '50%', '2025-04-23', '2025-04-25'],
-                    ['옹벽 철근 설치', '90%', '2025-04-22', '2025-04-23'],
-                    ['콘크리트 타일', '75%', '2025-04-23', '2025-04-24'],
-                    ['배수관 매설', '50%', '2025-04-23', '2025-04-25'],
-                  ];
-                  final item = data[index];
-                  return NoticeRowWidget(item[0], item[1], item[2], item[3]);
-                },
-              )
+            color: Color(0xff0b1437),
+            child: ListView.separated(
+              itemCount: notices.length.clamp(0, 6), // 최대 6개만
+              separatorBuilder: (context, index) =>
+                  Container(height: 1.h, color: Colors.white),
+              itemBuilder: (context, index) {
+                final item = notices[index];
+                return NoticeRowWidget(item.createdAt, item.content);
+              },
+            ),
           ),
       ],
     );
@@ -227,13 +222,10 @@ class NoticeSection extends StatelessWidget {
 }
 
 class NoticeRowWidget extends StatelessWidget {
-  final String task;
-  final String progress;
-  final String start;
-  final String end;
+  final String createdAt;
+  final String content;
 
-  const NoticeRowWidget(this.task, this.progress, this.start, this.end,
-      {super.key});
+  const NoticeRowWidget(this.createdAt, this.content, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -242,43 +234,31 @@ class NoticeRowWidget extends StatelessWidget {
       height: 59.h,
       color: Color(0xff0b1437),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-
           Container(
-              width: 400.w,height: 29.h,
-              child: Text(task,
+            width: 400.w,
+            height: 29.h,
+            child: Text(createdAt,
+                style: TextStyle(
+                  fontFamily: 'PretendardGOV',
+                  fontWeight: FontWeight.w500,
+                  fontSize: 24.sp,
+                  color: Colors.white,
+                )),
+          ),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Container(
+              height: 29.h,
+              child: Text(content,
                   style: TextStyle(
-                      fontFamily: 'PretendardGOV',
-                      fontWeight: FontWeight.w500,
-                      fontSize: 24.sp,
-                      color: Colors.white))),
-          Container(
-              width: 70.w,height: 29.h,
-              child: Text(progress,
-                  style: TextStyle(
-                      fontFamily: 'PretendardGOV',
-                      fontWeight: FontWeight.w500,
-                      fontSize: 24.sp,
-                      color: Colors.white))),
-          SizedBox(width: 90.w,),
-          Container(
-              width: 140.56.w,height: 29.h,
-              child: Text(start,
-                  style: TextStyle(
-                      fontFamily: 'PretendardGOV',
-                      fontWeight: FontWeight.w500,
-                      fontSize: 24.sp,
-                      color: Colors.white))),
-          SizedBox(width: 100.44.w,),
-          Container(
-              width: 140.56.w,height: 29.h,
-              child: Text(end,
-                  style: TextStyle(
-                      fontFamily: 'PretendardGOV',
-                      fontWeight: FontWeight.w500,
-                      fontSize: 24.sp,
-                      color: Colors.white))),
+                    fontFamily: 'PretendardGOV',
+                    fontWeight: FontWeight.w500,
+                    fontSize: 24.sp,
+                    color: Colors.white,
+                  )),
+            ),
+          ),
         ],
       ),
     );

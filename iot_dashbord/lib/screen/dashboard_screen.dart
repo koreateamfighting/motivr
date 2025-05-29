@@ -11,7 +11,7 @@ import 'package:iot_dashboard/theme/colors.dart';
 import 'package:iot_dashboard/component/dashboard/iot_status.dart';
 import 'package:iot_dashboard/component/dashboard/weather_info.dart';
 import 'package:iot_dashboard/component/dashboard/recent_alarm.dart';
-import 'package:iot_dashboard/component/dashboard/duty_and_notice.dart';
+import 'package:iot_dashboard/component/dashboard/work_task_and_notice.dart';
 import 'dart:ui' as ui;
 import 'dart:html' as html;
 
@@ -198,7 +198,7 @@ class _DashBoardState extends State<DashBoard> {
                             ),
                             Row(
                               children: [
-                                DutyAndNotice(),
+                                WorkTaskAndNotice(),
                                 SizedBox(
                                   width: 16.w,
                                 ),

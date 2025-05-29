@@ -41,26 +41,26 @@ class TopAppBar extends StatelessWidget {
         children: [
           SizedBox(width: 50.w),
           Container(
-            padding: EdgeInsets.only(top: 0.h),
+            alignment: Alignment.center,
+
             width: 60.w,
+                  height: 80.h,
                   child: IconButton(
                     onPressed: onMenuPressed,
-                    icon:  Icon(Icons.menu_rounded,size: 70.w,),
+                    icon:  Icon(Icons.menu_rounded,size: 70.sp,),
                     color: isMenuVisible
                         ? const Color(0xFF3182ce) // 열렸을 때
                         :  Color(0xFF3182ce)         // 닫혔을 때
                   ),
-
-
           ),
-          SizedBox(width: 100.w),
+          SizedBox(width: 140.w),
           Container(
-            alignment: Alignment.centerRight, // 내부에서 우측 정렬
+            alignment: Alignment.center, // 내부에서 우측 정렬
             child: Container(
-              width: 350.w,
-              height: 120.h,
+              width: 288.w,
+              height: 100.h,
               color: Colors.white,
-              padding: EdgeInsets.symmetric(horizontal: 42.w,vertical: 8.h), // ✅ 내부 여백 추가
+              // padding: EdgeInsets.symmetric(vertical: 8.h), // ✅ 내부 여백 추가
               child: Image.asset(
                 'assets/images/company_logo_small.png',
                 fit: BoxFit.fill, // ✅ 비율 유지하면서 컨테이너 안에 맞춤

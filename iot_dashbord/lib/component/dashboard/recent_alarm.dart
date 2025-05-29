@@ -5,6 +5,7 @@ import '../../model/alarm_model.dart';
 import 'package:intl/intl.dart';
 import 'package:iot_dashboard/component/dashboard/expand_alarm_search.dart';
 import 'package:iot_dashboard/utils/iframe_visibility.dart';
+import 'package:iot_dashboard/utils/format_timestamp.dart';
 
 class AlarmListView extends StatefulWidget {
   const AlarmListView({super.key});
@@ -22,10 +23,7 @@ class _AlarmListViewState extends State<AlarmListView> {
     _alarmsFuture = AlarmController.fetchAlarms();
   }
 
-  String formatTimestamp(String original) {
-    final dt = DateTime.parse(original);
-    return DateFormat('yyyy-MM-dd HH:mm').format(dt);
-  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
