@@ -14,31 +14,27 @@
       overflow: hidden;
       width: 100%;
       height: 100%;
-
     }
-  #unity-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-     #unity-canvas {
-    width: 100% !important;
-    height: 100% !important;
-    background: #231F20;
-    display: block;
-  }
-   #loading-cover {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: #000;
-    top: 0;
-    left: 0;
-    z-index: 9999;
-  }
+    #unity-container {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+    #unity-canvas {
+      width: 100%;
+      height: 100%;
+      background: #231F20;
+      display: block;
+    }
+    #loading-cover {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      top: 0;
+      left: 0;
+      z-index: 9999;
+    }
   </style>
 </head>
 <body>
@@ -59,11 +55,11 @@
 
   <script>
     const buildUrl = "Build";
-    const loaderUrl = buildUrl + "/0513.loader.js";
+    const loaderUrl = buildUrl + "/0530.loader.js";
     const config = {
-      dataUrl: buildUrl + "/0513.data",
-      frameworkUrl: buildUrl + "/0513.framework.js",
-      codeUrl: buildUrl + "/0513.wasm",
+      dataUrl: buildUrl + "/0530.data",
+      frameworkUrl: buildUrl + "/0530.framework.js",
+      codeUrl: buildUrl + "/0530.wasm",
       streamingAssetsUrl: "StreamingAssets",
       companyName: "DefaultCompany",
       productName: "Hanlim_Motivr",

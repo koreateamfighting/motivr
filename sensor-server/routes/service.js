@@ -18,8 +18,9 @@ router.post('/sensor', async (req, res) => {
     const pool = await sql.connect(dbConfig);
     await pool.request()
       .input('RID', sql.VarChar(100), String(data.RID))
-      .input('SensorType', sql.VarChar, String(data.SensorType))
-      .input('EventType', sql.VarChar, String(data.EventType))
+      .input('SensorType', sql.NVarChar, String(data.SensorType))
+      .input('EventType', sql.NVarChar, String(data.EventType))
+      
       .input('X_Deg', sql.Float, data.X_Deg)
       .input('Y_Deg', sql.Float, data.Y_Deg)
       .input('Z_Deg', sql.Float, data.Z_Deg)

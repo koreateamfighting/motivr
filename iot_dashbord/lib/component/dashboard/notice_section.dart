@@ -127,7 +127,7 @@ class _NoticeSectionState extends State<NoticeSection> {
                       );
 
 
-                      showIframes(); // ✅ 다이얼로그 닫히고 나서 실행됨
+
 
 
                     },

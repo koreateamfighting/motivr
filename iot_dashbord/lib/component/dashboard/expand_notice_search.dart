@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:iot_dashboard/utils/keyboard_handler.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iot_dashboard/utils/format_timestamp.dart';
+import 'package:iot_dashboard/utils/iframe_visibility.dart';
 
 class ExpandNoticeSearch extends StatefulWidget {
   const ExpandNoticeSearch({super.key});
@@ -22,6 +23,8 @@ class _ExpandNoticeSearchState extends State<ExpandNoticeSearch> {
   int currentPage = 0;
   static const int itemsPerPage = 14;
   TextEditingController _searchController = TextEditingController();
+  String currentSortField = '';
+  bool isAscending = true;
 
   void initState() {
     super.initState();
@@ -39,10 +42,36 @@ class _ExpandNoticeSearchState extends State<ExpandNoticeSearch> {
 
   @override
   void dispose() {
+    showIframes(); // ✅ 다이얼로그 닫히고 나서 실행됨
     _focusNode.dispose();
     super.dispose();
   }
+  void _sortBy(String field) {
+    setState(() {
+      if (currentSortField == field) {
+        isAscending = !isAscending;
+      } else {
+        currentSortField = field;
+        isAscending = true;
+      }
 
+      filteredNotices.sort((a, b) {
+        int result;
+        switch (field) {
+          case 'createdAt':
+            result = a.createdAt.compareTo(b.createdAt);
+            break;
+          case 'content':
+            result = a.content.compareTo(b.content);
+            break;
+
+          default:
+            result = 0;
+        }
+        return isAscending ? result : -result;
+      });
+    });
+  }
   List<Notice> getCurrentPageItems() {
     final start = currentPage * itemsPerPage;
     final end = (start + itemsPerPage).clamp(0, filteredNotices.length);
@@ -259,13 +288,29 @@ class _ExpandNoticeSearchState extends State<ExpandNoticeSearch> {
                                       // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                                     ),
                                     child: InkWell(
-                                      onTap: () {},
-                                      child: Text('시간',
-                                          style: TextStyle(
-                                              fontFamily: 'PretendardGOV',
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: 36.sp,
-                                              color: Color(0xff3182ce))),
+                                      onTap: () => _sortBy('createdAt'),
+                                      child: Row(
+                                        children: [
+
+                                          Text('시간',
+                                              style: TextStyle(
+                                                  fontFamily: 'PretendardGOV',
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: 36.sp,
+                                                  color: Color(0xff3182ce))),
+                                          if (currentSortField == 'timestamp') ...[
+                                            SizedBox(width: 8.w),
+                                            Text(
+                                              isAscending ? '▲' : '▼',
+                                              style: TextStyle(
+                                                fontSize: 28.sp,
+                                                color: Color(0xff3182ce),
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            )
+                                          ],
+                                        ],
+                                      )
                                     ),
                                   ),
                                   SizedBox(
@@ -286,13 +331,29 @@ class _ExpandNoticeSearchState extends State<ExpandNoticeSearch> {
                                       // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                                     ),
                                     child: InkWell(
-                                      onTap: () {},
-                                      child: Text('내용',
-                                          style: TextStyle(
-                                              fontFamily: 'PretendardGOV',
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: 36.sp,
-                                              color: Color(0xff3182ce))),
+                                        onTap: () => _sortBy('content'),
+                                        child: Row(
+                                          children: [
+
+                                            Text('내용',
+                                                style: TextStyle(
+                                                    fontFamily: 'PretendardGOV',
+                                                    fontWeight: FontWeight.w700,
+                                                    fontSize: 36.sp,
+                                                    color: Color(0xff3182ce))),
+                                            if (currentSortField == 'timestamp') ...[
+                                              SizedBox(width: 8.w),
+                                              Text(
+                                                isAscending ? '▲' : '▼',
+                                                style: TextStyle(
+                                                  fontSize: 28.sp,
+                                                  color: Color(0xff3182ce),
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                              )
+                                            ],
+                                          ],
+                                        )
                                     ),
                                   ),
                                 ],

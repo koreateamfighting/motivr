@@ -102,31 +102,39 @@ class _WorkTaskSectionState extends State<WorkTaskSection> {
                   ),
                   child: InkWell(
                     onTap: () {
-                      hideIframes();
-                      showGeneralDialog(
-                        context: context,
-                        barrierDismissible: true,
-                        barrierLabel: '',
-                        barrierColor: Colors.black.withOpacity(0.5),
-                        transitionDuration: Duration(milliseconds: 200),
-                        pageBuilder: (context, animation, secondaryAnimation) {
-                          return Align(
-                            alignment: Alignment.centerLeft,
-                            child: Padding(
-                              padding: EdgeInsets.only(left: 841.w),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: SizedBox(
-                                  width: 2750.w,
-                                  height: 1803.h,
-                                  child: ExpandWorkTaskSearch(),
+                      setState(() {
+                         hideIframes();
+                      });
+
+                      Future.microtask(() {
+                        showGeneralDialog(
+                          context: context,
+                          barrierDismissible: true,
+                          barrierLabel: '',
+                          barrierColor: Colors.black.withOpacity(0.5),
+                          transitionDuration: Duration(milliseconds: 200),
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) {
+                            return Align(
+                              alignment: Alignment.centerLeft,
+                              child: Padding(
+                                padding:
+                                    EdgeInsets.only(left: 841.w, top: 100.h),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: SizedBox(
+                                    width: 2750.w,
+                                    height: 1803.h,
+                                    child: ExpandWorkTaskSearch(),
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        },
-                      );
-                      showIframes();
+                            );
+                          },
+                        ).then((_) {
+                          // showIframes();
+                        });
+                      });
                     },
                     child: Text(
                       '전체 보기',
@@ -144,8 +152,7 @@ class _WorkTaskSectionState extends State<WorkTaskSection> {
             ),
           ),
         Container(height: 1.h, color: Colors.white),
-        if (widget.isExpanded)
-          _buildHeaderRow(),
+        if (widget.isExpanded) _buildHeaderRow(),
         if (widget.isExpanded)
           Container(
             padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -153,25 +160,25 @@ class _WorkTaskSectionState extends State<WorkTaskSection> {
             color: Color(0xff0b1437),
             child: workTasks.isEmpty
                 ? Center(
-                child: Text('작업 내역 없음',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24.sp,
-                        fontFamily: 'PretendardGOV')))
+                    child: Text('작업 내역 없음',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24.sp,
+                            fontFamily: 'PretendardGOV')))
                 : ListView.separated(
-              itemCount: workTasks.length,
-              separatorBuilder: (_, __) =>
-                  Container(height: 1.h, color: Colors.white),
-              itemBuilder: (context, index) {
-                final item = workTasks[index];
-                return DataRowWidget(
-                  item.title,
-                  '${item.progress}%',
-                  item.startDate ?? '-',
-                  item.endDate ?? '-',
-                );
-              },
-            ),
+                    itemCount: workTasks.length,
+                    separatorBuilder: (_, __) =>
+                        Container(height: 1.h, color: Colors.white),
+                    itemBuilder: (context, index) {
+                      final item = workTasks[index];
+                      return DataRowWidget(
+                        item.title,
+                        '${item.progress}%',
+                        item.startDate ?? '-',
+                        item.endDate ?? '-',
+                      );
+                    },
+                  ),
           ),
       ],
     );
@@ -234,34 +241,30 @@ class DataRowWidget extends StatelessWidget {
           Container(
               width: 400.w,
               height: 29.h,
-              child: Text(task,
-                  style: _rowStyle())),
+              child: Text(task, style: _rowStyle())),
           Container(
               width: 70.w,
               height: 29.h,
-              child: Text(progress,
-                  style: _rowStyle())),
+              child: Text(progress, style: _rowStyle())),
           SizedBox(width: 90.w),
           Container(
               width: 140.56.w,
               height: 29.h,
-              child: Text(start,
-                  style: _rowStyle())),
+              child: Text(start, style: _rowStyle())),
           SizedBox(width: 100.44.w),
           Container(
               width: 140.56.w,
               height: 29.h,
-              child: Text(end,
-                  style: _rowStyle())),
+              child: Text(end, style: _rowStyle())),
         ],
       ),
     );
   }
 
   TextStyle _rowStyle() => TextStyle(
-    fontFamily: 'PretendardGOV',
-    fontWeight: FontWeight.w500,
-    fontSize: 24.sp,
-    color: Colors.white,
-  );
+        fontFamily: 'PretendardGOV',
+        fontWeight: FontWeight.w500,
+        fontSize: 24.sp,
+        color: Colors.white,
+      );
 }

@@ -4,7 +4,10 @@ const cors = require('cors');
 const fs = require('fs');
 const https = require('https');
 const WebSocket = require('ws');
+const { spawn } = require('child_process'); // ✅ 추가
 const app = express();
+const path = require('path'); // ✅ 빠졌던 부분
+
 
 // HTTPS 인증서 설정
 const sslOptions = {
@@ -18,11 +21,31 @@ const sslOptions = {
 // 공통 설정
 app.use(express.json());
 app.use(cors());
-app.use(express.static('public'));
+app.use(express.static('public', {
+  setHeaders: (res, path) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.setHeader('X-Frame-Options', 'ALLOWALL');
+    res.setHeader('Content-Security-Policy', "frame-ancestors *");
+  }
+}));
+
+
 
 // 라우터 분리
 app.use('/api', require('./routes/user'));     // 로그인/회원
-app.use('/api', require('./routes/service'));  // 센서/기타
+app.use('/api', require('./routes/service'));  
+app.use('/api', require('./routes/alarm'));  // 센서/기타
+app.use('/api', require('./routes/notice'));  // 센서/기타
+app.use('/api', require('./routes/worktask'));
+const { router: cctvRouter, startHlsProcess } = require('./routes/cctv');
+app.use('/api', cctvRouter);
+
+app.use('/hls', express.static('public/hls'));
+console.log('✅ CCTV 라우터 import 성공');
+startHlsProcess('cam1'); // ✅ 자동 실행
+startHlsProcess('cam2'); // ✅ 자동 실행
 
 // HTTPS 서버 생성
 const server = https.createServer(sslOptions, app);
@@ -48,6 +71,7 @@ wss.on('connection', (ws, req) => {
     console.log('🔴 Unity WebSocket 연결 종료');
   });
 });
+
 
 // 서버 실행
 server.listen(3030, () => {

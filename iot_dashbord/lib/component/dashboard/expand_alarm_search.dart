@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:iot_dashboard/controller/alarm_controller.dart';
 import 'package:iot_dashboard/model/alarm_model.dart';
 import 'package:iot_dashboard/utils/format_timestamp.dart';
+import 'package:iot_dashboard/utils/iframe_visibility.dart';
 
 class ExpandAlarmSearch extends StatefulWidget {
   const ExpandAlarmSearch({super.key});
@@ -22,6 +23,8 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
   int currentPage = 0;
   static const int itemsPerPage = 14;
   TextEditingController _searchController = TextEditingController();
+  String currentSortField = '';
+  bool isAscending = true;
 
   @override
   void initState() {
@@ -41,8 +44,39 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
   @override
   void dispose() {
     _focusNode.dispose();
+    showIframes(); // ✅ 다이얼로그 닫히고 나서 실행됨
     super.dispose();
   }
+
+  void _sortBy(String field) {
+    setState(() {
+      if (currentSortField == field) {
+        isAscending = !isAscending;
+      } else {
+        currentSortField = field;
+        isAscending = true;
+      }
+
+      filteredAlarms.sort((a, b) {
+        int result;
+        switch (field) {
+          case 'timestamp':
+            result = a.timestamp.compareTo(b.timestamp);
+            break;
+          case 'level':
+            result = a.level.compareTo(b.level);
+            break;
+          case 'message':
+            result = a.message.compareTo(b.message);
+            break;
+          default:
+            result = 0;
+        }
+        return isAscending ? result : -result;
+      });
+    });
+  }
+
 
   List<Alarm> getCurrentPageItems() {
     final start = currentPage * itemsPerPage;
@@ -250,25 +284,42 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
                                     height: 60.h,
                                     padding: EdgeInsets.only(left: 15.w),
                                     decoration: BoxDecoration(
-                                      //color: Color(0xff111c44),
                                       color: Colors.transparent,
                                       border: Border.all(
                                         color: Color(0xff3182ce),
                                         width: 4.w,
                                       ),
                                       borderRadius: BorderRadius.circular(5.r),
-                                      // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                                     ),
                                     child: InkWell(
-                                      onTap: () {},
-                                      child: Text('시간',
-                                          style: TextStyle(
+                                      onTap: () => _sortBy('timestamp'),
+                                      child: Row(
+                                        children: [
+                                          Text(
+                                            '시간',
+                                            style: TextStyle(
                                               fontFamily: 'PretendardGOV',
                                               fontWeight: FontWeight.w700,
                                               fontSize: 36.sp,
-                                              color: Color(0xff3182ce))),
+                                              color: Color(0xff3182ce),
+                                            ),
+                                          ),
+                                          if (currentSortField == 'timestamp') ...[
+                                            SizedBox(width: 8.w),
+                                            Text(
+                                              isAscending ? '▲' : '▼',
+                                              style: TextStyle(
+                                                fontSize: 28.sp,
+                                                color: Color(0xff3182ce),
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            )
+                                          ],
+                                        ],
+                                      ),
                                     ),
                                   ),
+
                                   SizedBox(
                                     width: 293.w,
                                   ),
@@ -277,52 +328,86 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
                                     height: 60.h,
                                     padding: EdgeInsets.only(left: 15.w),
                                     decoration: BoxDecoration(
-                                      //color: Color(0xff111c44),
                                       color: Colors.transparent,
                                       border: Border.all(
                                         color: Color(0xff3182ce),
                                         width: 4.w,
                                       ),
                                       borderRadius: BorderRadius.circular(5.r),
-                                      // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                                     ),
                                     child: InkWell(
-                                      onTap: () {},
-                                      child: Text('유형',
-                                          style: TextStyle(
+                                      onTap: () => _sortBy('level'), // 유형
+                                      child: Row(
+                                        children: [
+                                          Text(
+                                            '유형',
+                                            style: TextStyle(
                                               fontFamily: 'PretendardGOV',
                                               fontWeight: FontWeight.w700,
                                               fontSize: 36.sp,
-                                              color: Color(0xff3182ce))),
+                                              color: Color(0xff3182ce),
+                                            ),
+                                          ),
+                                          if (currentSortField == 'level') ...[
+                                            SizedBox(width: 8.w),
+                                            Text(
+                                              isAscending ? '▲' : '▼',
+                                              style: TextStyle(
+                                                fontSize: 28.sp,
+                                                color: Color(0xff3182ce),
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            )
+                                          ],
+                                        ],
+                                      ),
                                     ),
                                   ),
+
                                   SizedBox(
                                     width: 234.w,
                                   ),
-                                  Container(
-                                    width: 838.w,
-                                    height: 60.h,
-                                    padding: EdgeInsets.only(left: 15.w),
-                                    decoration: BoxDecoration(
-                                      //color: Color(0xff111c44),
-                                      color: Colors.transparent,
-                                      border: Border.all(
-                                        color: Color(0xff3182ce),
-                                        width: 4.w,
-                                      ),
-                                      borderRadius: BorderRadius.circular(5.r),
-                                      // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
-                                    ),
-                                    child: InkWell(
-                                      onTap: () {},
-                                      child: Text('메세지',
-                                          style: TextStyle(
-                                              fontFamily: 'PretendardGOV',
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: 36.sp,
-                                              color: Color(0xff3182ce))),
-                                    ),
+                              Container(
+                                width: 838.w,
+                                height: 60.h,
+                                padding: EdgeInsets.only(left: 15.w),
+                                decoration: BoxDecoration(
+                                  color: Colors.transparent,
+                                  border: Border.all(
+                                    color: Color(0xff3182ce),
+                                    width: 4.w,
                                   ),
+                                  borderRadius: BorderRadius.circular(5.r),
+                                ),
+                                child: InkWell(
+                                  onTap: () => _sortBy('message'), // 메시지
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        '메세지',
+                                        style: TextStyle(
+                                          fontFamily: 'PretendardGOV',
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 36.sp,
+                                          color: Color(0xff3182ce),
+                                        ),
+                                      ),
+                                      if (currentSortField == 'message') ...[
+                                        SizedBox(width: 8.w),
+                                        Text(
+                                          isAscending ? '▲' : '▼',
+                                          style: TextStyle(
+                                            fontSize: 28.sp,
+                                            fontWeight: FontWeight.w700,
+                                            color: Color(0xff3182ce),
+                                          ),
+                                        ),
+                                      ]
+                                    ],
+                                  ),
+                                ),
+                              ),
+
                                 ],
                               ),
                             ),

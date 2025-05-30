@@ -3,9 +3,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iot_dashboard/controller/worktask_controller.dart';
 import 'package:iot_dashboard/model/worktask_model.dart';
 import 'package:flutter/services.dart';
+import 'package:iot_dashboard/services/selectable_calendar.dart';
 import 'package:iot_dashboard/utils/keyboard_handler.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:iot_dashboard/utils/iframe_visibility.dart';
 
 class ExpandWorkTaskSearch extends StatefulWidget {
   const ExpandWorkTaskSearch({super.key});
@@ -23,6 +25,10 @@ class _ExpandWorkTaskSearchState extends State<ExpandWorkTaskSearch> {
   int currentPage = 0;
   static const int itemsPerPage = 14;
   TextEditingController _searchController = TextEditingController();
+  String currentSortField = '';
+  bool isAscending = true;
+  DateTime? _selectedStartDate;
+  DateTime? _selectedEndDate;
 
   @override
   void initState() {
@@ -41,24 +47,84 @@ class _ExpandWorkTaskSearchState extends State<ExpandWorkTaskSearch> {
 
   @override
   void dispose() {
+    showIframes();
     _focusNode.dispose();
     super.dispose();
   }
+
+  void _sortBy(String field) {
+    setState(() {
+      if (currentSortField == field) {
+        isAscending = !isAscending;
+      } else {
+        currentSortField = field;
+        isAscending = true;
+      }
+
+      filteredWorkTask.sort((a, b) {
+        int result;
+        switch (field) {
+          case 'title':
+            result = a.title.compareTo(b.title);
+            break;
+          case 'progress':
+            result = a.progress.compareTo(b.progress);
+            break;
+          case 'startDate':
+            result = a.startDate.toString().compareTo(b.startDate.toString());
+            break;
+          case 'endDate':
+            result = a.endDate.toString().compareTo(b.endDate.toString());
+            break;
+          default:
+            result = 0;
+        }
+        return isAscending ? result : -result;
+      });
+    });
+  }
+
   List<WorkTask> getCurrentPageItems() {
     final start = currentPage * itemsPerPage;
     final end = (start + itemsPerPage).clamp(0, filteredWorkTask.length);
     return filteredWorkTask.sublist(start, end);
   }
-
   void _filterWorkTask() {
     final query = _searchController.text.trim().toLowerCase();
+
     setState(() {
-      currentPage = 0; // 검색 시 첫 페이지로 초기화
-      filteredWorkTask = allWorkTask
-          .where((worktask) => worktask.title.toLowerCase().contains(query))
-          .toList();
+      currentPage = 0;
+
+      filteredWorkTask = allWorkTask.where((task) {
+        final matchQuery = task.title.toLowerCase().contains(query);
+        final matchDate = matchDateRange(task);
+        return matchQuery && matchDate;
+      }).toList();
     });
   }
+
+  bool matchDateRange(WorkTask task) {
+    DateTime? taskStart = task.startDate != null ? DateTime.tryParse(task.startDate!) : null;
+    DateTime? taskEnd = task.endDate != null ? DateTime.tryParse(task.endDate!) : null;
+
+    if (_selectedStartDate != null && _selectedEndDate != null) {
+      // 둘 다 설정된 경우: 작업 시작~종료가 모두 범위 안에 있어야 함
+      return taskStart != null &&
+          taskEnd != null &&
+          !taskStart.isBefore(_selectedStartDate!) &&
+          !taskEnd.isAfter(_selectedEndDate!);
+    } else if (_selectedStartDate != null) {
+      // 시작일만 있는 경우: 작업 시작일이 해당 날짜 이상이어야 함
+      return taskStart != null && !taskStart.isBefore(_selectedStartDate!);
+    } else if (_selectedEndDate != null) {
+      // 종료일만 있는 경우: 작업 종료일이 해당 날짜 이하이어야 함
+      return taskEnd != null && !taskEnd.isAfter(_selectedEndDate!);
+    }
+
+    return true; // 날짜 필터 없음
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -104,7 +170,8 @@ class _ExpandWorkTaskSearchState extends State<ExpandWorkTaskSearch> {
                                     Container(
                                       width: 50.w,
                                       height: 50.h,
-                                      child: Image.asset('assets/icons/work_task.png'),
+                                      child: Image.asset(
+                                          'assets/icons/work_task.png'),
                                     ),
                                     SizedBox(
                                       width: 14.w,
@@ -126,7 +193,8 @@ class _ExpandWorkTaskSearchState extends State<ExpandWorkTaskSearch> {
                                       child: InkWell(
                                         onTap: () {},
                                         child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
                                           children: [
                                             Container(
                                               width: 50.w,
@@ -134,7 +202,6 @@ class _ExpandWorkTaskSearchState extends State<ExpandWorkTaskSearch> {
                                               child: Image.asset(
                                                   'assets/icons/upload.png'),
                                             ),
-
                                             Text(
                                               '파일 업로드',
                                               textAlign: TextAlign.center,
@@ -183,9 +250,9 @@ class _ExpandWorkTaskSearchState extends State<ExpandWorkTaskSearch> {
                                               ),
                                               border: OutlineInputBorder(
                                                 borderRadius:
-                                                BorderRadius.circular(5.r),
-                                                borderSide:
-                                                BorderSide(color: Colors.white),
+                                                    BorderRadius.circular(5.r),
+                                                borderSide: BorderSide(
+                                                    color: Colors.white),
                                               ),
                                               contentPadding: EdgeInsets.only(
                                                 bottom: 25.h,
@@ -197,8 +264,8 @@ class _ExpandWorkTaskSearchState extends State<ExpandWorkTaskSearch> {
                                     Container(
                                       width: 50.w,
                                       height: 50.h,
-                                      child:
-                                      Image.asset('assets/icons/calendar.png'),
+                                      child: Image.asset(
+                                          'assets/icons/calendar.png'),
                                     ),
                                     SizedBox(
                                       width: 11.w,
@@ -223,6 +290,18 @@ class _ExpandWorkTaskSearchState extends State<ExpandWorkTaskSearch> {
                                       width: 200.w,
                                       height: 60.h,
                                       color: Colors.white,
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        _selectedStartDate != null
+                                            ? DateFormat('yyyyMMdd').format(_selectedStartDate!)
+                                            : '',
+                                        style: TextStyle(
+                                          fontFamily: 'PretendardGOV',
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 28.sp,
+                                          color: Colors.black,
+                                        ),
+                                      ),
                                     ),
                                     Container(
                                       width: 50.w,
@@ -243,6 +322,18 @@ class _ExpandWorkTaskSearchState extends State<ExpandWorkTaskSearch> {
                                       width: 200.w,
                                       height: 60.h,
                                       color: Colors.white,
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        _selectedEndDate != null
+                                            ? DateFormat('yyyyMMdd').format(_selectedEndDate!)
+                                            : '',
+                                        style: TextStyle(
+                                          fontFamily: 'PretendardGOV',
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 28.sp,
+                                          color: Colors.black,
+                                        ),
+                                      ),
                                     ),
                                     SizedBox(
                                       width: 8.w,
@@ -255,11 +346,12 @@ class _ExpandWorkTaskSearchState extends State<ExpandWorkTaskSearch> {
 //color: Color(0xff111c44),
                                         color: Color(0xff3182ce),
 
-                                        borderRadius: BorderRadius.circular(4.r),
+                                        borderRadius:
+                                            BorderRadius.circular(4.r),
 // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                                       ),
                                       child: InkWell(
-                                          onTap:_filterWorkTask,
+                                          onTap: _filterWorkTask,
                                           child: Text(
                                             '검색',
                                             textAlign: TextAlign.center,
@@ -280,7 +372,8 @@ class _ExpandWorkTaskSearchState extends State<ExpandWorkTaskSearch> {
 //color: Color(0xff111c44),
                                         color: Color(0xff3182ce),
 
-                                        borderRadius: BorderRadius.circular(4.r),
+                                        borderRadius:
+                                            BorderRadius.circular(4.r),
 // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                                       ),
                                       child: InkWell(
@@ -342,20 +435,35 @@ class _ExpandWorkTaskSearchState extends State<ExpandWorkTaskSearch> {
 // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                                     ),
                                     child: InkWell(
-                                      onTap: () {},
-                                      child: Text('작업명',
-                                          style: TextStyle(
-                                              fontFamily: 'PretendardGOV',
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: 36.sp,
-                                              color: Color(0xff3182ce))),
-                                    ),
+                                        onTap: () => _sortBy('title'),
+                                        child: Row(
+                                          children: [
+                                            Text('작업명',
+                                                style: TextStyle(
+                                                    fontFamily: 'PretendardGOV',
+                                                    fontWeight: FontWeight.w700,
+                                                    fontSize: 36.sp,
+                                                    color: Color(0xff3182ce))),
+                                            if (currentSortField ==
+                                                'title') ...[
+                                              SizedBox(width: 8.w),
+                                              Text(
+                                                isAscending ? '▲' : '▼',
+                                                style: TextStyle(
+                                                  fontSize: 28.sp,
+                                                  color: Color(0xff3182ce),
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                              )
+                                            ],
+                                          ],
+                                        )),
                                   ),
                                   SizedBox(
-                                    width: 293.w,
+                                    width: 273.w,
                                   ),
                                   Container(
-                                    width: 150.w,
+                                    width: 170.w,
                                     height: 60.h,
                                     padding: EdgeInsets.only(left: 15.w),
                                     decoration: BoxDecoration(
@@ -369,14 +477,29 @@ class _ExpandWorkTaskSearchState extends State<ExpandWorkTaskSearch> {
 // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                                     ),
                                     child: InkWell(
-                                      onTap: () {},
-                                      child: Text('진행률',
-                                          style: TextStyle(
-                                              fontFamily: 'PretendardGOV',
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: 36.sp,
-                                              color: Color(0xff3182ce))),
-                                    ),
+                                        onTap: () => _sortBy('progress'),
+                                        child: Row(
+                                          children: [
+                                            Text('진행률',
+                                                style: TextStyle(
+                                                    fontFamily: 'PretendardGOV',
+                                                    fontWeight: FontWeight.w700,
+                                                    fontSize: 36.sp,
+                                                    color: Color(0xff3182ce))),
+                                            if (currentSortField ==
+                                                'progress') ...[
+                                              SizedBox(width: 8.w),
+                                              Text(
+                                                isAscending ? '▲' : '▼',
+                                                style: TextStyle(
+                                                  fontSize: 28.sp,
+                                                  color: Color(0xff3182ce),
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                              )
+                                            ],
+                                          ],
+                                        )),
                                   ),
                                   SizedBox(
                                     width: 293.w,
@@ -396,13 +519,26 @@ class _ExpandWorkTaskSearchState extends State<ExpandWorkTaskSearch> {
 // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                                     ),
                                     child: InkWell(
-                                      onTap: () {},
-                                      child: Text('시작',
-                                          style: TextStyle(
-                                              fontFamily: 'PretendardGOV',
+                                      onTap: () => _sortBy('startDate'), // 유형
+                                      child: Row(children: [
+                                        Text('시작',
+                                            style: TextStyle(
+                                                fontFamily: 'PretendardGOV',
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 36.sp,
+                                                color: Color(0xff3182ce))),
+                                        if (currentSortField == 'startDate') ...[
+                                          SizedBox(width: 8.w),
+                                          Text(
+                                            isAscending ? '▲' : '▼',
+                                            style: TextStyle(
+                                              fontSize: 28.sp,
+                                              color: Color(0xff3182ce),
                                               fontWeight: FontWeight.w700,
-                                              fontSize: 36.sp,
-                                              color: Color(0xff3182ce))),
+                                            ),
+                                          )
+                                        ],
+                                      ]),
                                     ),
                                   ),
                                   SizedBox(
@@ -423,138 +559,164 @@ class _ExpandWorkTaskSearchState extends State<ExpandWorkTaskSearch> {
 // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                                     ),
                                     child: InkWell(
-                                      onTap: () {},
-                                      child: Text('완료',
-                                          style: TextStyle(
-                                              fontFamily: 'PretendardGOV',
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: 36.sp,
-                                              color: Color(0xff3182ce))),
+                                      onTap: () => _sortBy('endDate'), // 유형
+                                      child: Row(
+                                        children: [
+                                          Text('완료',
+                                              style: TextStyle(
+                                                  fontFamily: 'PretendardGOV',
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: 36.sp,
+                                                  color: Color(0xff3182ce))),
+                                          if (currentSortField == 'endDate') ...[
+                                            SizedBox(width: 8.w),
+                                            Text(
+                                              isAscending ? '▲' : '▼',
+                                              style: TextStyle(
+                                                fontSize: 28.sp,
+                                                color: Color(0xff3182ce),
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            )
+                                          ],
+
+                                        ],
+                                      ),
                                     ),
                                   )
                                 ],
                               ),
                             ),
-                      Expanded(
-                        child: Column(
-                          children: [
-                            Container(
-                              height: 2.h,
-                              color: Colors.white,
-                            ),
                             Expanded(
-                              child: filteredWorkTask.isEmpty
-                                  ? Center(
-                                child: Text(
-                                  '검색 결과가 없습니다.',
-                                  style: TextStyle(
-                                    fontFamily: 'PretendardGOV',
-                                    fontSize: 36.sp,
-                                    fontWeight: FontWeight.w500,
+                              child: Column(
+                                children: [
+                                  Container(
+                                    height: 2.h,
                                     color: Colors.white,
                                   ),
-                                ),
-                              )
-                                  : ListView.separated(
-                                itemCount:
-                                getCurrentPageItems().length,
-                                itemBuilder: (context, index) {
-                                  final workTask =
-                                  getCurrentPageItems()[index];
-                                  return Container(
-                                    height: 100.h,
-                                    // padding: EdgeInsets.symmetric(horizontal: 0.w),
-                                    alignment: Alignment.centerLeft,
-                                    child: Row(
-                                      children: [
-                                        SizedBox(
-                                          width: 97.w,
-                                        ),
-                                        SizedBox(
-                                          width: 359.w,
-                                          child: Text(
-                                              workTask.title,
+                                  Expanded(
+                                    child: filteredWorkTask.isEmpty
+                                        ? Center(
+                                            child: Text(
+                                              '검색 결과가 없습니다.',
                                               style: TextStyle(
-                                                  fontFamily:
-                                                  'PretendardGOV',
-                                                  fontWeight:
-                                                  FontWeight
-                                                      .w500,
-                                                  fontSize: 36.sp,
-                                                  color: Colors
-                                                      .white)),
-                                        ),
-                                        SizedBox(
-                                          width: 255.w,
-                                        ),
-                                        SizedBox(
-                                          width: 125.w,
-                                          child: Text('${workTask.progress.toString()}%',
-                                              textAlign: TextAlign.end,
-                                              style: TextStyle(
-                                                  fontFamily:
-                                                  'PretendardGOV',
-                                                  fontWeight:
-                                                  FontWeight
-                                                      .w500,
-                                                  fontSize: 36.sp,
-                                                  color: Colors
-                                                      .white)),
-                                        ),
-                                        SizedBox(
-                                          width: 305.w,
-                                        ),
-                                        SizedBox(
-                                          width: 220.w,
-                                          child: Text(workTask.startDate != null
-                                              ? dateFormat.format(DateTime.parse(workTask.startDate!))
-                                              : '',
-                                              style: TextStyle(
-                                                  fontFamily:
-                                                  'PretendardGOV',
-                                                  fontWeight:
-                                                  FontWeight
-                                                      .w500,
-                                                  fontSize: 36.sp,
-                                                  color: Colors
-                                                      .white)),
-                                        ),
-                                        SizedBox(
-                                          width: 220.w,
-                                        ),
-
-                                        Expanded(
-                                          child: Text(workTask.endDate != null
-                                              ? dateFormat.format(DateTime.parse(workTask.endDate!))
-                                              : '',
-                                              style: TextStyle(
-                                                  fontFamily:
-                                                  'PretendardGOV',
-                                                  fontWeight:
-                                                  FontWeight
-                                                      .w500,
-                                                  fontSize: 36.sp,
-                                                  color: Colors
-                                                      .white)),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                                separatorBuilder:
-                                    (context, index) => Container(
-                                  height: 2.h,
-                                  color: Colors.white,
-                                ),
+                                                fontFamily: 'PretendardGOV',
+                                                fontSize: 36.sp,
+                                                fontWeight: FontWeight.w500,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          )
+                                        : ListView.separated(
+                                            itemCount:
+                                                getCurrentPageItems().length,
+                                            itemBuilder: (context, index) {
+                                              final workTask =
+                                                  getCurrentPageItems()[index];
+                                              return Container(
+                                                height: 100.h,
+                                                // padding: EdgeInsets.symmetric(horizontal: 0.w),
+                                                alignment: Alignment.centerLeft,
+                                                child: Row(
+                                                  children: [
+                                                    SizedBox(
+                                                      width: 97.w,
+                                                    ),
+                                                    SizedBox(
+                                                      width: 359.w,
+                                                      child: Text(
+                                                          workTask.title,
+                                                          style: TextStyle(
+                                                              fontFamily:
+                                                                  'PretendardGOV',
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              fontSize: 36.sp,
+                                                              color: Colors
+                                                                  .white)),
+                                                    ),
+                                                    SizedBox(
+                                                      width: 255.w,
+                                                    ),
+                                                    SizedBox(
+                                                      width: 125.w,
+                                                      child: Text(
+                                                          '${workTask.progress.toString()}%',
+                                                          textAlign:
+                                                              TextAlign.end,
+                                                          style: TextStyle(
+                                                              fontFamily:
+                                                                  'PretendardGOV',
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              fontSize: 36.sp,
+                                                              color: Colors
+                                                                  .white)),
+                                                    ),
+                                                    SizedBox(
+                                                      width: 305.w,
+                                                    ),
+                                                    SizedBox(
+                                                      width: 220.w,
+                                                      child: Text(
+                                                          workTask.startDate !=
+                                                                  null
+                                                              ? dateFormat.format(
+                                                                  DateTime.parse(
+                                                                      workTask
+                                                                          .startDate!))
+                                                              : '',
+                                                          style: TextStyle(
+                                                              fontFamily:
+                                                                  'PretendardGOV',
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              fontSize: 36.sp,
+                                                              color: Colors
+                                                                  .white)),
+                                                    ),
+                                                    SizedBox(
+                                                      width: 220.w,
+                                                    ),
+                                                    Expanded(
+                                                      child: Text(
+                                                          workTask.endDate != null
+                                                              ? dateFormat.format(
+                                                                  DateTime.parse(
+                                                                      workTask
+                                                                          .endDate!))
+                                                              : '',
+                                                          style: TextStyle(
+                                                              fontFamily:
+                                                                  'PretendardGOV',
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              fontSize: 36.sp,
+                                                              color: Colors
+                                                                  .white)),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            },
+                                            separatorBuilder:
+                                                (context, index) => Container(
+                                              height: 2.h,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                  ),
+                                  Container(
+                                    height: 2.h,
+                                    color: Colors.white,
+                                  ),
+                                ],
                               ),
                             ),
-                            Container(
-                              height: 2.h,
-                              color: Colors.white,
-                            ),
-                          ],
-                        ),
-                      ),
                             Container(
                               height: 100.h,
                               child: Row(
@@ -627,22 +789,21 @@ class _ExpandWorkTaskSearchState extends State<ExpandWorkTaskSearch> {
                         )),
                   ),
                   SizedBox(width: 20.w),
-                  Container(
-                    width: 650.w,
-                    height: 742.h,
-                    color: Color(0xff414c67),
+                  SelectableCalendar(
+                    onDateSelected: (start, end) {
+                      setState(() {
+                        _selectedStartDate = start;
+                        _selectedEndDate = end;
+                      });
+                    },
                   ),
-
 
                 ],
               ),
             ),
           ),
         );
-
       },
     );
   }
 }
-
-

@@ -3,8 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iot_dashboard/theme/colors.dart';
 import 'package:iot_dashboard/services/hls_player_iframe.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 class CctvMiniView extends StatefulWidget {
   const CctvMiniView({super.key});
+
   @override
   State<CctvMiniView> createState() => _CctvMiniViewState();
 }
@@ -12,7 +14,7 @@ class CctvMiniView extends StatefulWidget {
 class _CctvMiniViewState extends State<CctvMiniView> {
   @override
   Widget build(BuildContext context) {
-    return                            Container(
+    return Container(
       width: 881.w,
       height: 1709.h,
       decoration: BoxDecoration(
@@ -36,8 +38,7 @@ class _CctvMiniViewState extends State<CctvMiniView> {
               Container(
                 width: 30.w,
                 height: 30.h,
-                child: Image.asset(
-                    'assets/icons/cctv.png'),
+                child: Image.asset('assets/icons/cctv.png'),
               ),
               SizedBox(
                 width: 12.w,
@@ -60,8 +61,7 @@ class _CctvMiniViewState extends State<CctvMiniView> {
         Container(
           width: 859.w,
           height: 503.h,
-          padding: EdgeInsets.fromLTRB(
-              11.w, 10.h, 11.w, 10.h),
+          padding: EdgeInsets.fromLTRB(11.w, 10.h, 11.w, 10.h),
           decoration: BoxDecoration(
             color: Colors.black,
             border: Border.all(color: Colors.grey),
@@ -74,8 +74,7 @@ class _CctvMiniViewState extends State<CctvMiniView> {
         ),
         Container(
           height: 320.h,
-          padding:
-          EdgeInsets.only(left: 11.w, right: 11.w),
+          padding: EdgeInsets.only(left: 11.w, right: 11.w),
           child: Column(
             children: [
               Container(
@@ -83,8 +82,14 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text('●',style: TextStyle(fontSize: 32.sp,color: Color(0xff258420)),),
-                    SizedBox(width: 25.w,),
+                    Text(
+                      '●',
+                      style:
+                          TextStyle(fontSize: 32.sp, color: Color(0xff258420)),
+                    ),
+                    SizedBox(
+                      width: 25.w,
+                    ),
                     Text(
                       '추진구',
                       style: TextStyle(
@@ -94,7 +99,6 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                         color: Colors.white,
                       ),
                     ),
-
                   ],
                 ),
               ),
@@ -113,7 +117,9 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    SizedBox(width: 81.65.w,),
+                    SizedBox(
+                      width: 81.65.w,
+                    ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -125,7 +131,6 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
                           ),
-
                         ),
                         Text(
                           '2025-05-23',
@@ -134,9 +139,10 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                             fontSize: 12.sp,
                             fontWeight: FontWeight.w400,
                           ),
-
                         ),
-                        SizedBox(height: 10.h,),
+                        SizedBox(
+                          height: 10.h,
+                        ),
                         Text(
                           '1.1921',
                           style: GoogleFonts.inter(
@@ -144,7 +150,6 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                             fontSize: 30.sp,
                             fontWeight: FontWeight.w400,
                           ),
-
                         ),
                         Text(
                           '+0.0015 (+0.13%)',
@@ -153,9 +158,10 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w400,
                           ),
-
                         ),
-                        SizedBox(height: 15.h,),
+                        SizedBox(
+                          height: 15.h,
+                        ),
                         Text(
                           '0.00 USD',
                           style: GoogleFonts.inter(
@@ -163,10 +169,7 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                             fontSize: 12.sp,
                             fontWeight: FontWeight.w400,
                           ),
-
                         ),
-
-
                       ],
                     )
                   ],
@@ -178,8 +181,7 @@ class _CctvMiniViewState extends State<CctvMiniView> {
         Container(
           width: 859.w,
           height: 503.h,
-          padding: EdgeInsets.fromLTRB(
-              11.w, 10.h, 11.w, 10.h),
+          padding: EdgeInsets.fromLTRB(11.w, 10.h, 11.w, 10.h),
           decoration: BoxDecoration(
             color: Colors.black,
             border: Border.all(color: Colors.grey),
@@ -192,8 +194,7 @@ class _CctvMiniViewState extends State<CctvMiniView> {
         ),
         Container(
           height: 320.h,
-          padding:
-          EdgeInsets.only(left: 11.w, right: 11.w),
+          padding: EdgeInsets.only(left: 11.w, right: 11.w),
           child: Column(
             children: [
               Container(
@@ -201,8 +202,14 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text('●',style: TextStyle(fontSize: 32.sp,color: Color(0xff258420)),),
-                    SizedBox(width: 25.w,),
+                    Text(
+                      '●',
+                      style:
+                          TextStyle(fontSize: 32.sp, color: Color(0xff258420)),
+                    ),
+                    SizedBox(
+                      width: 25.w,
+                    ),
                     Text(
                       '도달구',
                       style: TextStyle(
@@ -212,84 +219,82 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                         color: Colors.white,
                       ),
                     ),
-
                   ],
                 ),
               ),
-          Container(
-            height: 248.h,
-            decoration: BoxDecoration(
-              //color: Color(0xff111c44),
-              color: Color(0xffffc4c9),
-              border: Border.all(
-                color: Colors.white,
-                width: 1.w,
-              ),
-              borderRadius: BorderRadius.circular(5.r),
-              // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                SizedBox(width: 81.65.w,),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
+              Container(
+                height: 248.h,
+                decoration: BoxDecoration(
+                  //color: Color(0xff111c44),
+                  color: Color(0xffffc4c9),
+                  border: Border.all(
+                    color: Colors.white,
+                    width: 1.w,
+                  ),
+                  borderRadius: BorderRadius.circular(5.r),
+                  // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Text(
-                      '도달구 / CCTV',
-                      style: GoogleFonts.inter(
-                        color: Color(0xff262d33),
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-
+                    SizedBox(
+                      width: 81.65.w,
                     ),
-                    Text(
-                      '2025-05-23',
-                      style: GoogleFonts.inter(
-                        color: Color(0xff939699),
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w400,
-                      ),
-
-                    ),
-                    SizedBox(height: 10.h,),
-                    Text(
-                      '1.1763',
-                      style: GoogleFonts.inter(
-                        color: Color(0xff262d33),
-                        fontSize: 30.sp,
-                        fontWeight: FontWeight.w400,
-                      ),
-
-                    ),
-                    Text(
-                      '+0.0015 (+0.13%)',
-                      style: GoogleFonts.inter(
-                        color: Color(0xff4b5157),
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w400,
-                      ),
-
-                    ),
-                    SizedBox(height: 15.h,),
-                    Text(
-                      '기준치',
-                      style: GoogleFonts.inter(
-                        color: Color(0xff4b5157),
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w400,
-                      ),
-
-                    ),
-
-
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '도달구 / CCTV',
+                          style: GoogleFonts.inter(
+                            color: Color(0xff262d33),
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          '2025-05-23',
+                          style: GoogleFonts.inter(
+                            color: Color(0xff939699),
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        SizedBox(
+                          height: 10.h,
+                        ),
+                        Text(
+                          '1.1763',
+                          style: GoogleFonts.inter(
+                            color: Color(0xff262d33),
+                            fontSize: 30.sp,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        Text(
+                          '+0.0015 (+0.13%)',
+                          style: GoogleFonts.inter(
+                            color: Color(0xff4b5157),
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        SizedBox(
+                          height: 15.h,
+                        ),
+                        Text(
+                          '기준치',
+                          style: GoogleFonts.inter(
+                            color: Color(0xff4b5157),
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    )
                   ],
-                )
-              ],
-            ),
-          ),
+                ),
+              ),
             ],
           ),
         ),
