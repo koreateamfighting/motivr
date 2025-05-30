@@ -32,6 +32,7 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+iot_dashbord/web/unity_build/Build/
 
 # Symbolication related
 app.*.symbols
