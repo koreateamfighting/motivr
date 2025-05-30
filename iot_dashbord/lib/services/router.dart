@@ -28,6 +28,7 @@ final router = GoRouter(
     // 🔐 로그인한 사용자가 다시 /login 접근 못 하게 막기
     if (isLoggedIn && isLogin) {
       return '/dashboard0';
+     // return '/detail';
     }
 
     return null;
