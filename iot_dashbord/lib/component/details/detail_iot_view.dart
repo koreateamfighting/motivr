@@ -1,9 +1,42 @@
 // detail_iot_view.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'dart:convert';
+import 'package:syncfusion_flutter_datagrid/datagrid.dart';
+import 'package:flutter/services.dart';
+import 'package:iot_dashboard/model/iot_model.dart';
+import 'package:iot_dashboard/component/details/propulsion_port_view.dart';
+import 'package:iot_dashboard/component/details/reach_port_view.dart';
+import 'package:iot_dashboard/component/details/iot_data_source.dart';
 
-class DetailIotView extends StatelessWidget {
+class DetailIotView extends StatefulWidget {
   const DetailIotView({super.key});
+
+  @override
+  State<DetailIotView> createState() => _DetailIotViewState();
+}
+
+class _DetailIotViewState extends State<DetailIotView> {
+  int selectedTab = 0; //0 : 추진구 , 1 : 도달구
+  final ScrollController _verticalController = ScrollController();
+
+  Future<List<IotItem>> loadIotData() async {
+    final String response =
+        await rootBundle.loadString('assets/data/temp_iot.json');
+    final List<dynamic> data = jsonDecode(response);
+    return data.map((e) => IotItem.fromJson(e)).toList();
+  }
+
+  void initstate(){
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _verticalController.dispose();
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -207,7 +240,10 @@ class DetailIotView extends StatelessWidget {
                           child: Container(
                             width: 50.w,
                             height: 50.h,
-                            child: Image.asset('assets/icons/color_close.png',fit: BoxFit.fill,),
+                            child: Image.asset(
+                              'assets/icons/color_close.png',
+                              fit: BoxFit.fill,
+                            ),
                           ),
                         ),
                       ],
@@ -215,22 +251,238 @@ class DetailIotView extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: 16.h,),
+              SizedBox(
+                height: 16.h,
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Container(width:1273.w,height: 1639.h,color: Colors.red,),
-                  SizedBox(
-                    width: 56.w,
+                  Container(
+                    width: 1273.w,
+                    height: 1639.h,
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() => selectedTab = 0);
+                                },
+                                child: buildTab(
+                                    label: '추진구', isSelected: selectedTab == 0),
+                              ),
+                            ),
+                            SizedBox(
+                              width: 20.w,
+                            ),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() => selectedTab = 1);
+                                },
+                                child: buildTab(
+                                    label: '도달구', isSelected: selectedTab == 1),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Expanded(
+                          child: selectedTab == 0
+                              ? const PropulsionPortView()
+                              : const ReachPortView(),
+                        ),
+                      ],
+                    ),
                   ),
-                  Container(width:2325.w,height: 1639.h,color: Colors.black,),
+                  Container(
+                    width: 56.w,
+                    color: Color(0xff1b2548),
+                  ),
+                  // 이 영역만 바꾼 코드 (DataTable → SfDataGrid 사용)
+                  Container(
+                    width: 2325.w,
+                    height: 1639.h,
+                    color: Colors.black,
+                    child: FutureBuilder<List<IotItem>>(
+                      future: loadIotData(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return Center(child: CircularProgressIndicator());
+                        }
+
+                        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return Center(
+                            child: Text(
+                              '데이터 없음',
+                              style: TextStyle(color: Colors.white, fontSize: 24.sp),
+                            ),
+                          );
+                        }
+
+                        final items = snapshot.data!;
+                        final dataSource = IotDataSource(items);
+
+                        return ScrollbarTheme(
+                          data: ScrollbarThemeData(
+                            thumbColor: MaterialStateProperty.all(Color(0xff004aff)), // 파란색 스크롤바
+                            trackColor: MaterialStateProperty.all(Colors.white),
+                            radius: Radius.circular(10.r),
+                            thickness: MaterialStateProperty.all(10.w),
+                          ),
+                          child: Scrollbar(
+                            thumbVisibility: true,
+                            controller: _verticalController,
+                            child: SfDataGrid(
+                              source: dataSource,
+                              allowSorting: false,
+                              verticalScrollController: _verticalController, // ⬅️ 연결 중요
+                              columnWidthMode: ColumnWidthMode.none,
+                              gridLinesVisibility: GridLinesVisibility.both,
+                              headerGridLinesVisibility: GridLinesVisibility.both,
+                              columns: [
+                                GridColumn(columnName: 'id', width: 120.w, label: buildHeader('ID')),
+                                GridColumn(columnName: 'type', width: 120.w, label: buildHeader('유형')),
+                                GridColumn(columnName: 'location', width: 219.w, label: buildHeader('설치 위치')),
+                                GridColumn(columnName: 'status', width: 160.w, label: buildHeader('상태')),
+                                GridColumn(columnName: 'battery', width: 160.w, label: buildHeader('배터리')),
+                                GridColumn(columnName: 'lastUpdated', width: 320.w, label: buildHeader('마지막 수신')),
+                                GridColumn(columnName: 'x', width: 180.w, label: buildHeader('X(mm)')),
+                                GridColumn(columnName: 'y', width: 180.w, label: buildHeader('Y(mm)')),
+                                GridColumn(columnName: 'z', width: 180.w, label: buildHeader('Z(mm)')),
+                                GridColumn(columnName: 'incline', width: 180.w, label: buildHeader('경사(°C)')),
+                                GridColumn(columnName: 'batteryInfo', width: 220.w, label: buildHeader('배터리 정보')),
+                                GridColumn(columnName: 'download', width: 261.w, label: buildHeader('데이터 다운로드')),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  )
+
+
+
+                  ,
                 ],
               )
             ],
           ),
         )
-
       ],
     );
   }
+
+  Widget buildTab({required String label, required bool isSelected}) {
+    return Container(
+        height: 80.h,
+        decoration: BoxDecoration(
+          color: isSelected ? Color(0xff3182ce) : Color(0xff1b254b),
+          border: isSelected
+              ? null
+              : Border.all(
+                  color: Color(0xff3182ce),
+                  width: 4.w,
+                ),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(5.r),
+            topRight: Radius.circular(5.r),
+          ),
+        ),
+        alignment: Alignment.center,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 8.w,
+            ),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'PretendardGOV',
+                fontSize: 36.sp,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ));
+  }
+
+  DataColumn buildDataColumn(String label) {
+    return DataColumn(
+      label: Text(
+        label,
+        style: TextStyle(
+          color: Colors.white,
+          fontFamily: 'PretendardGOV',
+          fontSize: 20.sp,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+  DataCell buildDataCell(String text) {
+    return DataCell(
+      Container(
+        margin: EdgeInsets.symmetric(vertical: 4.h), // 셀 간 간격
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h), // 셀 내부 여백 확장
+        decoration: BoxDecoration(
+          color: Color(0xff1a1f2c), // 셀 배경색
+          border: Border.all(color: Colors.white30, width: 1), // 더 선명한 테두리
+          borderRadius: BorderRadius.circular(4.r), // 약간의 라운딩
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 24.sp,
+            fontFamily: 'PretendardGOV',
+          ),
+        ),
+      ),
+    );
+  }
+
+
+
+  DataCell buildStatusCell(String status) {
+    Color color;
+    switch (status) {
+      case '정상':
+        color = Colors.green;
+        break;
+      case '주의':
+        color = Colors.orange;
+        break;
+      case '경고':
+        color = Colors.red;
+        break;
+      case '점검':
+        color = Colors.blue;
+        break;
+      default:
+        color = Colors.grey;
+    }
+
+    return DataCell(
+      Row(
+        children: [
+          Icon(Icons.circle, color: color, size: 16.sp),
+          SizedBox(width: 6.w),
+          Text(
+            status,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontFamily: 'PretendardGOV',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+
 }

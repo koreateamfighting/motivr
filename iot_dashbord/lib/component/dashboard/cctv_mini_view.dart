@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iot_dashboard/theme/colors.dart';
 import 'package:iot_dashboard/services/hls_player_iframe.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:iot_dashboard/services/webrtc_player.dart';
 
 class CctvMiniView extends StatefulWidget {
   const CctvMiniView({super.key});
@@ -67,6 +68,7 @@ class _CctvMiniViewState extends State<CctvMiniView> {
             border: Border.all(color: Colors.grey),
           ),
           child: const HlsPlayerIframe(cam: 'cam1'),
+
         ),
         Container(
           height: 1.h,
