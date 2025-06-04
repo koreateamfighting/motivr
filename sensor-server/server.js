@@ -39,13 +39,7 @@ app.use('/api', require('./routes/service'));
 app.use('/api', require('./routes/alarm'));  // 센서/기타
 app.use('/api', require('./routes/notice'));  // 센서/기타
 app.use('/api', require('./routes/worktask'));
-const { router: cctvRouter, startHlsProcess } = require('./routes/cctv');
-app.use('/api', cctvRouter);
 
-app.use('/hls', express.static('public/hls'));
-console.log('✅ CCTV 라우터 import 성공');
-startHlsProcess('cam1'); // ✅ 자동 실행
-startHlsProcess('cam2'); // ✅ 자동 실행
 
 // HTTPS 서버 생성
 const server = https.createServer(sslOptions, app);
