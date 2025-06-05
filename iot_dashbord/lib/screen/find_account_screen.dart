@@ -304,7 +304,7 @@ class _FindAccountScreenState extends State<FindAccountScreen> {
                                                   context: context,
                                                   builder: (_) => DialogForm(
                                                       mainText:
-                                                          "비밀번호 찾기는 아직 준비중입니다.\n 관리자에게 문의 바랍니다.",
+                                                          "비밀번호 찾기는 아직 준비중입니다.\n 관리자에게 문의 바랍니다.",fontSize: 32.sp,
                                                       btnText: "확인"),
                                                 );
                                               }

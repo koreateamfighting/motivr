@@ -15,76 +15,62 @@ class AdminScreen extends StatelessWidget {
         splitScreenMode: true,
         builder: (context, child) {
           return BaseLayout(
+              child: Container(
+            padding: EdgeInsets.only(left: 64.w, right: 68.w),
+            color: Color(0xff1b254b),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  height: 98.h,
-                  color: AppColors.main2,
-                  padding: EdgeInsets.symmetric(horizontal: 275.w),
+                  height: 100.h,
+                  color: Color(0xff1b254b),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      Image.asset(
-                        'assets/icons/color_setting.png',
-                        width: 80.w,
-                        height: 80.h,
-                      ),
-                      SizedBox(width: 20.w),
-                      Text(
-                        '관리자',
-                        style: TextStyle(
-                          fontFamily: 'PretendardGOV',
-                          fontWeight: FontWeight.w800,
-                          fontSize: 48.sp,
-                          color: Color(0xff3CBFAD),
+                      Container(
+                        width: 60.w,
+                        height: 60.h,
+                        child: Image.asset(
+                          'assets/icons/uncolor_setting2.png',
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                // ✅ 헤더 하단 선
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 50.w),
-                      width: 3712.w,
-                      height: 2.h,
-                      color: Color(0xff3CBFAD),
-                    ),
-                  ],
-                ),
-
-                SizedBox(
-                  height: 27.h,
-                ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Center(
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 2880.w,
-                            height: 70.h,
-                            decoration: BoxDecoration(
-                              color: Color(0xff414c67),
-                              borderRadius: BorderRadius.circular(10.r),
+                      SizedBox(width: 10.w),
+                      Container(
+                          width: 200.w,
+                          child: Text(
+                            '관리자',
+                            style: TextStyle(
+                              fontFamily: 'PretendardGOV',
+                              fontWeight: FontWeight.w700,
+                              fontSize: 48.sp,
+                              color: Colors.white,
                             ),
-                            child: Row(
-                              children: [
-                                SizedBox(
-                                  width: 11.w,
-                                ),
-                                Container(
-                                  width: 50.w,
-                                  height: 50.h,
-                                  child:
-                                      Image.asset('assets/icons/profile.png'),
-                                ),
-                                SizedBox(
-                                  width: 45.w,
-                                ),
-                                Text(
+                          )),
+                      SizedBox(width: 125.w),
+                      Container(
+                        width: 2880.w,
+                        height: 72.h,
+                        decoration: BoxDecoration(
+                          color: Color(0xff414767),
+                          borderRadius: BorderRadius.circular(5.r),
+                        ),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 11.w,
+                            ),
+                            Container(
+                              width: 50.w,
+                              height: 50.h,
+                              child: Image.asset('assets/icons/profile.png'),
+                            ),
+                            SizedBox(
+                              width: 45.w,
+                            ),
+                            Container(
+                                width: 261.w,
+                                height: 50.h,
+                                child: Text(
                                   '관리자 설정 입력',
                                   style: TextStyle(
                                     fontFamily: 'PretendardGOV',
@@ -92,50 +78,216 @@ class AdminScreen extends StatelessWidget {
                                     fontSize: 36.sp,
                                     color: Colors.white,
                                   ),
+                                )),
+                            SizedBox(
+                              width: 2155.w,
+                            ),
+                            InkWell(
+                                onTap: () {},
+                                child: Container(
+                                  width: 347.w,
+                                  height: 60.h,
+                                  decoration: BoxDecoration(
+                                    color: Color(0xff3182ce),
+                                    borderRadius: BorderRadius.circular(5.r),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    '저장',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontFamily: 'PretendardGOV',
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 36.sp,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ))
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                // ✅ 헤더 하단 선
+                Container(
+                  width: double.infinity,
+                  height: 2.h,
+                  color: Color(0xff3182ce),
+                ),
+
+                SizedBox(height: 40.h),
+
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Center(
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 2880.w,
+
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 30.w,
+                                      height: 30.h,
+                                      child: Image.asset(
+                                          'assets/icons/uncolor_setting.png'),
+                                    ),
+                                    SizedBox(
+                                      width: 5.w,
+                                    ),
+                                    sectionTitle('계정 관리')
+                                  ],
                                 ),
+                                Container(
+                                  width: 2880.w,
+                                  height: 127.h,
+                                  decoration: BoxDecoration(
+                                    color: Color(0xff414c67),
+                                    borderRadius: BorderRadius.circular(5.r),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      SizedBox(
+                                        width: 99.w,
+                                      ),
+                                      labeledTextField(
+                                          title: '사용자 이름',
+                                          hint: '예) : 관리자',
+                                          width: 1309,
+                                          height: 60),
+                                      SizedBox(
+                                        width: 61.w,
+                                      ),
+                                      labeledTextField(
+                                          title: '권한',
+                                          hint: '관리자',
+                                          width: 1309,
+                                          height: 60),
+                                    ],
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 35.w,
+                                    ),
+                                    sectionTitle('전체 타이틀 변경'),
+                                  ],
+                                ),
+                                Container(
+                                  width: 2880.w,
+                                  height: 130.h,
+                                  decoration: BoxDecoration(
+                                    color: Color(0xff414c67),
+                                    borderRadius: BorderRadius.circular(5.r),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      SizedBox(
+                                        width: 99.w,
+                                      ),
+                                      labeledTextField(
+                                          title: '타이틀 이름',
+                                          hint:
+                                              '예: Digital Twin EMS > 스마트 안전 시스템',
+                                          width: 1309,
+                                          height: 60),
+                                      SizedBox(
+                                        width: 61.w,
+                                      ),
+                                      labeledTextField(
+                                          title: '로고 변경',
+                                          hint: '예: 이미지 파일을 업로드 하세요',
+                                          width: 1309,
+                                          height: 60),
+                                    ],
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 35.w,
+                                    ),
+                                    sectionTitle('기초 데이터 입력'),
+                                  ],
+                                ),
+                                Container(
+                                  width: 2880.w,
+                                  height: 502.03.h,
+                                  decoration: BoxDecoration(
+                                    color: Color(0xff414c67),
+                                    borderRadius: BorderRadius.circular(5.r),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [],
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 30.w,
+                                      height: 30.h,
+                                      child:
+                                          Image.asset('assets/icons/edit.png'),
+                                    ),
+                                    SizedBox(
+                                      width: 5.w,
+                                    ),
+                                    sectionTitle('측정 데이터 수동 입력')
+                                  ],
+                                ),
+                                Container(
+                                  width: 2880.w,
+                                  height: 710.h,
+                                  decoration: BoxDecoration(
+                                    color: Color(0xff414c67),
+                                    borderRadius: BorderRadius.circular(5.r),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [],
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 30.w,
+                                      height: 30.h,
+                                      child:
+                                          Image.asset('assets/icons/flag.png'),
+                                    ),
+                                    SizedBox(
+                                      width: 5.w,
+                                    ),
+                                    sectionTitle('현장명 정보 입력')
+                                  ],
+                                ),
+                                Container(
+                                  width: 2880.w,
+                                  height: 130.h,
+                                  decoration: BoxDecoration(
+                                    color: Color(0xff414c67),
+                                    borderRadius: BorderRadius.circular(5.r),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [],
+                                  ),
+                                ),
+
+                                //////////
                               ],
                             ),
                           ),
-                          Container(
-                            width: 2880.w,
-                            height: 1757.h,
-                            color: Colors.brown,
-                          ),
-                          InkWell(
-                              onTap: () {},
-                              child: Container(
-                                width: 2880.w,
-                                height: 60.h,
-                                padding: EdgeInsets.only(bottom:4.h),
-                                decoration: BoxDecoration(
-                                  color: Color(0xff5664d2),
-                                  borderRadius: BorderRadius.circular(10.r),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                      width: 40.w,
-                                      height: 40.h,
-                                      child: Icon(
-                                        Icons.file_upload_outlined,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    SizedBox(width: 7.w,),
-                                    Text(
-                                      '모든 정보 저장',
-                                      style: TextStyle(
-                                        fontFamily: 'PretendardGOV',
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 36.sp,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    
-                                  ],
-                                ),
-                              )),
                         ],
                       ),
                     ),
@@ -143,7 +295,82 @@ class AdminScreen extends StatelessWidget {
                 )
               ],
             ),
-          );
+          ));
         });
+  }
+
+  Widget sectionTitle(String title) {
+    ScreenUtil.ensureScreenSize();
+    return Text(
+      title,
+      style: TextStyle(
+        fontFamily: 'PretendardGOV',
+        fontSize: 32.sp,
+        fontWeight: FontWeight.w700,
+        color: Colors.white,
+      ),
+    );
+  }
+
+  Widget blockTitle(String title) {
+    ScreenUtil.ensureScreenSize();
+    return Text(
+      title,
+      style: TextStyle(
+        fontFamily: 'PretendardGOV',
+        fontSize: 32.sp,
+        fontWeight: FontWeight.w400,
+        color: Colors.white,
+      ),
+    );
+  }
+
+  Widget labeledTextField(
+      {required String title,
+      String? hint,
+      required double width,
+      required double height}) {
+    ScreenUtil.ensureScreenSize();
+    return Container(
+      width: width.w,
+      margin: EdgeInsets.symmetric(vertical: 8.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontFamily: 'PretendardGOV',
+              fontSize: 24.sp,
+              fontWeight: FontWeight.w400,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Container(
+              width: width.w,
+              height: height.h,
+              child: TextField(
+                style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: hint ?? '',
+                  hintStyle: TextStyle(
+                      color: Color(0xff9eaea2),
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.w300,
+                      fontFamily: 'PretendardGOV'),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 12.h),
+                ),
+              )),
+        ],
+      ),
+    );
   }
 }

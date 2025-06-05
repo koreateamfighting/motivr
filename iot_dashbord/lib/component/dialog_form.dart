@@ -7,8 +7,16 @@ import 'package:iot_dashboard/utils/keyboard_handler.dart';
 class DialogForm extends StatefulWidget {
   final String mainText;
   final String btnText;
+  final double? fontSize;
 
-  DialogForm({Key? key, required this.mainText,required this.btnText}) : super(key: key);
+
+  const DialogForm({
+    Key? key,
+    required this.mainText,
+    required this.btnText,
+    this.fontSize, // 👉 선택적으로 받을 수 있게 함
+  }) : super(key: key);
+
 
   @override
   State<DialogForm> createState() => _DialogFormState();
@@ -108,7 +116,7 @@ class _DialogFormState extends State<DialogForm> {
                             style: TextStyle(
                                 fontFamily: 'PretendardGOV',
                                 fontWeight: FontWeight.w500,
-                                fontSize: 48.sp,
+                                fontSize:widget.fontSize ?? 48.sp,
                                 color: Colors.white),
                           ),
                           SizedBox(
