@@ -4,6 +4,7 @@ import 'package:iot_dashboard/theme/colors.dart';
 import 'package:iot_dashboard/services/hls_player_iframe.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iot_dashboard/services/webrtc_player.dart';
+import 'dart:async'; // ← 추가
 
 class CctvMiniView extends StatefulWidget {
   const CctvMiniView({super.key});
@@ -13,6 +14,23 @@ class CctvMiniView extends StatefulWidget {
 }
 
 class _CctvMiniViewState extends State<CctvMiniView> {
+
+  Timer? _refreshTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshTimer = Timer.periodic(Duration(minutes: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(

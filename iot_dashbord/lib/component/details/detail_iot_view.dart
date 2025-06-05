@@ -321,7 +321,7 @@ class _DetailIotViewState extends State<DetailIotView> {
                         }
 
                         final items = snapshot.data!;
-                        final dataSource = IotDataSource(items);
+                        final dataSource = IotDataSource(context,items);
 
                         return ScrollbarTheme(
                           data: ScrollbarThemeData(
