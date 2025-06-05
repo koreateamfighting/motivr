@@ -208,13 +208,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                                     ),
                                                     borderRadius:
                                                     BorderRadius.circular(8.r),
+
                                                   ),
+
                                                   child: Center(
                                                     child: TextField(
+
                                                       controller: _idController,
                                                       decoration: InputDecoration(
+
                                                         border: InputBorder.none,
                                                         hintText: "아이디 입력",
+
                                                         hintStyle: TextStyle(
                                                           color: Color(0xffA0AEC0),
                                                           fontSize: 32.sp,
@@ -223,8 +228,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                                         ),
                                                         isDense: true,
                                                         // 👈 여백 자동 줄이기
-                                                        contentPadding: EdgeInsets
-                                                            .zero, // 👈 여백 제거
+                                                        contentPadding: EdgeInsets.symmetric(vertical: 16.h),
+                                                        // 👈 여백 제거
                                                       ),
                                                       style: TextStyle(
                                                         fontSize: 36.sp,
@@ -312,7 +317,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                       obscureText: true,
                                                       decoration: InputDecoration(
                                                         border: InputBorder.none,
-
+                                                        contentPadding: EdgeInsets.symmetric(vertical: 16.h),
                                                         hintText: "비밀번호 입력",
                                                         hintStyle: TextStyle(
                                                           color: Color(0xffA0AEC0),
@@ -322,8 +327,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                         ),
                                                         isDense: true,
                                                         // 👈 여백 자동 줄이기
-                                                        contentPadding: EdgeInsets
-                                                            .zero, // 👈 여백 제거
+
                                                       ),
                                                       style: TextStyle(
                                                         fontSize: 36.sp,

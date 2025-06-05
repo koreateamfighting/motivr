@@ -234,8 +234,7 @@ class _FindAccountScreenState extends State<FindAccountScreen> {
                                               ),
                                               isDense: true,
                                               // 👈 여백 자동 줄이기
-                                              contentPadding:
-                                                  EdgeInsets.zero, // 👈 여백 제거
+                                              contentPadding: EdgeInsets.symmetric(vertical: 16.h),
                                             ),
                                             style: TextStyle(
                                               fontSize: 36.sp,
