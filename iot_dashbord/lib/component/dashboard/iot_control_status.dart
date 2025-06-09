@@ -193,7 +193,8 @@ Widget _statusRow(String label, int count, Color color, String iconName) {
         Container(
           width: 99.82.w,
           height: 49.18.h,
-          padding: EdgeInsets.only(top: 6.h),
+          // padding: EdgeInsets.symmetric(vertical: 4.h),
+          alignment: Alignment.center,
           decoration: BoxDecoration(
             color: Color(0xff414c67),
             borderRadius: BorderRadius.circular(8.r), // 둥근 모서리

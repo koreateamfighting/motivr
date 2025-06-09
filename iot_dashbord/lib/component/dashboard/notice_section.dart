@@ -69,13 +69,17 @@ class _NoticeSectionState extends State<NoticeSection> {
                   ),
                 ),
                 Spacer(),
-                Container(width: 60.w, height: 60.h, child: Icon(
-                  widget.isExpanded
-                      ? Icons.keyboard_arrow_down
-                      : Icons.keyboard_arrow_right,
-                    color: Color(0xff3d91ff),
-                  size: 70.sp,
-                ),)
+            Container(
+              width: 60.w,
+              height: 60.h,
+
+              child: Image.asset(
+                widget.isExpanded
+                    ? 'assets/icons/color_arrow_down.png'
+                    : 'assets/icons/color_arrow_right.png',
+
+              ),
+            ),
 
               ],
             ),

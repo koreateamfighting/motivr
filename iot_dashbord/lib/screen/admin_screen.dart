@@ -31,10 +31,10 @@ class AdminScreen extends StatelessWidget {
                         width: 60.w,
                         height: 60.h,
                         child: Image.asset(
-                          'assets/icons/uncolor_setting2.png',
+                          'assets/icons/color_setting2.png',
                         ),
                       ),
-                      SizedBox(width: 10.w),
+                      SizedBox(width: 18.w),
                       Container(
                           width: 200.w,
                           child: Text(
@@ -175,10 +175,16 @@ class AdminScreen extends StatelessWidget {
                                 ),
                                 Row(
                                   children: [
-                                    SizedBox(
-                                      width: 35.w,
+                                    Container(
+                                      width: 30.w,
+                                      height: 30.h,
+                                      child: Image.asset(
+                                          'assets/icons/edit2.png'),
                                     ),
-                                    sectionTitle('전체 타이틀 변경'),
+                                    SizedBox(
+                                      width: 5.w,
+                                    ),
+                                    sectionTitle('전체 타이틀 변경')
                                   ],
                                 ),
                                 Container(
@@ -213,10 +219,16 @@ class AdminScreen extends StatelessWidget {
                                 ),
                                 Row(
                                   children: [
-                                    SizedBox(
-                                      width: 35.w,
+                                    Container(
+                                      width: 30.w,
+                                      height: 30.h,
+                                      child: Image.asset(
+                                          'assets/icons/inputdata.png'),
                                     ),
-                                    sectionTitle('기초 데이터 입력'),
+                                    SizedBox(
+                                      width: 5.w,
+                                    ),
+                                    sectionTitle('기초 데이터 입력')
                                   ],
                                 ),
                                 Container(
@@ -226,9 +238,154 @@ class AdminScreen extends StatelessWidget {
                                     color: Color(0xff414c67),
                                     borderRadius: BorderRadius.circular(5.r),
                                   ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [],
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          SizedBox(width:60.w),
+                                          Container(
+                                            width: 30.w,
+                                            height: 30.h,
+                                            child:
+                                            Image.asset('assets/icons/edit3.png'),
+                                          ),
+                                          SizedBox(
+                                            width: 5.w,
+                                          ),
+                                          blockTitle('작업명')
+                                        ],
+                                      ),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        children: [
+                                          SizedBox(
+                                            width: 99.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '작업명',
+                                              hint:
+                                              '예: 콘크리트 타설',
+                                              width: 1000,
+                                              height: 55.17),
+                                          SizedBox(
+                                            width: 61.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '시작일',
+                                              hint: '예: 20250517',
+                                              width: 500,
+                                              height: 55.17),
+                                          SizedBox(
+                                            width: 61.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '완료일',
+                                              hint: '예: 20250531',
+                                              width: 500,
+                                              height: 55.17),
+                                          SizedBox(
+                                            width: 61.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '공정률',
+                                              hint: '예: 70',
+                                              width: 495,
+                                              height: 55),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          SizedBox(width:60.w),
+                                          Container(
+                                            width: 30.w,
+                                            height: 30.h,
+                                            child:
+                                            Image.asset('assets/icons/alarm.png'),
+                                          ),
+                                          SizedBox(
+                                            width: 5.w,
+                                          ),
+                                          blockTitle('최근알람 / 이벤트')
+                                        ],
+                                      ),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        children: [
+                                          SizedBox(
+                                            width: 99.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '날짜 / 시간',
+                                              hint:
+                                              '예: ',
+                                              width: 1000,
+                                              height: 60),
+                                          SizedBox(
+                                            width: 61.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '유형',
+                                              hint: '예: 경고/주의/경보',
+                                              width: 269,
+                                              height: 60),
+                                          SizedBox(
+                                            width: 61.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '메세지',
+                                              hint: '예: 20250531',
+                                              width: 1287,
+                                              height: 60),
+
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          SizedBox(width:60.w),
+                                          Container(
+                                            width: 30.w,
+                                            height: 30.h,
+                                            child:
+                                            Image.asset('assets/icons/clipboard2.png'),
+                                          ),
+                                          SizedBox(
+                                            width: 5.w,
+                                          ),
+                                          blockTitle('공지 및 주요 일정')
+                                        ],
+                                      ),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        children: [
+                                          SizedBox(
+                                            width: 99.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '날짜 / 시간',
+                                              hint:
+                                              '예: ',
+                                              width: 541,
+                                              height: 60),
+                                          SizedBox(
+                                            width: 61.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '유형',
+                                              hint: '예: 경고/주의/경보',
+                                              width: 269,
+                                              height: 60),
+                                          SizedBox(
+                                            width: 61.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '내용',
+                                              hint: '예: 20250531',
+                                              width: 1745,
+                                              height: 60),
+
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
                                 Row(
@@ -252,9 +409,263 @@ class AdminScreen extends StatelessWidget {
                                     color: Color(0xff414c67),
                                     borderRadius: BorderRadius.circular(5.r),
                                   ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [],
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          SizedBox(width:60.w),
+                                          Container(
+                                            width: 30.w,
+                                            height: 30.h,
+                                            child:
+                                            Image.asset('assets/icons/iot.png'),
+                                          ),
+                                          SizedBox(
+                                            width: 5.w,
+                                          ),
+                                          blockTitle('Iot 정보 입력')
+                                        ],
+                                      ),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        children: [
+                                          SizedBox(
+                                            width: 99.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '제품 식별자(ID)',
+                                              hint:
+                                              '예: 콘크리트 타설',
+                                              width: 207,
+                                              height: 60),
+                                          SizedBox(
+                                            width: 61.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '설치 위치 (추진구/도달구)',
+                                              hint: '예: 추진구_1',
+                                              width: 326,
+                                              height: 60),
+                                          SizedBox(
+                                            width: 61.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '상태',
+                                              hint: '예: 정상',
+                                              width: 210,
+                                              height: 60),
+                                          SizedBox(
+                                            width: 61.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '상태',
+                                              hint: '예: 정상',
+                                              width: 210,
+                                              height: 60),
+                                          SizedBox(
+                                            width: 61.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '마지막 수신',
+                                              hint: '예: 2025-05-20 14:23',
+                                              width: 266,
+                                              height: 60),
+                                          SizedBox(
+                                            width: 61.w,
+                                          ),
+                                          labeledTextField(
+                                              title: 'X (mm / 0°)',
+                                              hint: '예 : 0.3 /  24°',
+                                              width: 163,
+                                              height: 60),
+                                          SizedBox(
+                                            width: 61.w,
+                                          ),
+                                          labeledTextField(
+                                              title: 'Y (mm / 0°)',
+                                              hint: '예 : 0.3 /  24°',
+                                              width: 163,
+                                              height: 60),
+                                          SizedBox(
+                                            width: 61.w,
+                                          ),
+                                          labeledTextField(
+                                              title:'Z (mm / 0°)',
+                                              hint: '예 : 0.3 /  24°',
+                                              width: 163,
+                                              height: 60),
+                                          SizedBox(
+                                            width: 61.w,
+                                          ),
+                                          labeledTextField(
+                                              title:'경사 (0°)',
+                                              hint: '예 : 5',
+                                              width: 163,
+                                              height: 60),
+                                          SizedBox(
+                                            width: 61.w,
+                                          ),
+                                          labeledTextField(
+                                              title:'배터리 정보',
+                                              hint: '예 : 5',
+                                              width: 257,
+                                              height: 60),
+
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          SizedBox(width:60.w),
+                                          Container(
+                                            width: 30.w,
+                                            height: 30.h,
+                                            child:
+                                            Image.asset('assets/icons/cctv.png'),
+                                          ),
+                                          SizedBox(
+                                            width: 5.w,
+                                          ),
+                                          blockTitle('CCTV 정보 입력')
+                                        ],
+                                      ),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        children: [
+                                          SizedBox(
+                                            width: 99.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '카메라 이름 / 번호',
+                                              hint:
+                                              '예: CCTV-01',
+                                              width: 207,
+                                              height: 60),
+                                          SizedBox(
+                                            width: 61.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '설치 위치 (추진구/도달구)',
+                                              hint: '예: sensor-001',
+                                              width: 326,
+                                              height: 60),
+                                          SizedBox(
+                                            width: 61.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '상태',
+                                              hint: '예: 정상',
+                                              width: 210,
+                                              height: 60),
+                                          SizedBox(
+                                            width: 61.w,
+                                          ),
+                                          labeledTextField(
+                                              title: 'RTSP 주소',
+                                              hint: 'rstp://..',
+                                              width: 1000,
+                                              height: 60),
+                                          SizedBox(
+                                            width: 61.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '변위 측정 값',
+                                              hint: '예 : 0.3 /  24°',
+                                              width: 691,
+                                              height: 60),
+
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          SizedBox(width:60.w),
+                                          Container(
+                                            width: 30.w,
+                                            height: 30.h,
+                                            child:
+                                            Image.asset('assets/icons/clock2.png'),
+                                          ),
+                                          SizedBox(
+                                            width: 5.w,
+                                          ),
+                                          blockTitle('알람 히스토리')
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          SizedBox(width:108.97.w),
+                                          blockTitle('IoT')
+                                        ],
+                                      ),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        children: [
+                                          SizedBox(
+                                            width: 99.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '제품 식별자(ID)',
+                                              hint:
+                                              '예: sensor-001',
+                                              width: 206.85,
+                                              height: 60),
+                                          SizedBox(
+                                            width: 61.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '날짜 / 시간',
+                                              hint: '예: 2025-05-20 14:23',
+                                              width: 595.56,
+                                              height: 60),
+                                          SizedBox(
+                                            width: 61.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '로그',
+                                              hint: '예: 센서_3_INFO',
+                                              width: 1747.71,
+                                              height: 60),
+
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          SizedBox(width:108.97.w),
+                                          blockTitle('CCTV')
+                                        ],
+                                      ),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        children: [
+                                          SizedBox(
+                                            width: 99.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '제품 식별자(ID)',
+                                              hint:
+                                              '예: sensor-001',
+                                              width: 206.85,
+                                              height: 60),
+                                          SizedBox(
+                                            width: 61.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '날짜 / 시간',
+                                              hint: '예: 2025-05-20 14:23',
+                                              width: 595.56,
+                                              height: 60),
+                                          SizedBox(
+                                            width: 61.w,
+                                          ),
+                                          labeledTextField(
+                                              title: '로그',
+                                              hint: '예: 센서_3_INFO',
+                                              width: 1747.71,
+                                              height: 60),
+
+                                        ],
+                                      ),
+
+                                    ],
                                   ),
                                 ),
                                 Row(
@@ -278,9 +689,52 @@ class AdminScreen extends StatelessWidget {
                                     color: Color(0xff414c67),
                                     borderRadius: BorderRadius.circular(5.r),
                                   ),
-                                  child: Row(
+                                  child:  Row(
                                     mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [],
+                                    children: [
+                                      SizedBox(
+                                        width: 99.w,
+                                      ),
+                                      labeledTextField(
+                                          title: '공사명',
+                                          hint:
+                                          '예 : 절토사면 안정화 공사',
+                                          width: 600.42,
+                                          height: 60),
+                                      SizedBox(
+                                        width: 61.w,
+                                      ),
+                                      labeledTextField(
+                                          title: '현장 주소',
+                                          hint: '예 : 대구광역시 수성구 알파시티1로 35, 17',
+                                          width: 600.42,
+                                          height: 60),
+                                      SizedBox(
+                                        width: 61.w,
+                                      ),
+                                      labeledTextField(
+                                          title: '발주처',
+                                          hint: '예: 한림기술',
+                                          width: 420.29,
+                                          height: 60),
+                                      SizedBox(
+                                        width: 61.w,
+                                      ),
+                                      labeledTextField(
+                                          title: '공사 기간',
+                                          hint: '예: 20250520',
+                                          width: 420.29,
+                                          height: 60),
+                                      SizedBox(
+                                        width: 61.w,
+                                      ),
+                                      labeledTextField(
+                                          title: '시공사',
+                                          hint: '예: 한림기술',
+                                          width: 397.28,
+                                          height: 60),
+
+                                    ],
                                   ),
                                 ),
 
@@ -333,7 +787,6 @@ class AdminScreen extends StatelessWidget {
     ScreenUtil.ensureScreenSize();
     return Container(
       width: width.w,
-      margin: EdgeInsets.symmetric(vertical: 8.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -351,7 +804,7 @@ class AdminScreen extends StatelessWidget {
               width: width.w,
               height: height.h,
               child: TextField(
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: Colors.black),
                 decoration: InputDecoration(
                   hintText: hint ?? '',
                   hintStyle: TextStyle(

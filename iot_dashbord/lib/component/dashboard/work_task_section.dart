@@ -70,17 +70,30 @@ class _WorkTaskSectionState extends State<WorkTaskSection> {
                       color: Colors.white),
                 ),
                 Spacer(),
+                // Container(
+                //   width: 60.w,
+                //   height: 60.h,
+                //   alignment: Alignment.topCenter,
+                //   child: Icon(
+                //     widget.isExpanded
+                //         ? Icons.keyboard_arrow_down
+                //         : Icons.keyboard_arrow_right,
+                //     color: Color(0xff3d91ff),
+                //     size: 70.sp,
+                //   ),
+                // ),
                 Container(
                   width: 60.w,
                   height: 60.h,
-                  child: Icon(
+
+                  child: Image.asset(
                     widget.isExpanded
-                        ? Icons.keyboard_arrow_down
-                        : Icons.keyboard_arrow_right,
-                    color: Color(0xff3d91ff),
-                    size: 70.sp,
+                        ? 'assets/icons/color_arrow_down.png'
+                        : 'assets/icons/color_arrow_right.png',
+
                   ),
                 )
+
               ],
             ),
           ),

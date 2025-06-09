@@ -40,18 +40,30 @@ class TopAppBar extends StatelessWidget {
       child: Row(
         children: [
           SizedBox(width: 50.w),
+          // Container(
+          //   alignment: Alignment.center,
+          //
+          //   width: 60.w,
+          //         height: 80.h,
+          //         child: IconButton(
+          //           onPressed: onMenuPressed,
+          //           icon:  Icon(Icons.menu_rounded,size: 70.sp,),
+          //           color: isMenuVisible
+          //               ? const Color(0xFF3182ce) // 열렸을 때
+          //               :  Color(0xFF3182ce)         // 닫혔을 때
+          //         ),
+          // ),
           Container(
             alignment: Alignment.center,
 
             width: 60.w,
-                  height: 80.h,
-                  child: IconButton(
-                    onPressed: onMenuPressed,
-                    icon:  Icon(Icons.menu_rounded,size: 70.sp,),
-                    color: isMenuVisible
-                        ? const Color(0xFF3182ce) // 열렸을 때
-                        :  Color(0xFF3182ce)         // 닫혔을 때
-                  ),
+            height: 60.h,
+            child: InkWell(
+              onTap: onMenuPressed,
+              child: Image.asset(
+                'assets/icons/menu2.png'
+              ),
+            ),
           ),
           SizedBox(width: 140.w),
           Container(
