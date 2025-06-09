@@ -13,9 +13,15 @@ class GraphView extends StatefulWidget {
 
 class _GraphViewState extends State<GraphView> {
   String selectedInterval = '10분';
-  final List<String> sensorIds = ['S1_001', 'S1_002', 'S1_003', 'S1_004', 'S1_005'];
+  final List<String> sensorIds = [
+    'S1_001',
+    'S1_002',
+    'S1_003',
+    'S1_004',
+    'S1_005'
+  ];
   Map<String, String> selectedIntervals = {};
-
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -30,26 +36,43 @@ class _GraphViewState extends State<GraphView> {
     }
   }
 
-
+  @override
   Widget build(BuildContext context) {
     ScreenUtil.ensureScreenSize();
     return Container(
-      width: 2911.w,
-      height: 1640.h,
-      decoration: BoxDecoration(
-        color: Color(0xff414c67),
-        borderRadius: BorderRadius.circular(5.r),
-        border: Border.all(color: Color(0xff414c67), width: 4.w),
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: sensorIds.map((id) => _buildSensorChart(id)).toList(),
+        width: 2916.w, // 🔹 기존보다 10.w 넓힘
+        height: 1648.h,
+        decoration: BoxDecoration(
+          color: Color(0xff414c67),
+          borderRadius: BorderRadius.circular(5.r),
+          border: Border.all(color: Color(0xff414c67), width: 4.w),
         ),
-      ),
-
-    );
+        child: ScrollbarTheme(
+          data: ScrollbarThemeData(
+            thumbColor: MaterialStateProperty.all(Color(0xff004aff)),
+            // 파란색 스크롤바
+            trackColor: MaterialStateProperty.all(Colors.white),
+            radius: Radius.circular(10.r),
+            thickness: MaterialStateProperty.all(10.w),
+          ),
+          child: Scrollbar(
+            controller: _scrollController,
+            thumbVisibility: true,
+            // thickness: 6.w,
+            radius: Radius.circular(5.r),
+            trackVisibility: true,
+            scrollbarOrientation: ScrollbarOrientation.right,
+            interactive: true,
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: sensorIds.map((id) => _buildSensorChart(id)).toList(),
+              ),
+            ),
+          ),
+        ));
   }
 
   Widget _buildSensorChart(String sensorId) {
@@ -107,7 +130,7 @@ class _GraphViewState extends State<GraphView> {
                           width: 1.w,
                         ),
                         borderRadius:
-                        BorderRadius.circular(5.r), // 선택사항: 둥근 테두리
+                            BorderRadius.circular(5.r), // 선택사항: 둥근 테두리
                       ),
                       child: Text(
                         '10분',
@@ -124,16 +147,16 @@ class _GraphViewState extends State<GraphView> {
                   width: 10.w,
                 ),
                 InkWell(
-                  onTap: () async {
-                    showLoadingDialog(context); // 👈 로딩 다이얼로그 표시
-                    await Future.delayed(Duration(milliseconds: 300)); // 실제 API 호출이라면 await fetch...
-                    setState(() {
-                      selectedIntervals[sensorId] = '30분';
-                    });
-                    Navigator.of(context).pop(); // 👈 다이얼로그 닫기
-                  },
-
-                  child: Container(
+                    onTap: () async {
+                      showLoadingDialog(context); // 👈 로딩 다이얼로그 표시
+                      await Future.delayed(Duration(
+                          milliseconds: 300)); // 실제 API 호출이라면 await fetch...
+                      setState(() {
+                        selectedIntervals[sensorId] = '30분';
+                      });
+                      Navigator.of(context).pop(); // 👈 다이얼로그 닫기
+                    },
+                    child: Container(
                       width: 101.w,
                       height: 60.h,
                       alignment: Alignment.center,
@@ -144,7 +167,7 @@ class _GraphViewState extends State<GraphView> {
                           width: 1.w,
                         ),
                         borderRadius:
-                        BorderRadius.circular(5.r), // 선택사항: 둥근 테두리
+                            BorderRadius.circular(5.r), // 선택사항: 둥근 테두리
                       ),
                       child: Text(
                         '30분',
@@ -163,13 +186,13 @@ class _GraphViewState extends State<GraphView> {
                 InkWell(
                     onTap: () async {
                       showLoadingDialog(context); // 👈 로딩 다이얼로그 표시
-                      await Future.delayed(Duration(milliseconds: 300)); // 실제 API 호출이라면 await fetch...
+                      await Future.delayed(Duration(
+                          milliseconds: 300)); // 실제 API 호출이라면 await fetch...
                       setState(() {
                         selectedIntervals[sensorId] = '1시간';
                       });
                       Navigator.of(context).pop(); // 👈 다이얼로그 닫기
                     },
-
                     child: Container(
                       width: 101.w,
                       height: 60.h,
@@ -181,7 +204,7 @@ class _GraphViewState extends State<GraphView> {
                           width: 1.w,
                         ),
                         borderRadius:
-                        BorderRadius.circular(5.r), // 선택사항: 둥근 테두리
+                            BorderRadius.circular(5.r), // 선택사항: 둥근 테두리
                       ),
                       child: Text(
                         '1시간',
@@ -200,7 +223,8 @@ class _GraphViewState extends State<GraphView> {
                 InkWell(
                     onTap: () async {
                       showLoadingDialog(context); // 👈 로딩 다이얼로그 표시
-                      await Future.delayed(Duration(milliseconds: 300)); // 실제 API 호출이라면 await fetch...
+                      await Future.delayed(Duration(
+                          milliseconds: 300)); // 실제 API 호출이라면 await fetch...
                       setState(() {
                         selectedIntervals[sensorId] = '2시간';
                       });
@@ -217,7 +241,7 @@ class _GraphViewState extends State<GraphView> {
                           width: 1.w,
                         ),
                         borderRadius:
-                        BorderRadius.circular(5.r), // 선택사항: 둥근 테두리
+                            BorderRadius.circular(5.r), // 선택사항: 둥근 테두리
                       ),
                       child: Text(
                         '2시간',
@@ -236,7 +260,8 @@ class _GraphViewState extends State<GraphView> {
                 InkWell(
                     onTap: () async {
                       showLoadingDialog(context); // 👈 로딩 다이얼로그 표시
-                      await Future.delayed(Duration(milliseconds: 300)); // 실제 API 호출이라면 await fetch...
+                      await Future.delayed(Duration(
+                          milliseconds: 300)); // 실제 API 호출이라면 await fetch...
                       setState(() {
                         selectedIntervals[sensorId] = '3시간';
                       });
@@ -253,7 +278,7 @@ class _GraphViewState extends State<GraphView> {
                           width: 1.w,
                         ),
                         borderRadius:
-                        BorderRadius.circular(5.r), // 선택사항: 둥근 테두리
+                            BorderRadius.circular(5.r), // 선택사항: 둥근 테두리
                       ),
                       child: Text(
                         '3시간',
@@ -293,33 +318,33 @@ class _GraphViewState extends State<GraphView> {
             child: SfCartesianChart(
               margin: EdgeInsets.all(20),
               legend: Legend(
-                isVisible: true,
-                position: LegendPosition.top,
-                alignment: ChartAlignment.center,
-                textStyle: TextStyle(
-                  fontFamily: 'PretendardGOV',
-                  fontWeight: FontWeight.w700,
-                  color: Colors.grey,
-                  fontSize: 36.sp,
-                )
-
-              ),
+                  isVisible: true,
+                  position: LegendPosition.top,
+                  alignment: ChartAlignment.center,
+                  textStyle: TextStyle(
+                    fontFamily: 'PretendardGOV',
+                    fontWeight: FontWeight.w700,
+                    color: Colors.grey,
+                    fontSize: 36.sp,
+                  )),
               primaryXAxis: DateTimeAxis(
                 intervalType: DateTimeIntervalType.minutes,
-                interval: 10, // 10분 간격
+                interval: 10,
+                // 10분 간격
                 dateFormat: DateFormat('HH:mm'),
                 labelRotation: 45,
-                  labelIntersectAction: AxisLabelIntersectAction.none,
-                minimum: DateTime(2025, 5, 12, 0, 9), // ⬅️ 시작을 00:09로 명시
-                maximum: DateTime(2025, 5, 12, 23, 59), // ⬅️ 마지막을 23:59로 명시
+                labelIntersectAction: AxisLabelIntersectAction.none,
+                minimum: DateTime(2025, 5, 12, 0, 9),
+                // ⬅️ 시작을 00:09로 명시
+                maximum: DateTime(2025, 5, 12, 23, 59),
+                // ⬅️ 마지막을 23:59로 명시
                 majorGridLines: const MajorGridLines(width: 0),
                 labelStyle: TextStyle(
-                  fontSize: currentInterval == '10분' ? 10.sp : 18.sp, // 👈 조건부 스타일
+                  fontSize: currentInterval == '10분' ? 10.sp : 18.sp,
+                  // 👈 조건부 스타일
                   color: Colors.white,
                 ),
-
               ),
-
               primaryYAxis: NumericAxis(
                 minimum: -0.5,
                 maximum: 0.5,
@@ -363,9 +388,8 @@ class _GraphViewState extends State<GraphView> {
                   ),
                 ],
               ),
-
               series:
-            /*  <LineSeries<DisplacementData, DateTime>>[
+                  /*  <LineSeries<DisplacementData, DateTime>>[
                 LineSeries<DisplacementData, DateTime>(
                   name: 'X',
                   color: const Color(0xffff714d),
@@ -409,48 +433,53 @@ class _GraphViewState extends State<GraphView> {
                   yValueMapper: (d, _) => d.value,
                 ),
               ],*/
-               [
-              ScatterSeries<DisplacementData, DateTime>(
-            name: 'X',
-            color: const Color(0xffff714d),
-            markerSettings: MarkerSettings(
-              isVisible: true,
-              shape: DataMarkerType.circle,
-              width: 15.w,
-              height: 15.h,
-            ),
-            dataSource: _getIntervalData(getMockData(sensorId, 'X', currentInterval), currentInterval),
-            xValueMapper: (d, _) => d.time,
-            yValueMapper: (d, _) => d.value,
-            ),
-              ScatterSeries<DisplacementData, DateTime>(
-                name: 'Y',
-                color: const Color(0xff32ade6),
-                markerSettings: MarkerSettings(
-                  isVisible: true,
-                  shape: DataMarkerType.circle,
-                  width: 15.w,
-                  height: 15.h,
+                  [
+                ScatterSeries<DisplacementData, DateTime>(
+                  name: 'X',
+                  color: const Color(0xffff714d),
+                  markerSettings: MarkerSettings(
+                    isVisible: true,
+                    shape: DataMarkerType.circle,
+                    width: 15.w,
+                    height: 15.h,
+                  ),
+                  dataSource: _getIntervalData(
+                      getMockData(sensorId, 'X', currentInterval),
+                      currentInterval),
+                  xValueMapper: (d, _) => d.time,
+                  yValueMapper: (d, _) => d.value,
                 ),
-                dataSource: _getIntervalData(getMockData(sensorId, 'Y', currentInterval), currentInterval),
-                xValueMapper: (d, _) => d.time,
-                yValueMapper: (d, _) => d.value,
-              ),
-              ScatterSeries<DisplacementData, DateTime>(
-                name: 'Z',
-                color: const Color(0xff00c7be),
-                markerSettings: MarkerSettings(
-                  isVisible: true,
-                  shape: DataMarkerType.circle,
-                  width: 15.w,
-                  height: 15.h,
+                ScatterSeries<DisplacementData, DateTime>(
+                  name: 'Y',
+                  color: const Color(0xff32ade6),
+                  markerSettings: MarkerSettings(
+                    isVisible: true,
+                    shape: DataMarkerType.circle,
+                    width: 15.w,
+                    height: 15.h,
+                  ),
+                  dataSource: _getIntervalData(
+                      getMockData(sensorId, 'Y', currentInterval),
+                      currentInterval),
+                  xValueMapper: (d, _) => d.time,
+                  yValueMapper: (d, _) => d.value,
                 ),
-                dataSource: _getIntervalData(getMockData(sensorId, 'Z', currentInterval), currentInterval),
-                xValueMapper: (d, _) => d.time,
-                yValueMapper: (d, _) => d.value,
-              ),
+                ScatterSeries<DisplacementData, DateTime>(
+                  name: 'Z',
+                  color: const Color(0xff00c7be),
+                  markerSettings: MarkerSettings(
+                    isVisible: true,
+                    shape: DataMarkerType.circle,
+                    width: 15.w,
+                    height: 15.h,
+                  ),
+                  dataSource: _getIntervalData(
+                      getMockData(sensorId, 'Z', currentInterval),
+                      currentInterval),
+                  xValueMapper: (d, _) => d.time,
+                  yValueMapper: (d, _) => d.value,
+                ),
               ],
-
             ),
           ),
         ],
@@ -458,7 +487,8 @@ class _GraphViewState extends State<GraphView> {
     );
   }
 
-  List<DisplacementData> getMockData(String sensorId, String axis, String intervalLabel) {
+  List<DisplacementData> getMockData(
+      String sensorId, String axis, String intervalLabel) {
     final start = DateTime(2025, 5, 12, 0, 0);
     final interval = _getIntervalValue(intervalLabel); // minutes
     return List.generate(144, (index) {
@@ -468,15 +498,13 @@ class _GraphViewState extends State<GraphView> {
       final offset = axis == 'X'
           ? 0.05
           : axis == 'Y'
-          ? 0.04
-          : 0.03;
-      final value = (0.5 - (index % 20) * offset + base) *
-          (index % 2 == 0 ? 1 : -1);
+              ? 0.04
+              : 0.03;
+      final value =
+          (0.5 - (index % 20) * offset + base) * (index % 2 == 0 ? 1 : -1);
       return DisplacementData(time, value);
     });
   }
-
-
 
   int _getIntervalValue(String interval) {
     switch (interval) {
@@ -497,8 +525,6 @@ class _GraphViewState extends State<GraphView> {
     }
   }
 
-
-
   double _getFontSize() {
     switch (selectedInterval) {
       case '10분':
@@ -516,7 +542,8 @@ class _GraphViewState extends State<GraphView> {
     }
   }
 
-  List<DisplacementData> _getIntervalData(List<DisplacementData> original, String intervalLabel) {
+  List<DisplacementData> _getIntervalData(
+      List<DisplacementData> original, String intervalLabel) {
     switch (intervalLabel) {
       case '30분':
         return _aggregateData(original, Duration(minutes: 30));
@@ -532,7 +559,6 @@ class _GraphViewState extends State<GraphView> {
         return original;
     }
   }
-
 
   List<DisplacementData> _aggregateData(
       List<DisplacementData> data, Duration interval) {
@@ -609,5 +635,3 @@ List<DisplacementData> getMockSecondaryData() {
     return DisplacementData(time, value);
   });
 }
-
-

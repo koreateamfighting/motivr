@@ -15,7 +15,6 @@ class _CctvLogState extends State<CctvLog> {
     return
       Container(
         width: 881.w,
-        height: 181.h,
         decoration: BoxDecoration(
           //color: Color(0xff111c44),
           color: Color(0xff1b254b),

@@ -134,17 +134,17 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
                     TimePeriodSelect(),
                     SizedBox(height: 16.h,),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        AlarmHistroy(),
+                        AlarmHistory(),
                         SizedBox(
                           width: 4.w,
                         ),
-                        Column(
-                          children: [
 
                             GraphView()
-                          ],
-                        )
+
+
 
                       ],
                     )

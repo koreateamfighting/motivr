@@ -200,7 +200,7 @@ class _CctvMiniViewState extends State<CctvMiniView> {
         ),
         Container(
           width: 859.w,
-          height: 503.h,
+          height: 495.h,
           padding: EdgeInsets.fromLTRB(11.w, 10.h, 11.w, 10.h),
           decoration: BoxDecoration(
             color: Colors.black,
@@ -242,7 +242,7 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                   ],
                 ),
               ),
-              Container(
+              Expanded(child: Container(
                 height: 248.h,
                 decoration: BoxDecoration(
                   //color: Color(0xff111c44),
@@ -314,7 +314,8 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                     )
                   ],
                 ),
-              ),
+              ))
+              ,
             ],
           ),
         ),

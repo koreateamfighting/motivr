@@ -326,7 +326,7 @@ class _DetailIotViewState extends State<DetailIotView> {
                         return ScrollbarTheme(
                           data: ScrollbarThemeData(
                             thumbColor: MaterialStateProperty.all(Color(0xff004aff)), // 파란색 스크롤바
-                            trackColor: MaterialStateProperty.all(Colors.white),
+                            trackColor: MaterialStateProperty.all(Colors.transparent),
                             radius: Radius.circular(10.r),
                             thickness: MaterialStateProperty.all(10.w),
                           ),
