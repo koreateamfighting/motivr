@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:flutter/services.dart';
 import 'package:iot_dashboard/utils/keyboard_handler.dart';
+import 'package:markdown/markdown.dart' as md;
+import 'dart:convert';
 
 class PrivacyPolicyPage extends StatefulWidget {
   const PrivacyPolicyPage({super.key});
@@ -16,13 +16,15 @@ class PrivacyPolicyPage extends StatefulWidget {
 }
 
 class _PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
-  String _markdownText = '';
+  TextSpan? _markdownSpan;
   final FocusNode _focusNode = FocusNode();
+
   @override
   void initState() {
     super.initState();
     _loadMarkdown();
   }
+
   @override
   void dispose() {
     _focusNode.dispose();
@@ -33,40 +35,69 @@ class _PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
     final String rawText = await rootBundle.loadString('assets/texts/privacy_policy.txt');
 
     final processedText = rawText
-        .replaceAllMapped(RegExp(r'(?<!#)#?\s*$'), (match) => '') // 불필요한 공백 제거
-        .split('\n') // 줄 단위로 나누고
+        .replaceAll('&quot;', '"')
+        .replaceAll(r'\n', '\n')
+        .replaceAllMapped(RegExp(r'(?<!#)#?\s*\$'), (match) => '')
+        .split('\n')
         .map((line) {
       if (line.trim().startsWith('##')) {
-        return '\n${line.trim()}'; // 제목은 그대로
+        return '\n${line.trim()}';
       } else {
-        return '${line.trim()}  '; // 일반 줄에는 마크다운 줄바꿈(공백 2칸)
+        return '${line.trim()}  ';
       }
     })
         .join('\n');
 
+    final document = md.Document();
+    final lines = LineSplitter().convert(processedText);
+    final nodes = document.parseLines(lines);
+
+    final span = TextSpan(
+      children: nodes.map((node) {
+        if (node is md.Element && node.tag == 'h2') {
+          return TextSpan(
+            text: '\n${node.textContent}\n',
+            style: TextStyle(
+              fontSize: 40.sp,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'PretendardGOV',
+              color: Colors.black,
+            ),
+          );
+        } else {
+          return TextSpan(
+            text: '${node.textContent}\n',
+            style: TextStyle(
+              fontSize: 36.sp,
+              fontFamily: 'PretendardGOV',
+              fontWeight: FontWeight.w400,
+              color: const Color(0xff505050),
+            ),
+          );
+        }
+      }).toList(),
+    );
+
     setState(() {
-      _markdownText = processedText;
+      _markdownSpan = span;
     });
   }
-
-
 
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
-      designSize: Size(PrivacyPolicyPage.designWidth.toDouble(), PrivacyPolicyPage.designHeight.toDouble()),
-      minTextAdapt: true,
-      splitScreenMode: true,
+      designSize:  Size(
+        PrivacyPolicyPage.designWidth.toDouble(),
+        PrivacyPolicyPage.designHeight.toDouble(),
+      ),
       builder: (context, child) {
         return RawKeyboardListener(
           focusNode: _focusNode,
           autofocus: true,
-          onKey: (event) {
-            handleEscapeKey(event, context); // ESC → 닫기
-          },
+          onKey: (event) => handleEscapeKey(event, context),
           child: WillPopScope(
             onWillPop: () async {
-              Navigator.of(context).pop(); // 브라우저 뒤로가기 등
+              Navigator.of(context).pop();
               return false;
             },
             child: Material(
@@ -83,25 +114,12 @@ class _PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
                     children: [
                       _buildHeader(context),
                       Expanded(
-                        child: _markdownText.isEmpty
+                        child: _markdownSpan == null
                             ? const Center(child: CircularProgressIndicator())
-                            : Container(
-                          padding: EdgeInsets.only(left: 577.w, right: 587.w),
-                          child: Markdown(
-                            data: _markdownText,
-                            styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-                              p: TextStyle(
-                                  fontSize: 36.sp,
-                                  fontFamily: 'PretendardGOV',
-                                  fontWeight: FontWeight.w400,
-                                  color: Color(0xff505050)),
-                              h1: TextStyle(
-                                  fontSize: 48.sp,
-                                  fontFamily: 'PretendardGOV',
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xff000000)),
-                              h2: TextStyle(fontSize: 40.sp, fontWeight: FontWeight.bold),
-                            ),
+                            : Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 577.w),
+                          child: SingleChildScrollView(
+                            child: SelectableText.rich(_markdownSpan!),
                           ),
                         ),
                       ),

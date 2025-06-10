@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AppColors {
+
   // 메인 컬러
   static const Color main1 = Color(0xFF272E3F);
   static const Color main2 = Color(0xFF1D222E);
@@ -24,4 +26,17 @@ class AppColors {
   static const Color statusWarning = Color(0xFFFBD50F);
   static const Color statusDanger = Color(0xFFFF6060);
   static const Color statusCheck = Color(0xFF83C2F2);
+
+  static const cursorColor = Color(0xff3182ce);
+
+  // colors.dart 내에 추가
+  static OutlineInputBorder focusedBorder(double width) {
+    return OutlineInputBorder(
+      borderSide: BorderSide(
+        color: Color(0xff3182ce),
+        width: width,
+      ),
+    );
+  }
+
 }

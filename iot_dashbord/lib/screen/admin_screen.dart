@@ -883,8 +883,10 @@ class _AdminScreenState extends State<AdminScreen>{
               height: height.h,
               child: TextField(
                 controller: controller,
+
                 style: TextStyle(color: Colors.black),
                 decoration: InputDecoration(
+
                   hintText: hint ?? '',
                   hintStyle: TextStyle(
                       color: Color(0xff9eaea2),
@@ -897,6 +899,7 @@ class _AdminScreenState extends State<AdminScreen>{
                     borderRadius: BorderRadius.circular(8.r),
                     borderSide: BorderSide(color: Colors.white),
                   ),
+                  focusedBorder: AppColors.focusedBorder(2.w), // ✅ 여기에 적용
                   contentPadding:
                       EdgeInsets.symmetric(horizontal: 8.w, vertical: 12.h),
                 ),
