@@ -4,6 +4,10 @@ import 'package:iot_dashboard/theme/colors.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart'; // ✅ inputFormatter용
+import 'package:iot_dashboard/utils/auth_service.dart';
+import 'package:iot_dashboard/component/dialog_form.dart';
+import 'package:iot_dashboard/utils/iframe_visibility.dart';
+import 'package:iot_dashboard/controller/work_progress_controller.dart';
 
 class WorkProcessStatus extends StatefulWidget {
   const WorkProcessStatus({super.key});
@@ -14,8 +18,23 @@ class WorkProcessStatus extends StatefulWidget {
 
 class _WorkProcessStatusState extends State<WorkProcessStatus> {
   bool isEditing = false;
-  double progress = 0.6; // 초기값 60%
+  double? progress;
   final TextEditingController _controller = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    _loadInitialProgress();
+  }
+  Future<void> _loadInitialProgress() async {
+    try {
+      final result = await WorkProgressController.fetchProgress();
+      setState(() {
+        progress = result.progress / 100.0;
+      });
+    } catch (e) {
+      print('Failed to fetch progress: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +93,18 @@ class _WorkProcessStatusState extends State<WorkProcessStatus> {
   }
 
   Widget _buildChartUI() {
+    if (progress == null) {
+      return SizedBox(
+        height: 481.h,
+        child: Center(
+          child: CircularProgressIndicator(color: Colors.white),
+        ),
+      );
+    }
+
+    final progressVal = progress!;
     return Column(
+
       children: [
         Container(width: 1542.w, height: 1.h, color: Colors.white),
         SizedBox(height: 54.h),
@@ -96,13 +126,13 @@ class _WorkProcessStatusState extends State<WorkProcessStatus> {
                         sections: [
                           PieChartSectionData(
                             color: const Color(0xff2980ff),
-                            value: progress * 100,
+                            value: progress! * 100,
                             showTitle: false,
                             radius: 50.w,
                           ),
                           PieChartSectionData(
                             color: const Color(0xffa0aec0),
-                            value: 100 - progress * 100,
+                            value: 100 - progress! * 100,
                             showTitle: false,
                             radius: 50.w,
                           ),
@@ -114,7 +144,7 @@ class _WorkProcessStatusState extends State<WorkProcessStatus> {
                       children: [
                         SizedBox(height: 20.h),
                         Text(
-                          '${(progress * 100).toStringAsFixed(0)}%',
+                          '${(progress! * 100).toStringAsFixed(0)}%',
                           style: TextStyle(
                             fontSize: 80.sp,
                             fontFamily: 'PretendardGOV',
@@ -148,12 +178,53 @@ class _WorkProcessStatusState extends State<WorkProcessStatus> {
               SizedBox(height: 24.h),
               Container(width: 1542.w, height: 1.h, color: Colors.white),
               SizedBox(height: 8.h),
+
+              // // ✅ 관리자 권한 없으면 접근 차단
+              // if (!AuthService.isAdmin()) {
+              // // 마이크로태스크로 실행 → UI가 빌드된 후에 다이얼로그 띄우기
+              // Future.microtask(() {
+              // showDialog(
+              // context: context,
+              // builder: (context) => AlertDialog(
+              // title: Text('접근 거부'),
+              // content: Text('관리자 계정만 들어갈 수 있습니다.'),
+              // actions: [
+              // TextButton(
+              // onPressed: () {
+              // Navigator.of(context).pop();
+              // // 🚪 관리자 아니면 대시보드로 강제 이동
+              // Navigator.of(context).pushReplacementNamed('/dashboard0');
+              // },
+              // child: Text('확인'),
+              // ),
+              // ],
+              // ),
+              // );
+              // });
+              //
+              // // 일단 빈 컨테이너 반환 → 다이얼로그 후 이동
+              // return const Scaffold(body: SizedBox());
+              // }
               GestureDetector(
-                onTap: () {
-                  setState(() {
-                    isEditing = true;
-                    _controller.text = (progress * 100).toStringAsFixed(0);
-                  });
+                onTap: () async {
+
+                  if (!AuthService.isAdmin()) {
+
+                      hideIframes();
+                      await showDialog(
+                        context: context,
+                        barrierDismissible: false, // 바깥 클릭 시 닫히지 않도록
+                        builder: (_) => DialogForm(mainText:"관리자만 공정률 수정이 가능합니다.",btnText: "닫기",),
+                      );
+                      showIframes();
+
+
+                  } else {
+                    setState(() {
+                      isEditing = true;
+                      _controller.text = (progress! * 100).toStringAsFixed(0);
+                    });
+                  }
                 },
                 child: Container(
                   width: 140.w,
@@ -279,7 +350,7 @@ class _WorkProcessStatusState extends State<WorkProcessStatus> {
                         ))),
               ],
             ),
-            buildGradientBar(progress),
+            buildGradientBar(progress!),
             SizedBox(
               height: 34.79.h,
             ),
@@ -381,9 +452,12 @@ class _WorkProcessStatusState extends State<WorkProcessStatus> {
                     borderRadius: BorderRadius.circular(5.r),
                   ),
                   child: InkWell(
-                    onTap: () {
+                    onTap: () async {
                       double? input = double.tryParse(_controller.text);
                       if (input != null && input >= 0 && input <= 100) {
+                        // ✅ 서버에 저장
+                        await WorkProgressController.saveProgress(input);
+
                         setState(() {
                           progress = input / 100;
                           isEditing = false;

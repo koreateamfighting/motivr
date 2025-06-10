@@ -3,12 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:iot_dashboard/utils/keyboard_handler.dart';
 
-
 class DialogForm extends StatefulWidget {
   final String mainText;
   final String btnText;
   final double? fontSize;
-
 
   const DialogForm({
     Key? key,
@@ -16,7 +14,6 @@ class DialogForm extends StatefulWidget {
     required this.btnText,
     this.fontSize, // 👉 선택적으로 받을 수 있게 함
   }) : super(key: key);
-
 
   @override
   State<DialogForm> createState() => _DialogFormState();
@@ -42,7 +39,6 @@ class _DialogFormState extends State<DialogForm> {
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
@@ -51,7 +47,7 @@ class _DialogFormState extends State<DialogForm> {
         return RawKeyboardListener(
             focusNode: _focusNode,
             onKey: (event) {
-
+              handleEnterKey2(event, context);
               handleEscapeKey(event, context); // ESC → 닫기
             },
             child: WillPopScope(
@@ -64,7 +60,7 @@ class _DialogFormState extends State<DialogForm> {
                       decoration: BoxDecoration(
                         color: Color(0xff414c67),
                         border:
-                        Border.all(color: Color(0xff9b9c9d), width: 10.w),
+                            Border.all(color: Color(0xff9b9c9d), width: 10.w),
                         borderRadius: BorderRadius.circular(5.r),
                       ),
                       child: Column(
@@ -84,7 +80,7 @@ class _DialogFormState extends State<DialogForm> {
                                   width: 60.w,
                                   height: 60.h,
                                   child:
-                                  Image.asset('assets/icons/download.png'),
+                                      Image.asset('assets/icons/download.png'),
                                 ),
                                 Spacer(),
                                 InkWell(
@@ -95,7 +91,7 @@ class _DialogFormState extends State<DialogForm> {
                                     width: 70.w,
                                     height: 70.h,
                                     child:
-                                    Image.asset('assets/icons/close.png'),
+                                        Image.asset('assets/icons/close.png'),
                                   ),
                                 ),
                                 SizedBox(
@@ -116,7 +112,7 @@ class _DialogFormState extends State<DialogForm> {
                             style: TextStyle(
                                 fontFamily: 'PretendardGOV',
                                 fontWeight: FontWeight.w500,
-                                fontSize:widget.fontSize ?? 48.sp,
+                                fontSize: widget.fontSize ?? 48.sp,
                                 color: Colors.white),
                           ),
                           SizedBox(

@@ -3,12 +3,63 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iot_dashboard/component/base_layout.dart';
 import 'package:iot_dashboard/theme/colors.dart';
+import 'package:iot_dashboard/utils/auth_service.dart';
+import 'package:iot_dashboard/services/image_picker_text_field.dart';
+import 'package:iot_dashboard/controller/setting_controller.dart';
+import 'package:iot_dashboard/services/setting_service.dart';
+import 'dart:html' as html;
+import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
+import 'dart:async'; // Completer를 위한 import
+import 'dart:typed_data'; // Uint8List를 위한 import
 
-class AdminScreen extends StatelessWidget {
+
+class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
+
+  State<AdminScreen> createState() => _AdminScreenState();
+
+}
+class _AdminScreenState extends State<AdminScreen>{
+
+  final _titleController = TextEditingController();
+  html.File? selectedLogoFile;
+
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
+
+    // ✅ 관리자 권한 없으면 접근 차단
+    if (!AuthService.isAdmin()) {
+      // 마이크로태스크로 실행 → UI가 빌드된 후에 다이얼로그 띄우기
+      Future.microtask(() {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('접근 거부'),
+            content: Text('관리자 계정만 들어갈 수 있습니다.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  // 🚪 관리자 아니면 대시보드로 강제 이동
+                  Navigator.of(context).pushReplacementNamed('/dashboard0');
+                },
+                child: Text('확인'),
+              ),
+            ],
+          ),
+        );
+      });
+
+      // 일단 빈 컨테이너 반환 → 다이얼로그 후 이동
+      return const Scaffold(body: SizedBox());
+    }
+
     return ScreenUtilInit(
         designSize: const Size(3812, 2144),
         minTextAdapt: true,
@@ -83,7 +134,28 @@ class AdminScreen extends StatelessWidget {
                               width: 2155.w,
                             ),
                             InkWell(
-                                onTap: () {},
+                              onTap: () async {
+                                final title = _titleController.text.trim();
+                                if (title.isEmpty || selectedLogoFile == null) {
+                                  showDialog(
+                                    context: context,
+                                    builder: (_) => AlertDialog(
+                                      title: Text('입력 누락'),
+                                      content: Text('타이틀과 로고 파일을 모두 입력해주세요.'),
+                                      actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('확인'))],
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                final result = await SettingController.uploadTitleAndLogo(title, selectedLogoFile!);
+                                if (result.success) {
+                                  print('✅ ${result.message}');
+                                  await SettingService.refresh(); // 🔁 TopAppBar 갱신 트리거
+                                } else {
+                                  print('❌ ${result.message}');
+                                }
+                              },
                                 child: Container(
                                   width: 347.w,
                                   height: 60.h,
@@ -205,15 +277,20 @@ class AdminScreen extends StatelessWidget {
                                           hint:
                                               '예: Digital Twin EMS > 스마트 안전 시스템',
                                           width: 1309,
-                                          height: 60),
+                                          height: 60,
+                                        controller: _titleController,),
                                       SizedBox(
                                         width: 61.w,
                                       ),
-                                      labeledTextField(
-                                          title: '로고 변경',
-                                          hint: '예: 이미지 파일을 업로드 하세요',
-                                          width: 1309,
-                                          height: 60),
+                                  ImagePickerTextField(
+                                    title: '로고 변경',
+                                    hint: '예: 이미지 파일을 업로드 하세요',
+                                    width: 1309,
+                                    height: 58,
+                                    onFileSelected: (file) {
+                                      selectedLogoFile = file; // AdminScreen 상태 변수에 저장
+                                    },
+                                  ),
                                     ],
                                   ),
                                 ),
@@ -783,7 +860,8 @@ class AdminScreen extends StatelessWidget {
       {required String title,
       String? hint,
       required double width,
-      required double height}) {
+      required double height,
+      TextEditingController? controller}) {
     ScreenUtil.ensureScreenSize();
     return Container(
       width: width.w,
@@ -804,6 +882,7 @@ class AdminScreen extends StatelessWidget {
               width: width.w,
               height: height.h,
               child: TextField(
+                controller: controller,
                 style: TextStyle(color: Colors.black),
                 decoration: InputDecoration(
                   hintText: hint ?? '',

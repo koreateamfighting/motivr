@@ -7,6 +7,8 @@ import 'package:iot_dashboard/controller/user_controller.dart';
 import 'package:iot_dashboard/component/dialog_form.dart';
 import 'package:flutter/services.dart';
 import 'package:iot_dashboard/utils/keyboard_handler.dart';
+import 'package:iot_dashboard/services/setting_service.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -26,6 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
     // 키보드 포커스를 강제로 요청
+    SettingService.refresh(); // 🔁 TopAppBar 갱신 트리거
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
     });
@@ -111,7 +114,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Container(
                         width: 215.59.w,
                         height: 74.8.h,
-                        child: Image.asset('assets/images/company_logo.png'),
+                        child: Image.network(
+                          'https://hanlimtwin.kr:3030${SettingService.setting?.logoUrl ?? ''}',
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(Icons.image_not_supported);
+                          },
+                        )
                       ),
                       bottom: 60.2.h,
                       right: 92.41.w,
@@ -131,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           // ),
 
                           Text(
-                            'Digital Twin CMS',
+                            SettingService.setting?.title ?? '_',
                             style: TextStyle(
                               fontFamily: 'PretendardGOV',
                               fontWeight: FontWeight.w800,

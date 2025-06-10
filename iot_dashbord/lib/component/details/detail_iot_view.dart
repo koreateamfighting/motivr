@@ -422,15 +422,54 @@ class _DetailIotViewState extends State<DetailIotView> {
       ),
     );
   }
-  DataCell buildDataCell(String text) {
+  DataCell buildDataCell(String columnName, String text) {
+    // 상태(status) 컬럼에 색상 적용
+    if (columnName == 'status') {
+      Color color;
+      switch (text) {
+        case '정상':
+          color = Colors.green;
+          break;
+        case '주의':
+          color = Colors.yellow;
+          break;
+        case '경고':
+          color = Colors.red;
+          break;
+        case '점검':
+          color = Colors.lightBlue;
+          break;
+        default:
+          color = Colors.grey;
+      }
+
+      return DataCell(
+        Row(
+          children: [
+            Icon(Icons.circle, color: color, size: 16.sp),
+            SizedBox(width: 6.w),
+            Text(
+              text,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18.sp,
+                fontFamily: 'PretendardGOV',
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 그 외 컬럼은 일반 스타일 유지
     return DataCell(
       Container(
-        margin: EdgeInsets.symmetric(vertical: 4.h), // 셀 간 간격
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h), // 셀 내부 여백 확장
+        margin: EdgeInsets.symmetric(vertical: 4.h),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
         decoration: BoxDecoration(
-          color: Color(0xff1a1f2c), // 셀 배경색
-          border: Border.all(color: Colors.white30, width: 1), // 더 선명한 테두리
-          borderRadius: BorderRadius.circular(4.r), // 약간의 라운딩
+          color: Color(0xff1a1f2c),
+          border: Border.all(color: Colors.white30, width: 1),
+          borderRadius: BorderRadius.circular(4.r),
         ),
         child: Text(
           text,
@@ -443,6 +482,7 @@ class _DetailIotViewState extends State<DetailIotView> {
       ),
     );
   }
+
 
 
 

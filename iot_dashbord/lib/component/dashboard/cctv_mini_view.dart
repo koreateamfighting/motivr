@@ -4,7 +4,8 @@ import 'package:iot_dashboard/theme/colors.dart';
 import 'package:iot_dashboard/services/hls_player_iframe.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iot_dashboard/services/webrtc_player.dart';
-import 'dart:async'; // ← 추가
+import 'dart:async';
+import 'package:fl_chart/fl_chart.dart';
 
 class CctvMiniView extends StatefulWidget {
   const CctvMiniView({super.key});
@@ -126,7 +127,7 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                 height: 240.h,
                 decoration: BoxDecoration(
                   //color: Color(0xff111c44),
-                  color: Color(0xffac8ee3),
+                  color: Colors.white,
                   border: Border.all(
                     color: Colors.white,
                     width: 1.w,
@@ -134,66 +135,116 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                   borderRadius: BorderRadius.circular(5.r),
                   // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
+                child:Stack(
                   children: [
-                    SizedBox(
-                      width: 81.65.w,
+                    Positioned.fill(
+                      child: Container(
+                        height: 240.h,
+                        child: LineChart(
+                          LineChartData(
+
+                            minY: -5,
+                            maxY:  5,
+                            backgroundColor: Colors.transparent,
+                            gridData: FlGridData(show: false),
+                            titlesData: FlTitlesData(show: false),
+                            borderData: FlBorderData(show: false),
+                            lineBarsData: [
+                              LineChartBarData(
+                                spots: [
+                                  FlSpot(0, -2),
+                                  FlSpot(1, -1),
+                                  FlSpot(2, 0),
+                                  FlSpot(3, 2.5),
+                                  FlSpot(4, 3),
+                                  FlSpot(5, 1),
+                                  FlSpot(6, 0.5),
+                                  FlSpot(7, -1.5),
+                                ],
+                                isCurved: true,
+                                color: Colors.blue,
+                                barWidth: 2,
+                                dotData: FlDotData(show: false),
+                                belowBarData: BarAreaData(
+                                  show: true,
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.blue.withOpacity(0.8),
+                                      Colors.blue.withOpacity(0.2),
+                                    ],
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Text(
-                          '추진구 / CCTV',
-                          style: GoogleFonts.inter(
-                            color: Color(0xff262d33),
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Text(
-                          '2025-05-23',
-                          style: GoogleFonts.inter(
-                            color: Color(0xff939699),
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
                         SizedBox(
-                          height: 10.h,
+                          width: 81.65.w,
                         ),
-                        Text(
-                          '1.1921',
-                          style: GoogleFonts.inter(
-                            color: Color(0xff262d33),
-                            fontSize: 30.sp,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                        Text(
-                          '+0.0015 (+0.13%)',
-                          style: GoogleFonts.inter(
-                            color: Color(0xff4b5157),
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                        SizedBox(
-                          height: 15.h,
-                        ),
-                        Text(
-                          '0.00 USD',
-                          style: GoogleFonts.inter(
-                            color: Color(0xff4b5157),
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '추진구 / CCTV',
+                              style: GoogleFonts.inter(
+                                color: Color(0xff262d33),
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              '2025-05-23',
+                              style: GoogleFonts.inter(
+                                color: Color(0xff939699),
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            SizedBox(
+                              height: 10.h,
+                            ),
+                            Text(
+                              '1.1921',
+                              style: GoogleFonts.inter(
+                                color: Color(0xff262d33),
+                                fontSize: 30.sp,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            Text(
+                              '+0.0015 (+0.13%)',
+                              style: GoogleFonts.inter(
+                                color: Color(0xff4b5157),
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            SizedBox(
+                              height: 15.h,
+                            ),
+                            Text(
+                              '0.00 USD',
+                              style: GoogleFonts.inter(
+                                color: Color(0xff4b5157),
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        )
                       ],
-                    )
+                    ),
                   ],
-                ),
+                )
+
               ),
             ],
           ),
@@ -254,66 +305,116 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                   borderRadius: BorderRadius.circular(5.r),
                   // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
+                child: Stack(
                   children: [
-                    SizedBox(
-                      width: 81.65.w,
+                    Positioned.fill(
+                      child: Container(
+                        height: 240.h,
+                        child: LineChart(
+                          LineChartData(
+
+                            minY: -5,
+                            maxY:  5,
+                            backgroundColor: Colors.white,
+                            gridData: FlGridData(show: false),
+                            titlesData: FlTitlesData(show: false),
+                            borderData: FlBorderData(show: false),
+                            lineBarsData: [
+                              LineChartBarData(
+                                spots: [
+                                  FlSpot(0, -2),
+                                  FlSpot(1, -1),
+                                  FlSpot(2, 0),
+                                  FlSpot(3, 2.5),
+                                  FlSpot(4, 3),
+                                  FlSpot(5, 1),
+                                  FlSpot(6, 0.5),
+                                  FlSpot(7, -1.5),
+                                ],
+                                isCurved: true,
+                                color: Colors.red,
+                                barWidth: 2,
+                                dotData: FlDotData(show: false),
+                                belowBarData: BarAreaData(
+                                  show: true,
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.red.withOpacity(0.8),
+                                      Colors.red.withOpacity(0.2),
+                                    ],
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Text(
-                          '도달구 / CCTV',
-                          style: GoogleFonts.inter(
-                            color: Color(0xff262d33),
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Text(
-                          '2025-05-23',
-                          style: GoogleFonts.inter(
-                            color: Color(0xff939699),
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
                         SizedBox(
-                          height: 10.h,
+                          width: 81.65.w,
                         ),
-                        Text(
-                          '1.1763',
-                          style: GoogleFonts.inter(
-                            color: Color(0xff262d33),
-                            fontSize: 30.sp,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                        Text(
-                          '+0.0015 (+0.13%)',
-                          style: GoogleFonts.inter(
-                            color: Color(0xff4b5157),
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                        SizedBox(
-                          height: 15.h,
-                        ),
-                        Text(
-                          '기준치',
-                          style: GoogleFonts.inter(
-                            color: Color(0xff4b5157),
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '도달구 / CCTV',
+                              style: GoogleFonts.inter(
+                                color: Color(0xff262d33),
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              '2025-05-23',
+                              style: GoogleFonts.inter(
+                                color: Color(0xff939699),
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            SizedBox(
+                              height: 10.h,
+                            ),
+                            Text(
+                              '1.1763',
+                              style: GoogleFonts.inter(
+                                color: Color(0xff262d33),
+                                fontSize: 30.sp,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            Text(
+                              '+0.0015 (+0.13%)',
+                              style: GoogleFonts.inter(
+                                color: Color(0xff4b5157),
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            SizedBox(
+                              height: 15.h,
+                            ),
+                            Text(
+                              '기준치',
+                              style: GoogleFonts.inter(
+                                color: Color(0xff4b5157),
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        )
                       ],
-                    )
+                    ),
                   ],
                 ),
+
               ))
               ,
             ],

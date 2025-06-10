@@ -184,13 +184,19 @@ class _AlarmHistoryState extends State<AlarmHistory> {
   }
 
   Widget _buildRow(int i) {
+    // 이벤트 타입과 스타일 결정
+    final String eventType = (i % 2 == 0) ? 'WARN' : 'CRIT';
+    final Color textColor = (eventType == 'WARN') ? Colors.yellow : Colors.red;
+    final String iconPath = (eventType == 'WARN')
+        ? 'assets/icons/alert_caution.png'
+        : 'assets/icons/alert_warning.png';
+
     return Container(
       width: double.infinity,
       height: 100.h,
       decoration: BoxDecoration(
         border: Border(
-          bottom:
-          BorderSide(color: Colors.white.withOpacity(0.2), width: 1.w),
+          bottom: BorderSide(color: Colors.white.withOpacity(0.2), width: 1.w),
         ),
       ),
       padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -207,14 +213,22 @@ class _AlarmHistoryState extends State<AlarmHistory> {
               ),
             ),
           ),
+          SizedBox(width: 145.w),
+          Container(
+            width: 60.w,
+            height: 60.h,
+            child: Image.asset(iconPath),
+          ),
+          SizedBox(width: 20.w),
           Container(
             width: 200.w,
             child: Text(
-              '이벤트 ${i + 1}',
+              eventType,
               style: TextStyle(
                 fontSize: 30.sp,
-                color: Colors.white,
+                color: textColor,
                 fontFamily: 'PretendardGOV',
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
@@ -222,4 +236,5 @@ class _AlarmHistoryState extends State<AlarmHistory> {
       ),
     );
   }
+
 }
