@@ -7,7 +7,7 @@ import 'package:iot_dashboard/utils/keyboard_handler.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iot_dashboard/utils/format_timestamp.dart';
 import 'package:iot_dashboard/utils/iframe_visibility.dart';
-
+import 'package:iot_dashboard/theme/colors.dart';
 class ExpandNoticeSearch extends StatefulWidget {
   const ExpandNoticeSearch({super.key});
 
@@ -184,6 +184,7 @@ class _ExpandNoticeSearchState extends State<ExpandNoticeSearch> {
                                                 borderSide: BorderSide(
                                                     color: Colors.white),
                                               ),
+                                              focusedBorder: AppColors.focusedBorder(2.w), // ✅ 여기에 적용
                                               contentPadding: EdgeInsets.only(
                                                 bottom: 25.h,
                                               )),

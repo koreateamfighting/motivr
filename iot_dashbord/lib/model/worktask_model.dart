@@ -4,7 +4,6 @@ class WorkTask {
   final int progress;
   final String? startDate;
   final String? endDate;
-  final String createdAt;
 
   WorkTask({
     required this.id,
@@ -12,8 +11,24 @@ class WorkTask {
     required this.progress,
     this.startDate,
     this.endDate,
-    required this.createdAt,
   });
+
+  // ✅ 여기에 copyWith 추가
+  WorkTask copyWith({
+    int? id,
+    String? title,
+    int? progress,
+    String? startDate,
+    String? endDate,
+  }) {
+    return WorkTask(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      progress: progress ?? this.progress,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+    );
+  }
 
   factory WorkTask.fromJson(Map<String, dynamic> json) {
     return WorkTask(
@@ -22,7 +37,16 @@ class WorkTask {
       progress: json['progress'],
       startDate: json['start_date'],
       endDate: json['end_date'],
-      createdAt: json['created_at'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'progress': progress,
+      'start_date': startDate,
+      'end_date': endDate,
+    };
   }
 }

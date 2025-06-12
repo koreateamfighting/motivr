@@ -241,7 +241,7 @@ class NoticeRowWidget extends StatelessWidget {
         children: [
           Container(
             width: 400.w,
-            height: 29.h,
+
             child: Text(createdAt,
                 style: TextStyle(
                   fontFamily: 'PretendardGOV',
@@ -253,7 +253,7 @@ class NoticeRowWidget extends StatelessWidget {
           SizedBox(width: 10.w),
           Expanded(
             child: Container(
-              height: 29.h,
+
               child: Text(content,
                   style: TextStyle(
                     fontFamily: 'PretendardGOV',

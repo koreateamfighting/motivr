@@ -7,7 +7,7 @@ import 'package:iot_dashboard/controller/alarm_controller.dart';
 import 'package:iot_dashboard/model/alarm_model.dart';
 import 'package:iot_dashboard/utils/format_timestamp.dart';
 import 'package:iot_dashboard/utils/iframe_visibility.dart';
-
+import 'package:iot_dashboard/theme/colors.dart';
 class ExpandAlarmSearch extends StatefulWidget {
   const ExpandAlarmSearch({super.key});
 
@@ -190,6 +190,7 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
                                                 borderSide: BorderSide(
                                                     color: Colors.white),
                                               ),
+                                              focusedBorder: AppColors.focusedBorder(2.w), // ✅ 여기에 적용
                                               contentPadding: EdgeInsets.only(
                                                 bottom: 25.h,
                                               )),

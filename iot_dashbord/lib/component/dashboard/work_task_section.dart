@@ -70,18 +70,7 @@ class _WorkTaskSectionState extends State<WorkTaskSection> {
                       color: Colors.white),
                 ),
                 Spacer(),
-                // Container(
-                //   width: 60.w,
-                //   height: 60.h,
-                //   alignment: Alignment.topCenter,
-                //   child: Icon(
-                //     widget.isExpanded
-                //         ? Icons.keyboard_arrow_down
-                //         : Icons.keyboard_arrow_right,
-                //     color: Color(0xff3d91ff),
-                //     size: 70.sp,
-                //   ),
-                // ),
+
                 Container(
                   width: 60.w,
                   height: 60.h,
@@ -138,7 +127,9 @@ class _WorkTaskSectionState extends State<WorkTaskSection> {
                                   child: SizedBox(
                                     width: 2750.w,
                                     height: 1803.h,
-                                    child: ExpandWorkTaskSearch(),
+                                    child: ExpandWorkTaskSearch(
+                                      onCsvUploaded: _loadWorkTasks, // ✅ 갱신 함수 전달
+                                    ),
                                   ),
                                 ),
                               ),
@@ -245,19 +236,20 @@ class DataRowWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 6.h),
-      height: 59.h,
+      padding: EdgeInsets.only(bottom: 2.h),
+      height: 59.5.h,
       color: Color(0xff0b1437),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Container(
               width: 400.w,
-              height: 29.h,
+
+
               child: Text(task, style: _rowStyle())),
           Container(
               width: 70.w,
-              height: 29.h,
+
               child: Text(progress, style: _rowStyle())),
           SizedBox(width: 90.w),
           Container(
