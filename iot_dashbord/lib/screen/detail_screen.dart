@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:iot_dashboard/component/base_layout.dart';
+import 'package:iot_dashboard/component/common/base_layout.dart';
 import 'package:iot_dashboard/component/details/detail_iot_view.dart';
 import 'package:iot_dashboard/component/details/detail_cctv_view.dart';
-import 'package:iot_dashboard/component/build_tab.dart';
+import 'package:iot_dashboard/component/common/build_tab.dart';
 
 class DetailScreen extends StatefulWidget {
   const DetailScreen({super.key});

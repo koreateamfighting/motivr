@@ -122,7 +122,9 @@ class _NoticeSectionState extends State<NoticeSection> {
                                 child: SizedBox(
                                   width: 2750.w,
                                   height: 1803.h,
-                                  child: ExpandNoticeSearch(),
+                                  child: ExpandNoticeSearch(
+                                    onDataUploaded: _fetchNoticeData,
+                                  ),
                                 ),
                               ),
                             ),

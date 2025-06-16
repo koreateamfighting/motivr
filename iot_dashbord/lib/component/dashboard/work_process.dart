@@ -5,7 +5,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart'; // ✅ inputFormatter용
 import 'package:iot_dashboard/utils/auth_service.dart';
-import 'package:iot_dashboard/component/dialog_form.dart';
+import 'package:iot_dashboard/component/common/dialog_form.dart';
 import 'package:iot_dashboard/utils/iframe_visibility.dart';
 import 'package:iot_dashboard/controller/work_progress_controller.dart';
 

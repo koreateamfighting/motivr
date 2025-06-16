@@ -8,8 +8,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:iot_dashboard/utils/format_timestamp.dart';
 import 'package:iot_dashboard/utils/iframe_visibility.dart';
 import 'package:iot_dashboard/theme/colors.dart';
+import 'package:iot_dashboard/component/common/dialog_form.dart';
+
 class ExpandNoticeSearch extends StatefulWidget {
-  const ExpandNoticeSearch({super.key});
+
+  final VoidCallback? onDataUploaded;
+
+  const ExpandNoticeSearch({super.key,this.onDataUploaded});
 
   @override
   State<ExpandNoticeSearch> createState() => _ExpandNoticeSearchState();
@@ -25,7 +30,12 @@ class _ExpandNoticeSearchState extends State<ExpandNoticeSearch> {
   TextEditingController _searchController = TextEditingController();
   String currentSortField = '';
   bool isAscending = true;
-
+  bool _isUploading = false;
+  bool isEditing = false;
+  bool _canDelete = false;
+  Map<int, Notice> editedNotices = {};
+  Map<int, TextEditingController> contentControllers = {};
+  Set<int> deletedNoticeIds = {}; // ✅ 삭제된 ID들을 모아둘 집합
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -40,12 +50,6 @@ class _ExpandNoticeSearchState extends State<ExpandNoticeSearch> {
     });
   }
 
-  @override
-  void dispose() {
-    showIframes(); // ✅ 다이얼로그 닫히고 나서 실행됨
-    _focusNode.dispose();
-    super.dispose();
-  }
   void _sortBy(String field) {
     setState(() {
       if (currentSortField == field) {
@@ -72,6 +76,7 @@ class _ExpandNoticeSearchState extends State<ExpandNoticeSearch> {
       });
     });
   }
+
   List<Notice> getCurrentPageItems() {
     final start = currentPage * itemsPerPage;
     final end = (start + itemsPerPage).clamp(0, filteredNotices.length);
@@ -86,6 +91,63 @@ class _ExpandNoticeSearchState extends State<ExpandNoticeSearch> {
           .where((notice) => notice.content.toLowerCase().contains(query))
           .toList();
     });
+  }
+
+  void _initializeControllers() {
+    for (final notice in allNotices) {
+      final id = notice.id;
+      editedNotices[id] = notice.copyWith();
+      contentControllers.putIfAbsent(
+          id, () => TextEditingController(text: notice.content));
+    }
+  }
+
+  void _toggleEditMode() {
+    setState(() {
+      isEditing = !isEditing;
+      if (!isEditing) {
+        editedNotices.clear();
+        deletedNoticeIds.clear();
+        _canDelete = false;
+      } else {
+        _initializeControllers();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          setState(() {
+            _canDelete = true;
+          });
+        });
+      }
+    });
+  }
+
+  bool get isNothingChanged {
+    // 삭제가 하나라도 있으면 false
+    if (deletedNoticeIds.isNotEmpty) return false;
+
+    // 수정된 항목이 원본과 동일한지 비교
+    for (final entry in editedNotices.entries) {
+      final original = allNotices.firstWhere((t) => t.id == entry.key,
+          orElse: () => Notice(id: -1, content: '', createdAt: ''));
+      final edited = entry.value;
+
+      if (original.id == -1) continue; // 삭제되었거나 없으면 생략
+
+      if (original.content != edited.content) {
+        return false; // 값이 실제로 다르면 변경 있음
+      }
+    }
+
+    return true; // 수정 및 삭제 모두 없을 때만 true
+  }
+
+  @override
+  void dispose() {
+    for (var controller in contentControllers.values) {
+      controller.dispose();
+    }
+    _focusNode.dispose();
+    showIframes();
+    super.dispose();
   }
 
   @override
@@ -184,7 +246,9 @@ class _ExpandNoticeSearchState extends State<ExpandNoticeSearch> {
                                                 borderSide: BorderSide(
                                                     color: Colors.white),
                                               ),
-                                              focusedBorder: AppColors.focusedBorder(2.w), // ✅ 여기에 적용
+                                              focusedBorder:
+                                                  AppColors.focusedBorder(2.w),
+                                              // ✅ 여기에 적용
                                               contentPadding: EdgeInsets.only(
                                                 bottom: 25.h,
                                               )),
@@ -198,14 +262,16 @@ class _ExpandNoticeSearchState extends State<ExpandNoticeSearch> {
                                       alignment: Alignment.center,
                                       decoration: BoxDecoration(
                                         //color: Color(0xff111c44),
-                                        color: Color(0xff3182ce),
+
+                                        color: isEditing? Colors.grey:Color(0xff3182ce),
 
                                         borderRadius:
                                             BorderRadius.circular(4.r),
                                         // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                                       ),
                                       child: InkWell(
-                                          onTap: _filterNotices,
+                                          onTap:
+                                              isEditing ? null : _filterNotices,
                                           child: Text(
                                             '검색',
                                             textAlign: TextAlign.center,
@@ -224,16 +290,122 @@ class _ExpandNoticeSearchState extends State<ExpandNoticeSearch> {
                                       alignment: Alignment.center,
                                       decoration: BoxDecoration(
                                         //color: Color(0xff111c44),
-                                        color: Color(0xff3182ce),
+                                        color: isEditing && isNothingChanged
+                                            ? const Color(0xFF888888) // 회색
+                                            : const Color(0xff3182ce), // 기본 파랑
 
                                         borderRadius:
                                             BorderRadius.circular(4.r),
                                         // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                                       ),
                                       child: InkWell(
-                                          onTap: () {},
+                                          onTap: isEditing && isNothingChanged
+                                              ? null
+                                              : () async {
+                                                  final currentItems =
+                                                      getCurrentPageItems();
+                                                  List<Notice> modified = [];
+                                                  if (isEditing) {
+                                                    for (final notice
+                                                        in currentItems) {
+                                                      final edited =
+                                                          editedNotices[
+                                                              notice.id];
+                                                      if (edited != null) {
+                                                        modified.add(edited);
+                                                      }
+                                                    }
+
+                                                    try {
+                                                      // ✅ 1. 삭제 먼저 처리
+                                                      if (deletedNoticeIds
+                                                          .isNotEmpty) {
+                                                        await NoticeController
+                                                            .deleteNotices(
+                                                                deletedNoticeIds
+                                                                    .toList());
+                                                      }
+
+                                                      // ✅ 2. 수정 처리
+                                                      if (modified.isNotEmpty) {
+                                                        final success =
+                                                            await NoticeController
+                                                                .updateNotices(
+                                                                    modified);
+                                                        if (success) {
+                                                          final updatedNotices =
+                                                              await NoticeController
+                                                                  .fetchNotices();
+                                                          setState(() {
+                                                            allNotices =
+                                                                updatedNotices;
+                                                            filteredNotices =
+                                                                updatedNotices;
+                                                            currentPage = 0;
+                                                          });
+                                                          // ✅ 콜백 실행
+                                                          if (widget.onDataUploaded != null) {
+                                                            widget.onDataUploaded!();
+                                                          }
+                                                          showDialog(
+                                                            context: context,
+                                                            builder: (_) =>
+                                                                const DialogForm(
+                                                              mainText:
+                                                                  '수정 및 삭제가 완료되었습니다.',
+                                                              btnText: '확인',
+                                                              fontSize: 16,
+                                                            ),
+                                                          );
+                                                        }
+                                                      } else if (deletedNoticeIds
+                                                          .isNotEmpty) {
+                                                        // 수정 없이 삭제만 했을 때도 목록 갱신
+                                                        final updatedNotices =
+                                                            await NoticeController
+                                                                .fetchNotices();
+                                                        setState(() {
+                                                          allNotices =
+                                                              updatedNotices;
+                                                          filteredNotices =
+                                                              updatedNotices;
+                                                          currentPage = 0;
+                                                        });
+                                                        if (widget
+                                                            .onDataUploaded !=
+                                                            null) {
+                                                          widget
+                                                              .onDataUploaded!();
+                                                        }
+
+                                                        showDialog(
+                                                          context: context,
+                                                          builder: (_) =>
+                                                              const DialogForm(
+                                                            mainText:
+                                                                '삭제가 완료되었습니다.',
+                                                            btnText: '확인',
+                                                            fontSize: 16,
+                                                          ),
+                                                        );
+                                                      }
+                                                    } catch (e) {
+                                                      showDialog(
+                                                        context: context,
+                                                        builder: (_) =>
+                                                            DialogForm(
+                                                          mainText:
+                                                              '저장 중 오류 발생: $e',
+                                                          btnText: '닫기',
+                                                        ),
+                                                      );
+                                                    }
+                                                  }
+
+                                                  _toggleEditMode();
+                                                },
                                           child: Text(
-                                            '편집',
+                                            isEditing ? '완료' : '편집',
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                               fontFamily: 'PretendardGOV',
@@ -289,30 +461,29 @@ class _ExpandNoticeSearchState extends State<ExpandNoticeSearch> {
                                       // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                                     ),
                                     child: InkWell(
-                                      onTap: () => _sortBy('createdAt'),
-                                      child: Row(
-                                        children: [
-
-                                          Text('시간',
-                                              style: TextStyle(
-                                                  fontFamily: 'PretendardGOV',
+                                        onTap: () => _sortBy('createdAt'),
+                                        child: Row(
+                                          children: [
+                                            Text('시간',
+                                                style: TextStyle(
+                                                    fontFamily: 'PretendardGOV',
+                                                    fontWeight: FontWeight.w700,
+                                                    fontSize: 36.sp,
+                                                    color: Color(0xff3182ce))),
+                                            if (currentSortField ==
+                                                'timestamp') ...[
+                                              SizedBox(width: 8.w),
+                                              Text(
+                                                isAscending ? '▲' : '▼',
+                                                style: TextStyle(
+                                                  fontSize: 28.sp,
+                                                  color: Color(0xff3182ce),
                                                   fontWeight: FontWeight.w700,
-                                                  fontSize: 36.sp,
-                                                  color: Color(0xff3182ce))),
-                                          if (currentSortField == 'timestamp') ...[
-                                            SizedBox(width: 8.w),
-                                            Text(
-                                              isAscending ? '▲' : '▼',
-                                              style: TextStyle(
-                                                fontSize: 28.sp,
-                                                color: Color(0xff3182ce),
-                                                fontWeight: FontWeight.w700,
-                                              ),
-                                            )
+                                                ),
+                                              )
+                                            ],
                                           ],
-                                        ],
-                                      )
-                                    ),
+                                        )),
                                   ),
                                   SizedBox(
                                     width: 224.w,
@@ -335,14 +506,14 @@ class _ExpandNoticeSearchState extends State<ExpandNoticeSearch> {
                                         onTap: () => _sortBy('content'),
                                         child: Row(
                                           children: [
-
                                             Text('내용',
                                                 style: TextStyle(
                                                     fontFamily: 'PretendardGOV',
                                                     fontWeight: FontWeight.w700,
                                                     fontSize: 36.sp,
                                                     color: Color(0xff3182ce))),
-                                            if (currentSortField == 'timestamp') ...[
+                                            if (currentSortField ==
+                                                'timestamp') ...[
                                               SizedBox(width: 8.w),
                                               Text(
                                                 isAscending ? '▲' : '▼',
@@ -354,9 +525,47 @@ class _ExpandNoticeSearchState extends State<ExpandNoticeSearch> {
                                               )
                                             ],
                                           ],
-                                        )
-                                    ),
+                                        )),
                                   ),
+                                  // SizedBox(
+                                  //   width: 16.w,
+                                  // ),
+                                  // Container(
+                                  //   width: 70.w,
+                                  //   height: 70.h,
+                                  //   child:
+                                  //   InkWell(
+                                  //     onTap: () {
+                                  //       if (isEditing) {
+                                  //         // ✅ 편집 모드일 때만 삭제 작동
+                                  //         setState(
+                                  //                 () {
+                                  //               deletedNoticeIds
+                                  //                   .add(notice.id);
+                                  //               editedNotices
+                                  //                   .remove(notice.id);
+                                  //
+                                  //               // 1. 삭제
+                                  //               allNotices.removeWhere((notice) =>
+                                  //               notice.id ==
+                                  //                   notice.id);
+                                  //               filteredNotices = allNotices
+                                  //                   .where((notice) => notice.content.toLowerCase().contains(_searchController.text.toLowerCase()) && matchDateRange(notice))
+                                  //                   .toList();
+                                  //
+                                  //               // 2. 페이지 범위 초과 시 페이지 이동
+                                  //               if (currentPage * itemsPerPage >= filteredNotices.length &&
+                                  //                   currentPage > 0) {
+                                  //                 currentPage--;
+                                  //               }
+                                  //             });
+                                  //       }
+                                  //     },
+                                  //     child: Image
+                                  //         .asset(
+                                  //         'assets/icons/color_close.png'),
+                                  //   ),
+                                  // ),
                                 ],
                               ),
                             ),
@@ -386,7 +595,20 @@ class _ExpandNoticeSearchState extends State<ExpandNoticeSearch> {
                                             itemBuilder: (context, index) {
                                               final notice =
                                                   getCurrentPageItems()[index];
+                                              final globalIndex =
+                                                  allNotices.indexOf(notice);
+                                              final contentController =
+                                                  contentControllers
+                                                      .putIfAbsent(notice.id,
+                                                          () {
+                                                return TextEditingController(
+                                                  text: editedNotices[notice.id]
+                                                          ?.content ??
+                                                      notice.content,
+                                                );
+                                              });
                                               return Container(
+                                                key: ValueKey(notice.id),
                                                 height: 100.h,
                                                 // padding: EdgeInsets.symmetric(horizontal: 0.w),
                                                 alignment: Alignment.centerLeft,
@@ -411,21 +633,143 @@ class _ExpandNoticeSearchState extends State<ExpandNoticeSearch> {
                                                                   .white)),
                                                     ),
                                                     SizedBox(
-                                                      width: 255.w,
+                                                      width: isEditing
+                                                          ? 150.w
+                                                          : 255.w,
                                                     ),
-                                                    Expanded(
-                                                      child: Text(
-                                                          notice.content,
-                                                          style: TextStyle(
-                                                              fontFamily:
-                                                                  'PretendardGOV',
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontSize: 36.sp,
-                                                              color: Colors
-                                                                  .white)),
-                                                    ),
+                                                    isEditing
+                                                        ? Row(
+                                                            children: [
+                                                              Container(
+                                                                  width: 1200.w,
+                                                                  color: Colors
+                                                                      .white,
+                                                                  child:
+                                                                      TextField(
+                                                                    controller:
+                                                                        contentController,
+                                                                    onChanged:
+                                                                        (value) {
+                                                                      setState(
+                                                                          () {
+                                                                        editedNotices[
+                                                                            notice.id] = (editedNotices[notice.id] ??
+                                                                                notice)
+                                                                            .copyWith(content: value);
+                                                                      });
+                                                                    },
+                                                                    style:
+                                                                        TextStyle(
+                                                                      fontFamily:
+                                                                          'PretendardGOV',
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w500,
+                                                                      fontSize:
+                                                                          36.sp,
+                                                                      color: Colors
+                                                                          .black,
+                                                                    ),
+                                                                    decoration:
+                                                                        InputDecoration(
+                                                                      border: InputBorder
+                                                                          .none,
+                                                                      contentPadding:
+                                                                          EdgeInsets
+                                                                              .zero,
+                                                                    ),
+                                                                  )),
+                                                              SizedBox(
+                                                                width: 16.w,
+                                                              ),
+                                                              Container(
+                                                                width: 70.w,
+                                                                height: 70.h,
+                                                                child: InkWell(
+                                                                    onTap: () {
+                                                                      if (isEditing) {
+                                                                        setState(() {
+                                                                          deletedNoticeIds.add(notice.id);
+                                                                          editedNotices.remove(notice.id);
+
+                                                                          // ✅ 수정: 특정 항목만 삭제
+                                                                          allNotices.removeWhere((item) => item.id == notice.id);
+                                                                          filteredNotices = allNotices
+                                                                              .where((item) => item.content
+                                                                              .toLowerCase()
+                                                                              .contains(_searchController.text.toLowerCase()))
+                                                                              .toList();
+
+                                                                          // ✅ 페이지 조정
+                                                                          if (currentPage * itemsPerPage >= filteredNotices.length &&
+                                                                              currentPage > 0) {
+                                                                            currentPage--;
+                                                                          }
+                                                                        });
+                                                                      }
+                                                                    },
+
+                                                                  child: Image
+                                                                      .asset(
+                                                                          'assets/icons/color_close.png'),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          )
+                                                        : Expanded(
+                                                            child: isEditing
+                                                                ? Container(
+                                                                    color: Colors
+                                                                        .white,
+                                                                    child:
+                                                                        TextField(
+                                                                      controller:
+                                                                          contentController,
+                                                                      onChanged:
+                                                                          (value) {
+                                                                        setState(
+                                                                            () {
+                                                                          editedNotices[notice.id] =
+                                                                              (editedNotices[notice.id] ?? notice).copyWith(content: value);
+                                                                        });
+                                                                      },
+                                                                      style:
+                                                                          TextStyle(
+                                                                        fontFamily:
+                                                                            'PretendardGOV',
+                                                                        fontWeight:
+                                                                            FontWeight.w500,
+                                                                        fontSize:
+                                                                            36.sp,
+                                                                        color: Colors
+                                                                            .black,
+                                                                      ),
+                                                                      decoration:
+                                                                          InputDecoration(
+                                                                        border:
+                                                                            InputBorder.none,
+                                                                        contentPadding:
+                                                                            EdgeInsets.symmetric(horizontal: 10.w),
+                                                                      ),
+                                                                    ),
+                                                                  )
+                                                                : Text(
+                                                                    notice
+                                                                        .content,
+                                                                    style:
+                                                                        TextStyle(
+                                                                      fontFamily:
+                                                                          'PretendardGOV',
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w500,
+                                                                      fontSize:
+                                                                          36.sp,
+                                                                      color: Colors
+                                                                          .white,
+                                                                    ),
+                                                                  ),
+                                                          ),
                                                   ],
                                                 ),
                                               );

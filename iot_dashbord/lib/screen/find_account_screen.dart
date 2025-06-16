@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iot_dashboard/component/register.dart';
+import 'package:iot_dashboard/component/login/register.dart';
 import 'package:iot_dashboard/theme/colors.dart'; // ✅ 추가
 import 'package:iot_dashboard/controller/user_controller.dart';
-import 'package:iot_dashboard/component/dialog_form.dart';
+import 'package:iot_dashboard/component/common/dialog_form.dart';
 import 'package:flutter/services.dart';
 import 'package:iot_dashboard/utils/keyboard_handler.dart';
 

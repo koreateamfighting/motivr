@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iot_dashboard/component/dialog_form.dart';
+import 'package:iot_dashboard/component/common/dialog_form.dart';
 import 'package:go_router/go_router.dart';
 
 class ForbiddenScreen extends StatelessWidget {

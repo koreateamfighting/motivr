@@ -1,12 +1,12 @@
 // admin_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:iot_dashboard/component/base_layout.dart';
+import 'package:iot_dashboard/component/common/base_layout.dart';
 import 'package:iot_dashboard/theme/colors.dart';
 import 'package:iot_dashboard/utils/auth_service.dart';
-import 'package:iot_dashboard/services/image_picker_text_field.dart';
+import 'package:iot_dashboard/utils/image_picker_text_field.dart';
 import 'package:iot_dashboard/controller/setting_controller.dart';
-import 'package:iot_dashboard/services/setting_service.dart';
+import 'package:iot_dashboard/utils/setting_service.dart';
 import 'dart:html' as html;
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';

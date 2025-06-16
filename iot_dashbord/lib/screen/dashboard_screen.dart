@@ -4,9 +4,9 @@ import 'package:iot_dashboard/component/dashboard/cctv_log.dart';
 import 'package:iot_dashboard/component/dashboard/cctv_mini_view.dart';
 import 'package:iot_dashboard/component/dashboard/iot_control_status.dart';
 import 'package:iot_dashboard/component/dashboard/work_process.dart';
-import 'package:iot_dashboard/component/unity_webgl_frame.dart';
-import 'package:iot_dashboard/component/base_layout.dart';
-import 'package:iot_dashboard/component/hlsplayer_view.dart'; // ✅ 이름 통일
+import 'package:iot_dashboard/component/common/unity_webgl_frame.dart';
+import 'package:iot_dashboard/component/common/base_layout.dart';
+import 'package:iot_dashboard/component/common/hlsplayer_view.dart'; // ✅ 이름 통일
 import 'package:iot_dashboard/theme/colors.dart';
 import 'package:iot_dashboard/component/dashboard/iot_status.dart';
 import 'package:iot_dashboard/component/dashboard/weather_info.dart';

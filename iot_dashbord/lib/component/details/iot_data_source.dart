@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iot_dashboard/component/dialog_form2.dart';
+import 'package:iot_dashboard/component/common/dialog_form2.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:iot_dashboard/model/iot_model.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';

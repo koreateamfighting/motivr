@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
-import 'services/router.dart';
-import 'services/setting_service.dart';
+import 'routes/router.dart';
+import 'utils/setting_service.dart';
 import 'package:iot_dashboard/theme/colors.dart';
 
 void main() async {

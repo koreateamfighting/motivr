@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:iot_dashboard/component/base_layout.dart';
+import 'package:iot_dashboard/component/common/base_layout.dart';
 import 'package:iot_dashboard/theme/colors.dart';
-import 'package:iot_dashboard/component/unity_webgl_frame.dart';
+import 'package:iot_dashboard/component/common/unity_webgl_frame.dart';
 
 
 class DigitalTwinScreen extends StatefulWidget {

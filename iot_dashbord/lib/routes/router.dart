@@ -8,9 +8,9 @@ import '../screen/admin_screen.dart';
 import '../screen/login_screen.dart';
 import '../screen/forbidden_screen.dart';
 import '../screen/find_account_screen.dart';
-import 'transition.dart';
+import '../utils/transition.dart';
 import 'package:iot_dashboard/utils/auth_service.dart';
-import 'package:iot_dashboard/component/dialog_form.dart';
+import 'package:iot_dashboard/component/common/dialog_form.dart';
 
 
 final router = GoRouter(

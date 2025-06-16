@@ -128,7 +128,7 @@ class _WorkTaskSectionState extends State<WorkTaskSection> {
                                     width: 2750.w,
                                     height: 1803.h,
                                     child: ExpandWorkTaskSearch(
-                                      onCsvUploaded: _loadWorkTasks, // ✅ 갱신 함수 전달
+                                      onDataUploaded: _loadWorkTasks, // ✅ 갱신 함수 전달
                                     ),
                                   ),
                                 ),

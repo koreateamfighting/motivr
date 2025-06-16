@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:http/http.dart' as http;
-import 'package:iot_dashboard/component/privacy_policy_page.dart';
-import 'package:iot_dashboard/component/term_of_use_page.dart';
+import 'package:iot_dashboard/component/login/privacy_policy_page.dart';
+import 'package:iot_dashboard/component/login/term_of_use_page.dart';
 import 'dart:convert';
 import 'package:iot_dashboard/controller/user_controller.dart';
 import 'package:iot_dashboard/model/user_model.dart';
-import 'package:iot_dashboard/component/register_success_dialog.dart';
-import 'package:iot_dashboard/component/dialog_form.dart';
+import 'package:iot_dashboard/component/login/register_success_dialog.dart';
+import 'package:iot_dashboard/component/common/dialog_form.dart';
 import 'package:flutter/services.dart';
 
 class RegisterWidget extends StatefulWidget {

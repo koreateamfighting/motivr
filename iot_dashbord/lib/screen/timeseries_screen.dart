@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:iot_dashboard/component/base_layout.dart';
+import 'package:iot_dashboard/component/common/base_layout.dart';
 import 'package:iot_dashboard/component/timeseries/time_period_select.dart';
 import 'package:iot_dashboard/theme/colors.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
-import 'package:iot_dashboard/component/build_tab.dart';
+import 'package:iot_dashboard/component/common/build_tab.dart';
 import 'package:iot_dashboard/component/timeseries/alarm_history.dart';
 import 'package:iot_dashboard/component/timeseries/graph_view.dart';
 
