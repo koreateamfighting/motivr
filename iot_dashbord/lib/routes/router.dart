@@ -30,7 +30,7 @@ final router = GoRouter(
 
     // 로그인된 사용자는 /login 재접근 차단
     if (isLoggedIn && isLogin) {
-      return '/dashboard0';
+      return '/DashBoard';
     }
 
     if (path == '/admin' && !isAdmin) {
@@ -52,7 +52,7 @@ final router = GoRouter(
       },
     ),
     GoRoute(
-      path: '/dashboard0',
+      path: '/DashBoard',
       pageBuilder: (context, state) => buildSlideTransitionPage(const DashBoard()),
     ),
     GoRoute(

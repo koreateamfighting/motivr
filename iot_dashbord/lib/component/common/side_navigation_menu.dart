@@ -31,7 +31,7 @@ class SideNavigationMenu extends StatelessWidget {
                 height: 140.h,
               ),
               _buildMenuItem(
-                  context, 'dashboard', '대시보드', '/dashboard0', currentPath),
+                  context, 'dashboard', '대시보드', '/DashBoard', currentPath),
               SizedBox(
                 height: 85.h,
               ),

@@ -14,7 +14,7 @@ class ForbiddenScreen extends StatelessWidget {
         barrierDismissible: false,
         builder: (_) => DialogForm(mainText: "관리자 계정만 접근 가능합니다.", btnText: "닫기"),
       ).then((_) {
-        context.go('/dashboard0'); // 확인 누르면 다른 곳으로 이동
+        context.go('/DashBoard'); // 확인 누르면 다른 곳으로 이동
       });
     });
 

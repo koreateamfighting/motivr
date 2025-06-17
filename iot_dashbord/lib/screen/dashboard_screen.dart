@@ -12,7 +12,7 @@ import 'package:iot_dashboard/component/dashboard/iot_status.dart';
 import 'package:iot_dashboard/component/dashboard/weather_info.dart';
 import 'package:iot_dashboard/component/dashboard/recent_alarm_section.dart';
 import 'package:iot_dashboard/component/dashboard/work_task_and_notice.dart';
-import 'dart:ui' as ui;
+import 'dart:async';
 import 'dart:html' as html;
 
 class DashBoard extends StatefulWidget {
@@ -27,8 +27,20 @@ class DashBoard extends StatefulWidget {
 
 class _DashBoardState extends State<DashBoard> {
   @override
+
   void initState() {
     super.initState();
+
+    // 1분마다 현재 시간을 체크
+    Timer.periodic(Duration(minutes: 1), (timer) {
+      final now = DateTime.now();
+
+      // 원하는 시간: 오전 6시 56분
+      if (now.hour == 6 && now.minute == 56) {
+        print("웹 페이지 새로고침");
+        html.window.location.reload(); // 웹페이지 새로고침
+      }
+    });
   }
 
   @override

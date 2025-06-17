@@ -193,7 +193,7 @@ class _WorkProcessStatusState extends State<WorkProcessStatus> {
               // onPressed: () {
               // Navigator.of(context).pop();
               // // 🚪 관리자 아니면 대시보드로 강제 이동
-              // Navigator.of(context).pushReplacementNamed('/dashboard0');
+              // Navigator.of(context).pushReplacementNamed('/DashBoard');
               // },
               // child: Text('확인'),
               // ),

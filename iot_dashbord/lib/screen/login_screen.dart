@@ -58,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final errorMessage = await UserController.login(userID, password);
     if (errorMessage == null) {
-      context.go('/dashboard0');
+      context.go('/DashBoard');
     } else {
       showDialog(
         context: context,
@@ -438,7 +438,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                             await UserController.login(
                                                 userID, password);
                                             if (errorMessage == null) {
-                                              context.go('/dashboard0');
+                                              context.go('/DashBoard');
                                             } else {
                                               showDialog(
                                                 context: context,
