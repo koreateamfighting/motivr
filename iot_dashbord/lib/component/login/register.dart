@@ -29,6 +29,7 @@ class _RegisterWidgetState extends State<RegisterWidget> {
   final _positionController = TextEditingController();
   final _roleController = TextEditingController();
   bool checkedID = false;
+
   @override
   void dispose() {
     _idController.dispose();
@@ -46,11 +47,16 @@ class _RegisterWidgetState extends State<RegisterWidget> {
 
   Future<void> _onRegisterTap() async {
     // 👉 ID, PW 둘 다 필수 검사
-    if (_idController.text.trim().isEmpty || _pwController.text.isEmpty) {
+    if  (_idController.text.trim().isEmpty ||
+        _pwController.text.isEmpty ||
+        _emailController.text.trim().isEmpty) {
       showDialog(
         context: context,
         barrierDismissible: false, // 바깥 클릭 시 닫히지 않도록
-        builder: (_) => DialogForm(mainText:"필수항목을 입력해주세요.",btnText: "닫기",),
+        builder: (_) => DialogForm(
+          mainText: "필수항목을 입력해주세요.",
+          btnText: "닫기",
+        ),
       );
       return;
     }
@@ -59,20 +65,25 @@ class _RegisterWidgetState extends State<RegisterWidget> {
       showDialog(
         context: context,
         barrierDismissible: false, // 바깥 클릭 시 닫히지 않도록
-        builder: (_) => DialogForm(mainText:"비밀번호가 일치 하지 않습니다..",btnText: "닫기",),
+        builder: (_) => DialogForm(
+          mainText: "비밀번호가 일치 하지 않습니다..",
+          btnText: "닫기",
+        ),
       );
       return;
     }
 
-    if(checkedID == false){
+    if (checkedID == false) {
       showDialog(
         context: context,
         barrierDismissible: false, // 바깥 클릭 시 닫히지 않도록
-        builder: (_) => DialogForm(mainText:"아이디 중복체크를 확인 해주세요.",btnText: "닫기",),
+        builder: (_) => DialogForm(
+          mainText: "아이디 중복체크를 확인 해주세요.",
+          btnText: "닫기",
+        ),
       );
       return;
     }
-
 
     // 나머지는 선택입력
     final user = UserModel(
@@ -100,7 +111,10 @@ class _RegisterWidgetState extends State<RegisterWidget> {
       showDialog(
         context: context,
         barrierDismissible: false, // 바깥 클릭 시 닫히지 않도록
-        builder: (_) => DialogForm(mainText:"${errorMessage}",btnText: "닫기",),
+        builder: (_) => DialogForm(
+          mainText: "${errorMessage}",
+          btnText: "닫기",
+        ),
       );
     }
   }
@@ -159,20 +173,58 @@ class _RegisterWidgetState extends State<RegisterWidget> {
                                   ),
                                 ),
                               ),
-                              child: Text(
-                                '회원 가입',
-                                style: TextStyle(
-                                  fontFamily: 'PretendardGOV',
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 36.sp,
-                                  color: Color(0xff0B2144),
-                                ),
-                              ),
+                              child:  Text.rich(TextSpan(
+                                    children: <TextSpan>[
+                                      TextSpan(
+                                          text: '회원 가입', style: TextStyle(
+                                          fontSize: 36.sp,
+                                          fontFamily: 'PretendartGOV',
+                                          fontWeight: FontWeight.w700,
+                                        color: Color(0xff0B2144),
+                                      )),
+
+                                      TextSpan(
+                                          text:'\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t(', style: TextStyle(
+                                          fontSize: 16.sp,
+                                          fontFamily: 'PretendartGOV',
+                                          fontWeight: FontWeight.w400,
+                                          color: Colors.grey)
+
+                                      ),
+                                      TextSpan(
+                                          text:'*', style: TextStyle(
+                                          fontSize: 16.sp,
+                                          fontFamily: 'PretendartGOV',
+                                          fontWeight: FontWeight.w400,
+                                          color: Colors.red)
+
+                                      ),
+                                      TextSpan(
+                                          text:'표시 항목은 필수 입력 항목입니다.)', style: TextStyle(
+                                          fontSize: 16.sp,
+                                          fontFamily: 'PretendartGOV',
+                                          fontWeight: FontWeight.w400,
+                                          color: Colors.grey)
+
+                                      ),
+                                    ]
+                                ))
+                              // child: Text(
+                              //   '회원 가입',
+                              //   style: TextStyle(
+                              //     fontFamily: 'PretendardGOV',
+                              //     fontWeight: FontWeight.w700,
+                              //     fontSize: 36.sp,
+                              //     color: Color(0xff0B2144),
+                              //   ),
+                              // ),
                             ),
                             SizedBox(
                               height: 44.h,
                             ),
-                            formLabel('아이디'),
+
+                              formLabel('아이디',true),
+
                             Container(
                               width: 800.w,
                               child: Row(
@@ -190,38 +242,45 @@ class _RegisterWidgetState extends State<RegisterWidget> {
                                       final userID = _idController.text.trim();
 
                                       if (userID.isEmpty) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text('아이디를 입력해주세요.')),
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                              content: Text('아이디를 입력해주세요.')),
                                         );
                                         return;
                                       }
 
-                                      final isAvailable = await UserController.checkDuplicateUserID(userID);
+                                      final isAvailable = await UserController
+                                          .checkDuplicateUserID(userID);
 
                                       if (isAvailable) {
                                         setState(() {
                                           checkedID = true;
                                           showDialog(
                                             context: context,
-                                            barrierDismissible: false, // 바깥 클릭 시 닫히지 않도록
-                                            builder: (_) => DialogForm(mainText:"사용가능한 아이디입니다.",btnText: "확인",),
+                                            barrierDismissible: false,
+                                            // 바깥 클릭 시 닫히지 않도록
+                                            builder: (_) => DialogForm(
+                                              mainText: "사용가능한 아이디입니다.",
+                                              btnText: "확인",
+                                            ),
                                           );
-
                                         });
-
                                       } else {
                                         setState(() {
                                           checkedID = false;
                                           showDialog(
                                             context: context,
-                                            barrierDismissible: false, // 바깥 클릭 시 닫히지 않도록
-                                            builder: (_) => DialogForm(mainText:"이미 사용 중인 아이디입니다.",btnText: "닫기",),
+                                            barrierDismissible: false,
+                                            // 바깥 클릭 시 닫히지 않도록
+                                            builder: (_) => DialogForm(
+                                              mainText: "이미 사용 중인 아이디입니다.",
+                                              btnText: "닫기",
+                                            ),
                                           );
                                         });
-
                                       }
                                     },
-
                                     child: Container(
                                       width: 210.w,
                                       height: 80.h,
@@ -242,17 +301,14 @@ class _RegisterWidgetState extends State<RegisterWidget> {
                                       ),
                                     ),
                                   ),
-
                                 ],
                               ),
                             ),
-
-
-                            formLabel('비밀번호'),
+                            formLabel('비밀번호',true),
                             formTextField('비밀번호 입력 (문자, 숫자 포함)', _pwController,
                                 borderColor: Color(0xff67788e),
                                 fieldType: FormFieldType.password),
-                            formLabel('비밀번호 확인'),
+                            formLabel('비밀번호 확인',true),
                             formTextField('비밀번호 재입력', _pwConfirmController,
                                 borderColor: Color(0xff67788e),
                                 fieldType: FormFieldType.password),
@@ -267,25 +323,26 @@ class _RegisterWidgetState extends State<RegisterWidget> {
                             SizedBox(
                               height: 24.h,
                             ),
-                            formLabel('이름'),
+                            formLabel('이름',false),
                             formTextField('이름을 입력해주세요', _nameController,
                                 fieldType: FormFieldType.name),
-                            formLabel('연락처'),
+                            formLabel('연락처',false),
                             formTextField('연락처', _phoneController,
                                 fieldType: FormFieldType.phone),
-                            formLabel('이메일 주소'),
+                            formLabel('이메일 주소',true),
                             formTextField('이메일 주소 입력', _emailController,
+                                borderColor: Color(0xff67788e),
                                 fieldType: FormFieldType.name),
-                            formLabel('회사명'),
+                            formLabel('회사명',false),
                             formTextField('회사명을 입력해주세요', _companyController,
                                 fieldType: FormFieldType.normal),
-                            formLabel('부서명'),
+                            formLabel('부서명',false),
                             formTextField('부서명을 입력해주세요', _deptController,
                                 fieldType: FormFieldType.normal),
-                            formLabel('직급'),
+                            formLabel('직급',false),
                             formTextField('직급을 입력해주세요', _positionController,
                                 fieldType: FormFieldType.normal),
-                            formLabel('담당업무'),
+                            formLabel('담당업무',false),
                             formTextField('담당업무를 입력해주세요', _roleController,
                                 fieldType: FormFieldType.normal),
                             SizedBox(
@@ -506,20 +563,39 @@ class _RegisterWidgetState extends State<RegisterWidget> {
   }
 }
 
-Widget formLabel(String text) {
+Widget formLabel(String text,bool requireItem) {
   return Container(
     width: 800.w,
     height: 50.h,
     padding: EdgeInsets.only(top: 4.h),
-    child: Text(
-      text,
-      style: TextStyle(
-        fontFamily: 'PretendardGOV',
-        fontWeight: FontWeight.w400,
-        fontSize: 24.sp,
-        color: Color(0xff0B2144),
-      ),
-    ),
+    // child: Text(
+    //   text,
+    //   style: TextStyle(
+    //     fontFamily: 'PretendardGOV',
+    //     fontWeight: FontWeight.w400,
+    //     fontSize: 24.sp,
+    //     color: Color(0xff0B2144),
+    //   ),
+    // )
+    child: Text.rich(TextSpan(
+      children: <TextSpan>[
+        TextSpan(
+          text: text, style: TextStyle(
+          fontSize: 24.sp,
+          fontFamily: 'PretendartGOV',
+          fontWeight: FontWeight.w400,
+          color: Color(0xff0B2144)
+    )),
+        TextSpan(
+          text:requireItem? '*':'', style: TextStyle(
+            fontSize: 24.sp,
+            fontFamily: 'PretendartGOV',
+            fontWeight: FontWeight.w400,
+            color: Colors.red)
+
+        )
+      ]
+    )),
   );
 }
 

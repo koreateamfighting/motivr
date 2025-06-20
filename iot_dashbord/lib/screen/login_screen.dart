@@ -261,14 +261,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                                       // 아이디 찾기 클릭 시
                                                       context.go('/find_account?tab=id');
 
-// 비밀번호 찾기 클릭 시
-
-
-                                                      // showDialog(
-                                                      //   context: context,
-                                                      //   barrierDismissible: false,
-                                                      //   builder: (_) => DialogForm(mainText:"준비중입니다.",btnText: "확인",),
-                                                      // );
                                                     },
                                                     child: Text(
                                                       '아이디 찾기',
@@ -371,31 +363,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                                   ),
                                                 )
 
-
-
-                                                // InkWell(
-                                                //   onTap: (){
-                                                //     showDialog(
-                                                //       context: context,
-                                                //       barrierDismissible: false, // 바깥 클릭 시 닫히지 않도록
-                                                //       builder: (_) => DialogForm(mainText:"준비중입니다.",btnText: "확인",),
-                                                //     );
-                                                //   },
-                                                //   child:         Container(
-                                                //     alignment: Alignment.centerRight,
-                                                //     width: 112.w,
-                                                //     height: 50.h,
-                                                //     child: Text(
-                                                //       '비밀번호 찾기',
-                                                //       style: TextStyle(
-                                                //         fontFamily: 'PretendardGOV',
-                                                //         fontWeight: FontWeight.w400,
-                                                //         fontSize: 20.sp,
-                                                //         color: Colors.white,
-                                                //       ),
-                                                //     ),
-                                                //   ),
-                                                // )
                                               ]),
                                         ),
                                       ],

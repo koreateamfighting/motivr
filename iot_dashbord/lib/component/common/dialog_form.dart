@@ -107,7 +107,7 @@ class _DialogFormState extends State<DialogForm> {
                           SizedBox(
                             height: 62.h,
                           ),
-                          Text(
+                          SelectableText(
                             widget.mainText,
                             style: TextStyle(
                                 fontFamily: 'PretendardGOV',

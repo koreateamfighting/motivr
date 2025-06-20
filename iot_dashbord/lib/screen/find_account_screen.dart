@@ -22,6 +22,7 @@ class _FindAccountScreenState extends State<FindAccountScreen> {
   static const designHeight = 2144;
   final _idController = TextEditingController();
   final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
 
   final FocusNode _focusNode = FocusNode(); // ✅ 키 이벤트 포커스용
   late String selectedTab;
@@ -248,6 +249,64 @@ class _FindAccountScreenState extends State<FindAccountScreen> {
                                       SizedBox(
                                         height: 25.h,
                                       ),
+                                      if(selectedTab == 'pw')
+                                      Container(
+                                        height: 50.h,
+                                        child: Text(
+                                          '이메일',
+                                          style: TextStyle(
+                                            fontFamily: 'PretendardGOV',
+                                            fontWeight: FontWeight.w400,
+                                            fontSize: 24.sp,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                      if(selectedTab == 'pw')
+                                      Container(
+                                        width: 600.w,
+                                        height: 80.h,
+                                        // 고정된 입력창 높이
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 16.w),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          border: Border.all(
+                                            color: const Color(0xFFE2E8F0),
+                                            width: 1.w,
+                                          ),
+                                          borderRadius:
+                                          BorderRadius.circular(8.r),
+                                        ),
+                                        child: Center(
+                                          child: TextField(
+                                            controller: _emailController,
+                                            decoration: InputDecoration(
+                                              border: InputBorder.none,
+                                              hintText: '이메일 입력',
+                                              hintStyle: TextStyle(
+                                                color: Color(0xffA0AEC0),
+                                                fontSize: 32.sp,
+                                                fontWeight: FontWeight.w400,
+                                                fontFamily: 'PretendardGOV',
+                                              ),
+                                              isDense: true,
+                                              // 👈 여백 자동 줄이기
+                                              contentPadding: EdgeInsets.symmetric(vertical: 16.h),
+                                            ),
+                                            style: TextStyle(
+                                              fontSize: 36.sp,
+                                              color: Color(0xff2d3748),
+                                            ),
+                                            textAlignVertical: TextAlignVertical
+                                                .center, // 👈 수직 정렬 핵심
+                                          ),
+                                        ),
+                                      ),
+                                      if(selectedTab == 'pw')
+                                      SizedBox(
+                                        height: 25.h,
+                                      ),
                                       Container(
                                         width: 600.w,
                                         height: 2.h,
@@ -299,14 +358,41 @@ class _FindAccountScreenState extends State<FindAccountScreen> {
                                                         btnText: "확인"),
                                                   );
                                                 }
-                                              } else {
-                                                showDialog(
-                                                  context: context,
-                                                  builder: (_) => DialogForm(
-                                                      mainText:
-                                                          "비밀번호 찾기는 아직 준비중입니다.\n 관리자에게 문의 바랍니다.",fontSize: 32.sp,
-                                                      btnText: "확인"),
-                                                );
+                                              }  else {
+                                                final userID = _idController.text.trim();
+                                                final email = _emailController.text.trim();
+
+                                                if (userID.isEmpty || email.isEmpty) {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (_) => DialogForm(
+                                                      mainText: "아이디와 이메일을 모두 입력해주세요.",
+                                                      btnText: "확인",
+                                                    ),
+                                                  );
+                                                  return;
+                                                }
+
+                                                try {
+                                                  final tempPassword = await UserController.recoverPassword(userID, email);
+
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (_) => DialogForm(
+                                                      mainText: '임시 비밀번호는 "$tempPassword"\t입니다.\n로그인 후 꼭 비밀번호를 변경해주세요.',
+                                                      btnText: "확인",
+                                                      fontSize: 24.sp,
+                                                    ),
+                                                  );
+                                                } catch (e) {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (_) => DialogForm(
+                                                      mainText: e.toString().replaceAll('Exception: ', ''),
+                                                      btnText: "확인",
+                                                    ),
+                                                  );
+                                                }
                                               }
                                             },
                                             child: Text(

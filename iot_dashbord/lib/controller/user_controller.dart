@@ -43,6 +43,28 @@ class UserController {
     }
   }
 
+  static Future<String?> recoverPassword(String userID, String email) async {
+    try {
+      final uri = Uri.parse('https://hanlimtwin.kr:3030/api/recover-password');
+      final response = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'userID': userID, 'email': email}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['tempPassword'];
+      } else {
+        final data = jsonDecode(response.body);
+        return Future.error(data['error'] ?? '서버 오류');
+      }
+    } catch (e) {
+      return Future.error('통신 오류');
+    }
+  }
+
+
   static Future<String?> login(String userID, String password) async {
     try {
       final response = await http.post(
@@ -104,6 +126,21 @@ class UserController {
     }
   }
 
+  static Future<bool> changePassword(String userID, String currentPw, String newPw) async {
+    final uri = Uri.parse('https://hanlimtwin.kr:3030/api/change-password');
+
+    final response = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'userID': userID,
+        'currentPassword': currentPw,
+        'newPassword': newPw,
+      }),
+    );
+
+    return response.statusCode == 200;
+  }
 
 
 

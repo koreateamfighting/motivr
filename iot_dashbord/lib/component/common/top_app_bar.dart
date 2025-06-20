@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:iot_dashboard/controller/user_controller.dart';
 import 'dart:html' as html;
 import 'package:iot_dashboard/utils/iframe_visibility.dart';
+import 'package:iot_dashboard/component/common/change_password_dialog.dart';
 import 'package:iot_dashboard/utils/setting_service.dart';
 
 class TopAppBar extends StatelessWidget {
@@ -56,7 +57,7 @@ class TopAppBar extends StatelessWidget {
                 // ),
                 Tooltip(
                   message: '메뉴 펼치기/닫기',
-                  child:  Container(
+                  child: Container(
                     alignment: Alignment.center,
                     width: 60.w,
                     height: 60.h,
@@ -66,7 +67,7 @@ class TopAppBar extends StatelessWidget {
                     ),
                   ),
                 )
-               ,
+                ,
                 SizedBox(width: 140.w),
                 Container(
                   alignment: Alignment.center, // 내부에서 우측 정렬
@@ -76,7 +77,8 @@ class TopAppBar extends StatelessWidget {
                     color: Colors.white,
                     // padding: EdgeInsets.symmetric(vertical: 8.h), // ✅ 내부 여백 추가
                     child: Image.network(
-                      'https://hanlimtwin.kr:3030${SettingService.setting?.logoUrl ?? ''}',
+                      'https://hanlimtwin.kr:3030${SettingService.setting
+                          ?.logoUrl ?? ''}',
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) {
                         return const Icon(Icons.image_not_supported);
@@ -103,7 +105,7 @@ class TopAppBar extends StatelessWidget {
                         color: Color(0xff0b1437)),
                   ),
                 ),
-                SizedBox(width: 840.w),
+                SizedBox(width: 750.w),
 
                 // WeatherInfoBar(),
 
@@ -128,6 +130,34 @@ class TopAppBar extends StatelessWidget {
 
                 SizedBox(width: 63.w),
                 Tooltip(
+                  message: '설정',
+                  child: InkWell(
+                    onTap: () {
+                      hideIframes();
+
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false, // 바깥 클릭으로 닫히지 않도록
+                        builder: (_) => const ChangePasswordDialog(),
+                      ).then((_) {
+                        showIframes(); // 다이얼로그 닫힌 후 다시 iframe 보여주기
+                      });
+                    },
+
+                    child: Container(
+                      width: 60.w,
+                      height: 60.h,
+                      padding: EdgeInsets.fromLTRB(4.0.w, 4.0.h, 4.0.w, 4.0.h),
+                      decoration: BoxDecoration(
+                        color: Color(0xFF3182ce),
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                      child: Image.asset('assets/icons/uncolor_setting.png'),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 63.w),
+                Tooltip(
                     message: '로그아웃',
                     child: InkWell(
                         onTap: () async {
@@ -136,20 +166,22 @@ class TopAppBar extends StatelessWidget {
                           await showDialog(
                             context: context,
                             barrierDismissible: false,
-                            builder: (_) => DialogForm2(
-                              mainText: "로그아웃 하시겠습니까?",
-                              btnText1: "아니오",
-                              btnText2: "네",
-                              onConfirm: () async {
-                                final userID = await AuthService.getUserID();
-                                if (userID != null) {
-                                  await UserController.logout(userID);
-                                }
-                                if (context.mounted) {
-                                  context.go('/login');
-                                }
-                              },
-                            ),
+                            builder: (_) =>
+                                DialogForm2(
+                                  mainText: "로그아웃 하시겠습니까?",
+                                  btnText1: "아니오",
+                                  btnText2: "네",
+                                  onConfirm: () async {
+                                    final userID = await AuthService
+                                        .getUserID();
+                                    if (userID != null) {
+                                      await UserController.logout(userID);
+                                    }
+                                    if (context.mounted) {
+                                      context.go('/login');
+                                    }
+                                  },
+                                ),
                           );
 
                           showIframes(); // ✅ 다이얼로그 닫히고 나서 실행됨
@@ -158,7 +190,7 @@ class TopAppBar extends StatelessWidget {
                           width: 60.w,
                           height: 60.h,
                           padding:
-                              EdgeInsets.fromLTRB(4.0.w, 4.0.h, 4.0.w, 4.0.h),
+                          EdgeInsets.fromLTRB(4.0.w, 4.0.h, 4.0.w, 4.0.h),
                           decoration: BoxDecoration(
                             color: Color(0xFF3182ce),
                             borderRadius: BorderRadius.circular(10.r),

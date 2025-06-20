@@ -31,6 +31,7 @@ class _HlsPlayerIframeState extends State<HlsPlayerIframe> {
   void _refreshIframe() {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     _iframeUrl = 'https://hanlimtwin.kr:3030/hls_player.html?cam=${widget.cam}&t=$timestamp';
+    print('현재 cctv의 url :${_iframeUrl}');
     _viewId = 'hls-player-iframe-${widget.cam}-$timestamp';
 
     // re-register with a new viewId
