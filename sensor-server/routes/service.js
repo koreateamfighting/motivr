@@ -90,6 +90,34 @@ router.post('/test_submit_data', (req, res) => {
 
   return res.status(200).json(clientPayload); // 응답은 클라이언트 내용
 });
+router.get('/progress', async (req, res) => {
+  try {
+    const pool = await sql.connect(dbConfig); // ✅ 추가
+    const result = await pool.request().query(`
+      SELECT TOP 1 progress FROM WorkProgress ORDER BY updated_at DESC
+    `);
+    res.json({ progress: result.recordset[0]?.progress || 0 });
+  } catch (err) {
+    console.error('❌ Progress fetch error:', err); // ✅ 에러 로깅도 추가
+    res.status(500).send('DB Error');
+  }
+});
+
+router.post('/progress', async (req, res) => {
+  const { progress } = req.body;
+  try {
+    const pool = await sql.connect(dbConfig); // ❗이 줄이 없으면 에러!
+    await pool.request()
+      .input('progress', sql.Float, progress)
+      .query(`
+        INSERT INTO WorkProgress (progress, updated_at) VALUES (@progress, GETDATE())
+      `);
+    res.sendStatus(200);
+  } catch (err) {
+    console.error('❌ DB 저장 실패:', err); // 디버깅 출력 추가
+    res.status(500).send('DB Error');
+  }
+});
 
 
 

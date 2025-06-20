@@ -6,9 +6,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class IotDataSource extends DataGridSource {
   final BuildContext context;
+  final bool isDegree; // ⬅︎ 추가
   List<DataGridRow> _iotRows = [];
 
-  IotDataSource(this.context, List<IotItem> items) {
+  IotDataSource(this.context, List<IotItem> items,this.isDegree) {
     _iotRows = items.map<DataGridRow>((item) {
       return DataGridRow(cells: [
         DataGridCell<String>(columnName: 'id', value: item.id),
@@ -18,10 +19,9 @@ class IotDataSource extends DataGridSource {
         DataGridCell<String>(columnName: 'battery', value: item.battery),
         DataGridCell<String>(
             columnName: 'lastUpdated', value: item.lastUpdated),
-        DataGridCell<double>(columnName: 'x', value: item.x),
-        DataGridCell<double>(columnName: 'y', value: item.y),
-        DataGridCell<double>(columnName: 'z', value: item.z),
-        DataGridCell<String>(columnName: 'incline', value: item.incline),
+        DataGridCell<String>(columnName: 'x', value: isDegree ? item.X_Deg : item.X_MM),
+        DataGridCell<String>(columnName: 'y', value: isDegree ? item.Y_Deg : item.Y_MM),
+        DataGridCell<String>(columnName: 'z', value: isDegree ? item.Z_Deg : item.Z_MM),
         DataGridCell<String>(
             columnName: 'batteryInfo', value: item.batteryInfo),
         DataGridCell<String>(columnName: 'download', value: item.download),

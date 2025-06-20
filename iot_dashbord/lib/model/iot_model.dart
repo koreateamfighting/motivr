@@ -5,10 +5,12 @@ class IotItem {
   final String status;
   final String battery;
   final String lastUpdated;
-  final dynamic x;
-  final dynamic y;
-  final dynamic z;
-  final String incline;
+  final String X_MM;
+  final String Y_MM;
+  final String Z_MM;
+  final String X_Deg;
+  final String Y_Deg;
+  final String Z_Deg;
   final String batteryInfo;
   final String download;
 
@@ -19,10 +21,13 @@ class IotItem {
     required this.status,
     required this.battery,
     required this.lastUpdated,
-    required this.x,
-    required this.y,
-    required this.z,
-    required this.incline,
+    required this.X_MM,
+    required this.Y_MM,
+    required this.Z_MM,
+    required this.X_Deg,
+    required this.Y_Deg,
+    required this.Z_Deg,
+
     required this.batteryInfo,
     required this.download,
   });
@@ -35,12 +40,15 @@ class IotItem {
       status: json['status'],
       battery: json['battery'],
       lastUpdated: json['lastUpdated'],
-      x: json['x'],
-      y: json['y'],
-      z: json['z'],
-      incline: json['incline'],
+      X_MM: json['X(mm)'].toString(),
+      Y_MM: json['Y(mm)'].toString(),
+      Z_MM: json['Z(mm)'].toString(),
+      X_Deg: json['X_Deg'].toString(),
+      Y_Deg: json['Y_Deg'].toString(),
+      Z_Deg: json['Z_Deg'].toString(),
       batteryInfo: json['batteryInfo'],
       download: json['download'],
     );
   }
+
 }

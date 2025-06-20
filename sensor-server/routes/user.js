@@ -9,8 +9,13 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 
 function generateAccessToken(user) {
-  return jwt.sign({ userID: user.UserID, id: user.Id }, JWT_SECRET, { expiresIn: '15m' });
+  return jwt.sign(
+    { userID: user.UserID, id: user.Id, role: user.Role }, // ✅ role 포함
+    JWT_SECRET,
+    { expiresIn: '15m' }
+  );
 }
+
 function generateRefreshToken(user) {
   return jwt.sign({ userID: user.UserID, id: user.Id }, JWT_REFRESH_SECRET, { expiresIn: '7d' });
 }
@@ -55,7 +60,7 @@ router.post('/register', async (req, res) => {
     role
   } = req.body;
 
-  if (!userID || !password) {
+  if (!userID || !password ||!email) {
     return res.status(400).json({ error: '아이디와 비밀번호는 필수입니다.' });
   }
 
@@ -101,9 +106,10 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   const { userID, password } = req.body;
 
-  if (!userID || !password) {
-    return res.status(400).json({ error: '아이디와 비밀번호는 필수입니다.' });
+  if (!userID || !password ) {
+    return res.status(400).json({ error: '아이디, 비밀번호, 이메일은 필수입니다.' });
   }
+  
 
   try {
     const pool = await sql.connect(dbConfig);
@@ -125,7 +131,13 @@ router.post('/login', async (req, res) => {
       .input('RefreshToken', sql.NVarChar, refreshToken)
       .query('UPDATE Users SET RefreshToken = @RefreshToken, LastLoginAt = GETDATE() WHERE UserID = @UserID');
 
-    res.json({ accessToken, refreshToken });
+      res.json({
+        accessToken,
+        refreshToken,
+        role: user.Role,  // 💡 선택사항
+        name: user.Name   // 💡 선택사항
+      });
+      
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: '서버 오류' });
@@ -179,6 +191,88 @@ router.get('/find-id', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: '서버 오류' });
+  }
+});
+
+// 임시 비밀번호 발급
+router.post('/recover-password', async (req, res) => {
+  const { userID, email } = req.body;
+
+  if (!userID || !email) {
+    return res.status(400).json({ error: '아이디와 이메일은 필수입니다.' });
+  }
+
+  try {
+    const pool = await sql.connect(dbConfig);
+    const result = await pool.request()
+      .input('UserID', sql.NVarChar, userID)
+      .query('SELECT * FROM Users WHERE UserID = @UserID');
+
+    const user = result.recordset[0];
+
+    if (!user) {
+      return res.status(404).json({ error: '존재하지 않는 사용자입니다.' });
+    }
+
+    if (user.Email !== email) {
+      return res.status(403).json({ error: '계정의 이메일과 일치하지 않습니다.' });
+    }
+
+    // 1. 임시 비밀번호 생성
+    const tempPassword = generateRandomPassword();
+    const hashed = await bcrypt.hash(tempPassword, 10);
+
+    // 2. DB 업데이트
+    await pool.request()
+      .input('UserID', sql.NVarChar, userID)
+      .input('PasswordHash', sql.NVarChar, hashed)
+      .query('UPDATE Users SET PasswordHash = @PasswordHash WHERE UserID = @UserID');
+
+    // 3. 프론트에 임시 비밀번호 반환
+    return res.status(200).json({ tempPassword });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: '서버 오류' });
+  }
+});
+
+// 임시 비밀번호 생성 함수
+function generateRandomPassword() {
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  return Array.from({ length: 10 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
+//비밀번호 변경
+router.post('/change-password', async (req, res) => {
+  const { userID, currentPassword, newPassword } = req.body;
+
+  if (!userID || !currentPassword || !newPassword) {
+    return res.status(400).json({ error: '모든 필드를 입력해주세요.' });
+  }
+
+  try {
+    const pool = await sql.connect(dbConfig);
+    const result = await pool.request()
+      .input('UserID', sql.NVarChar, userID)
+      .query('SELECT * FROM Users WHERE UserID = @UserID');
+
+    const user = result.recordset[0];
+    if (!user) return res.status(404).json({ error: '사용자를 찾을 수 없습니다.' });
+
+    const match = await bcrypt.compare(currentPassword, user.PasswordHash);
+    if (!match) return res.status(401).json({ error: '현재 비밀번호가 일치하지 않습니다.' });
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+
+    await pool.request()
+      .input('UserID', sql.NVarChar, userID)
+      .input('PasswordHash', sql.NVarChar, hashed)
+      .query('UPDATE Users SET PasswordHash = @PasswordHash WHERE UserID = @UserID');
+
+    return res.status(200).json({ message: '비밀번호 변경 성공' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: '서버 오류' });
   }
 });
 

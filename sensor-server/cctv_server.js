@@ -5,7 +5,7 @@ const https = require('https');
 const path = require('path');
 const cors = require('cors');
 const { router: cctvRouter, startHlsProcess } = require('./routes/cctv');
-
+const { startMotionDetect } = require('./routes/cctv'); // ✅ 추가
 const app = express();
 
 // HTTPS 인증서
@@ -33,8 +33,11 @@ app.use('/api', cctvRouter);
 
 app.use('/hls', express.static('public/hls'));
 console.log('✅ CCTV 라우터 import 성공');
-startHlsProcess('cam1'); // ✅ 자동 실행
-startHlsProcess('cam2'); // ✅ 자동 실행
+startHlsProcess('cam1');
+startMotionDetect('cam1'); // ✅ 감지도 시작
+
+startHlsProcess('cam2');
+startMotionDetect('cam2'); // ✅ cam2도 시작
 
 
 // HTTPS 서버 실행 (포트 4040)

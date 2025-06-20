@@ -39,6 +39,10 @@ app.use('/api', require('./routes/service'));
 app.use('/api', require('./routes/alarm'));  // 센서/기타
 app.use('/api', require('./routes/notice'));  // 센서/기타
 app.use('/api', require('./routes/worktask'));
+// ⬇️ 이 줄 추가
+const settingRouter = require('./routes/settings');
+app.use('/api', settingRouter);
+
 
 
 // HTTPS 서버 생성

@@ -4,7 +4,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:convert';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:iot_dashboard/model/iot_model.dart';
+import 'package:iot_dashboard/controller//iot_controller.dart';
 import 'package:iot_dashboard/component/details/propulsion_port_view.dart';
 import 'package:iot_dashboard/component/details/reach_port_view.dart';
 import 'package:iot_dashboard/component/details/iot_data_source.dart';
@@ -19,15 +21,17 @@ class DetailIotView extends StatefulWidget {
 class _DetailIotViewState extends State<DetailIotView> {
   int selectedTab = 0; //0 : 추진구 , 1 : 도달구
   final ScrollController _verticalController = ScrollController();
+  bool isDegree = false;
 
-  Future<List<IotItem>> loadIotData() async {
-    final String response =
-        await rootBundle.loadString('assets/data/temp_iot.json');
-    final List<dynamic> data = jsonDecode(response);
-    return data.map((e) => IotItem.fromJson(e)).toList();
-  }
 
-  void initstate(){
+  // Future<List<IotItem>> loadIotData() async {
+  //   final String response =
+  //   await rootBundle.loadString('assets/data/temp_iot.json');
+  //   final List<dynamic> data = jsonDecode(response);
+  //   return data.map((e) => IotItem.fromJson(e)).toList();
+  // }
+
+  void initstate() {
     super.initState();
   }
 
@@ -190,7 +194,11 @@ class _DetailIotViewState extends State<DetailIotView> {
                           width: 102.w,
                         ),
                         InkWell(
-                            onTap: () {},
+                            onTap: () {
+                              setState(() {
+                                isDegree = !isDegree;
+                              });
+                            },
                             child: Container(
                               width: 540.w,
                               height: 60.h,
@@ -301,66 +309,96 @@ class _DetailIotViewState extends State<DetailIotView> {
                   ),
                   // 이 영역만 바꾼 코드 (DataTable → SfDataGrid 사용)
                   Container(
-                    width: 2325.w,
-                    height: 1639.h,
-                    color: Colors.black,
-                    child: FutureBuilder<List<IotItem>>(
-                      future: loadIotData(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return Center(child: CircularProgressIndicator());
-                        }
+                      width: 2325.w,
+                      height: 1639.h,
+                      color: Colors.black,
+                      child: ChangeNotifierProvider(
+                        create: (_) =>
+                        IotController()
+                          ..fetchSampleIotItems(),
+                        child: Consumer<IotController>(
+                          builder: (context, controller, _) {
+                            final items = controller.items;
 
-                        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                          return Center(
-                            child: Text(
-                              '데이터 없음',
-                              style: TextStyle(color: Colors.white, fontSize: 24.sp),
-                            ),
-                          );
-                        }
+                            if (items.isEmpty) {
+                              return Center(
+                                child: Text(
+                                  '데이터 없음',
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 24.sp),
+                                ),
+                              );
+                            }
 
-                        final items = snapshot.data!;
-                        final dataSource = IotDataSource(context,items);
+                            final dataSource = IotDataSource(context, items,isDegree);
 
-                        return ScrollbarTheme(
-                          data: ScrollbarThemeData(
-                            thumbColor: MaterialStateProperty.all(Color(0xff004aff)), // 파란색 스크롤바
-                            trackColor: MaterialStateProperty.all(Colors.transparent),
-                            radius: Radius.circular(10.r),
-                            thickness: MaterialStateProperty.all(10.w),
-                          ),
-                          child: Scrollbar(
-                            thumbVisibility: true,
-                            controller: _verticalController,
-                            child: SfDataGrid(
-                              source: dataSource,
-                              allowSorting: false,
-                              verticalScrollController: _verticalController, // ⬅️ 연결 중요
-                              columnWidthMode: ColumnWidthMode.none,
-                              gridLinesVisibility: GridLinesVisibility.both,
-                              headerGridLinesVisibility: GridLinesVisibility.both,
-                              columns: [
-                                GridColumn(columnName: 'id', width: 120.w, label: buildHeader('ID')),
-                                GridColumn(columnName: 'type', width: 120.w, label: buildHeader('유형')),
-                                GridColumn(columnName: 'location', width: 219.w, label: buildHeader('설치 위치')),
-                                GridColumn(columnName: 'status', width: 160.w, label: buildHeader('상태')),
-                                GridColumn(columnName: 'battery', width: 160.w, label: buildHeader('배터리')),
-                                GridColumn(columnName: 'lastUpdated', width: 320.w, label: buildHeader('마지막 수신')),
-                                GridColumn(columnName: 'x', width: 180.w, label: buildHeader('X(mm)')),
-                                GridColumn(columnName: 'y', width: 180.w, label: buildHeader('Y(mm)')),
-                                GridColumn(columnName: 'z', width: 180.w, label: buildHeader('Z(mm)')),
-                                GridColumn(columnName: 'incline', width: 180.w, label: buildHeader('경사(°C)')),
-                                GridColumn(columnName: 'batteryInfo', width: 220.w, label: buildHeader('배터리 정보')),
-                                GridColumn(columnName: 'download', width: 261.w, label: buildHeader('데이터 다운로드')),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                            return ScrollbarTheme(
+                              data: ScrollbarThemeData(
+                                thumbColor: MaterialStateProperty.all(
+                                    Color(0xff004aff)),
+                                radius: Radius.circular(10.r),
+                                thickness: MaterialStateProperty.all(10.w),
+                              ),
+                              child: Scrollbar(
+                                thumbVisibility: true,
+                                controller: _verticalController,
+                                child: SfDataGrid(
+                                  source: dataSource,
+                                  allowSorting: false,
+                                  verticalScrollController: _verticalController,
+                                  columnWidthMode: ColumnWidthMode.none,
+                                  gridLinesVisibility: GridLinesVisibility.both,
+                                  headerGridLinesVisibility: GridLinesVisibility
+                                      .both,
+                                  columns: [
+                                    GridColumn(columnName: 'id',
+                                        width: 120.w,
+                                        label: buildHeader('ID')),
+                                    GridColumn(columnName: 'type',
+                                        width: 120.w,
+                                        label: buildHeader('유형')),
+                                    GridColumn(columnName: 'location',
+                                        width: 219.w,
+                                        label: buildHeader('설치 위치')),
+                                    GridColumn(columnName: 'status',
+                                        width: 160.w,
+                                        label: buildHeader('상태')),
+                                    GridColumn(columnName: 'battery',
+                                        width: 160.w,
+                                        label: buildHeader('배터리')),
+                                    GridColumn(columnName: 'lastUpdated',
+                                        width: 320.w,
+                                        label: buildHeader('마지막 수신')),
+                                    GridColumn(
+                                      columnName: 'X_MM',
+                                      width: 180.w,
+                                      label: buildHeader(isDegree ? 'X(°)' : 'X(mm)'),
+                                    ),
+                                    GridColumn(
+                                      columnName: 'Y_MM',
+                                      width: 180.w,
+                                      label: buildHeader(isDegree ? 'Y(°)' : 'Y(mm)'),
+                                    ),
+                                    GridColumn(
+                                      columnName: 'Z_MM',
+                                      width: 180.w,
+                                      label: buildHeader(isDegree ? 'Z(°)' : 'Z(mm)'),
+                                    ),
+
+                                    GridColumn(columnName: 'batteryInfo',
+                                        width: 220.w,
+                                        label: buildHeader('배터리 정보')),
+                                    GridColumn(columnName: 'download',
+                                        width: 442.w,
+                                        label: buildHeader('데이터 다운로드')),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
                   )
-
 
 
                   ,
@@ -381,9 +419,9 @@ class _DetailIotViewState extends State<DetailIotView> {
           border: isSelected
               ? null
               : Border.all(
-                  color: Color(0xff3182ce),
-                  width: 4.w,
-                ),
+            color: Color(0xff3182ce),
+            width: 4.w,
+          ),
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(5.r),
             topRight: Radius.circular(5.r),
@@ -422,6 +460,7 @@ class _DetailIotViewState extends State<DetailIotView> {
       ),
     );
   }
+
   DataCell buildDataCell(String columnName, String text) {
     // 상태(status) 컬럼에 색상 적용
     if (columnName == 'status') {
@@ -484,8 +523,6 @@ class _DetailIotViewState extends State<DetailIotView> {
   }
 
 
-
-
   DataCell buildStatusCell(String status) {
     Color color;
     switch (status) {
@@ -522,7 +559,6 @@ class _DetailIotViewState extends State<DetailIotView> {
       ),
     );
   }
-
 
 
 }
