@@ -1,6 +1,7 @@
 // detail_cctv_view.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:iot_dashboard/services/opencv_cctv_iframe.dart';
 import 'package:provider/provider.dart';
 import 'package:iot_dashboard/controller/cctv_controller.dart';
 import 'package:iot_dashboard/component/details/cctv_table_list.dart';
@@ -175,102 +176,169 @@ class _DetailCctvViewState extends State<DetailCctvView> {
                                       child: Container(
                                         width: double.infinity,
                                         color: const Color(0xff0b1437),
-                                        padding: EdgeInsets.symmetric(horizontal: 54.w),
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 54.w),
                                         child: selectedCamId == null
-                                            ? const Center(child: Text('No Data', style: TextStyle(color: Colors.white)))
-                                            : Builder(
-                                          builder: (context) {
-                                            final selected = controller.items.firstWhere(
-                                                  (e) => e.camId == selectedCamId,
-                                              orElse: () => CctvItem(
-                                                id: 0,
-                                                camId: '',
-                                                location: '',
-                                                isConnected: false,
-                                                eventState: '',
-                                                imageAnalysis: 0.0,
-                                                streamUrl: '',
-                                                lastRecorded: DateTime.now(),
-                                                recordPath: '',
-                                              ),
-                                            );
-                                            return Row(
-                                              children: [
-                                                SizedBox(
-                                                  width: 54.w,
-                                                ),
-                                                _cell(selected.camId, w: 180, ),
-                                                SizedBox(width: 20.w,),
-                                                _cell(selected.location, w: 200),
-                                                SizedBox(width: 65.w,),
-
-                                                Container(
-                                                  width: 40.w,
-                                                  height: 40.h,
-                                                  decoration: BoxDecoration(
-                                                    color: selected.isConnected
-                                                        ? const Color(0xffdb3829)
-                                                        : const Color(0xff3dc473),
-                                                    border: selected.isConnected
-                                                        ? Border.all(color: const Color(0xff3dc473), width: 2.w)
-                                                        : null,
-                                                    borderRadius: BorderRadius.circular(32.r),
-                                                  ),
-                                                ),
-                                                SizedBox(width: 123.w,),
-                                                Container(
-                                                  width: 140.w,
-                                                  height: 83.h,
-                                                  alignment: Alignment.centerLeft,
-                                                  child:Text(
-                                                    selected.eventState,
+                                            ? const Center(
+                                                child: Text('No Data',
                                                     style: TextStyle(
-                                                      fontFamily: 'PretendardGOV',
-                                                      fontSize: 36.sp,
-                                                      color: selected.eventState =='정상'? Color(0xff3dc47e) : Color(0xffdb3829),
-                                                      fontWeight: FontWeight.w600,
+                                                        color: Colors.white)))
+                                            : Builder(
+                                                builder: (context) {
+                                                  final selected = controller
+                                                      .items
+                                                      .firstWhere(
+                                                    (e) =>
+                                                        e.camId ==
+                                                        selectedCamId,
+                                                    orElse: () => CctvItem(
+                                                      id: 0,
+                                                      camId: '',
+                                                      location: '',
+                                                      isConnected: false,
+                                                      eventState: '',
+                                                      imageAnalysis: 0.0,
+                                                      streamUrl: '',
+                                                      lastRecorded:
+                                                          DateTime.now(),
+                                                      recordPath: '',
                                                     ),
-                                                  )
-                                                ),
-                                                SizedBox(width: 100.w,),
-                                                // if(selected.eventState =="정상")
-                                                _cell('${selected.imageAnalysis.toStringAsFixed(2)} 정상', w: 200),
-                                                SizedBox(width: 123.w,),
-                                                _cell(selected.streamUrl, w: 600,),
-                                                SizedBox(width: 140.w,),
-                                                _cell(
-                                                  '${selected.lastRecorded.year}-${selected.lastRecorded.month.toString().padLeft(2, '0')}-${selected.lastRecorded.day.toString().padLeft(2, '0')} '
-                                                      '${selected.lastRecorded.hour.toString().padLeft(2, '0')}:${selected.lastRecorded.minute.toString().padLeft(2, '0')}',
-                                                  w: 500,
-                                                ),
-                                                Container(
-                                                  width: 149.61.w,
-                                                  height: 55.08.h,
-                                                  alignment: Alignment.center,
-                                                  child: TextButton(
-                                                    onPressed: () {
-                                                      // TODO: implement download logic
-                                                    },
-                                                    style: TextButton.styleFrom(
-                                                      backgroundColor: const Color(0xff2196f3),
-                                                      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 10.h),
-                                                        shape: RoundedRectangleBorder(
-                                                          borderRadius: BorderRadius.circular(5.r), // ✅ 여기서 radius 지정
-                                                        )
-                                                    ),
-                                                    child: Text(
-                                                      '다운로드',
-                                                      style: TextStyle(color: Colors.white, fontSize: 24.sp,fontFamily: 'PretendardGOV',fontWeight: FontWeight.w500),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            );
-                                          },
-                                        ),
+                                                  );
+                                                  return Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width: 54.w,
+                                                      ),
+                                                      _cell(
+                                                        selected.camId,
+                                                        w: 180,
+                                                      ),
+                                                      SizedBox(
+                                                        width: 20.w,
+                                                      ),
+                                                      _cell(selected.location,
+                                                          w: 200),
+                                                      SizedBox(
+                                                        width: 65.w,
+                                                      ),
+
+                                                      Container(
+                                                        width: 40.w,
+                                                        height: 40.h,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: selected
+                                                                  .isConnected
+                                                              ? const Color(
+                                                                  0xffdb3829)
+                                                              : const Color(
+                                                                  0xff3dc473),
+                                                          border: selected
+                                                                  .isConnected
+                                                              ? Border.all(
+                                                                  color: const Color(
+                                                                      0xff3dc473),
+                                                                  width: 2.w)
+                                                              : null,
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      32.r),
+                                                        ),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 123.w,
+                                                      ),
+                                                      Container(
+                                                          width: 140.w,
+                                                          height: 83.h,
+                                                          alignment: Alignment
+                                                              .centerLeft,
+                                                          child: Text(
+                                                            selected.eventState,
+                                                            style: TextStyle(
+                                                              fontFamily:
+                                                                  'PretendardGOV',
+                                                              fontSize: 36.sp,
+                                                              color: selected
+                                                                          .eventState ==
+                                                                      '정상'
+                                                                  ? Color(
+                                                                      0xff3dc47e)
+                                                                  : Color(
+                                                                      0xffdb3829),
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                            ),
+                                                          )),
+                                                      SizedBox(
+                                                        width: 100.w,
+                                                      ),
+                                                      // if(selected.eventState =="정상")
+                                                      _cell(
+                                                          '${selected.imageAnalysis.toStringAsFixed(2)} 정상',
+                                                          w: 200),
+                                                      SizedBox(
+                                                        width: 123.w,
+                                                      ),
+                                                      _cell(
+                                                        selected.streamUrl,
+                                                        w: 600,
+                                                      ),
+                                                      SizedBox(
+                                                        width: 140.w,
+                                                      ),
+                                                      _cell(
+                                                        '${selected.lastRecorded.year}-${selected.lastRecorded.month.toString().padLeft(2, '0')}-${selected.lastRecorded.day.toString().padLeft(2, '0')} '
+                                                        '${selected.lastRecorded.hour.toString().padLeft(2, '0')}:${selected.lastRecorded.minute.toString().padLeft(2, '0')}',
+                                                        w: 500,
+                                                      ),
+                                                      Container(
+                                                        width: 149.61.w,
+                                                        height: 55.08.h,
+                                                        alignment:
+                                                            Alignment.center,
+                                                        child: TextButton(
+                                                          onPressed: () {
+                                                            // TODO: implement download logic
+                                                          },
+                                                          style: TextButton
+                                                              .styleFrom(
+                                                                  backgroundColor:
+                                                                      const Color(
+                                                                          0xff2196f3),
+                                                                  padding: EdgeInsets.symmetric(
+                                                                      horizontal:
+                                                                          24.w,
+                                                                      vertical:
+                                                                          10.h),
+                                                                  shape:
+                                                                      RoundedRectangleBorder(
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            5.r), // ✅ 여기서 radius 지정
+                                                                  )),
+                                                          child: Text(
+                                                            '다운로드',
+                                                            style: TextStyle(
+                                                                color: Colors
+                                                                    .white,
+                                                                fontSize: 24.sp,
+                                                                fontFamily:
+                                                                    'PretendardGOV',
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                              ),
                                       ),
                                     ),
-
                                   ],
                                 ),
                               ),
@@ -315,18 +383,18 @@ class _DetailCctvViewState extends State<DetailCctvView> {
                                       Container(
                                         width: 435.81.w,
                                         height: 327.h,
-                                        decoration: BoxDecoration(
-                                          //color: Color(0xff111c44),
-                                          color: Color(0xff1b254b),
-                                          border: Border.all(
+                                        child: selectedCamId != null && selectedCamId!.isNotEmpty
+                                            ? OpencvCctvIframe(
+                                          key: ValueKey(selectedCamId), // 이거 중요함
+                                          cam: selectedCamId!,
+                                        )
+                                            : const Center(
+                                          child: CircularProgressIndicator(
                                             color: Colors.white,
-                                            width: 1.w,
                                           ),
-                                          borderRadius:
-                                              BorderRadius.circular(5.r),
-                                          // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                                         ),
                                       ),
+
                                     ],
                                   )
                                 ],
@@ -363,13 +431,12 @@ class _DetailCctvViewState extends State<DetailCctvView> {
       ),
     );
   }
+
   Widget _cell(
-      String text, {
-        required double w,
-        double h = 55.08,
-
-
-      }) {
+    String text, {
+    required double w,
+    double h = 55.08,
+  }) {
     return Container(
       width: w.w,
       height: h.h,
@@ -385,5 +452,4 @@ class _DetailCctvViewState extends State<DetailCctvView> {
       ),
     );
   }
-
 }
