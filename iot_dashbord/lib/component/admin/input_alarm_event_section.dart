@@ -7,12 +7,14 @@ import 'package:iot_dashboard/component/admin/action_button.dart';
 import 'package:iot_dashboard/component/admin/section_title.dart';
 import 'package:iot_dashboard/component/admin/time_picker_row.dart';
 import 'package:iot_dashboard/component/admin/custom_divider.dart';
+import 'package:iot_dashboard/component/admin/labeled_dropdown_field.dart';
+import 'package:iot_dashboard/controller/alarm_controller.dart';
+import 'package:iot_dashboard/component/common/dialog_form.dart';
 
 class EventAlarmSection extends StatefulWidget {
   final String? alarmDate;
   final String? alarmHour;
   final String? alarmMinute;
-  final TextEditingController? alarmTypeController;
   final TextEditingController? alarmMessageController;
 
   const EventAlarmSection(
@@ -20,7 +22,6 @@ class EventAlarmSection extends StatefulWidget {
       this.alarmDate,
       this.alarmHour,
       this.alarmMinute,
-      this.alarmTypeController,
       this.alarmMessageController})
       : super(key: key);
 
@@ -31,26 +32,32 @@ class EventAlarmSection extends StatefulWidget {
 class _EventAlarmSectionState extends State<EventAlarmSection> {
   bool isExpanded = false; // ✅ 펼침 여부 상태
 
-
-
   late TextEditingController _messageController;
   late TextEditingController _alarmTypeController;
   late String? alarmHour;
   late String? alarmMinute;
-
+  DateTime? _selectedDate;
+  String? _selectedAlarmType = '정보'; // ✅ 기본값
 
   @override
   void initState() {
     super.initState();
-    _messageController = widget.alarmMessageController ?? TextEditingController();
-    _alarmTypeController = widget.alarmTypeController ?? TextEditingController();
+    _messageController =
+        widget.alarmMessageController ?? TextEditingController();
+    _selectedDate = DateTime.tryParse(widget.alarmDate ?? '');
 
     // ⚠️ 이 두 줄이 꼭 필요합니다!
     alarmHour = widget.alarmHour ?? '00';
     alarmMinute = widget.alarmMinute ?? '00';
-
   }
-
+  bool get isFormValid {
+    return _selectedDate != null &&
+        alarmHour != null &&
+        alarmMinute != null &&
+        _selectedAlarmType != null &&
+        _selectedAlarmType!.trim().isNotEmpty &&
+        _messageController.text.trim().isNotEmpty;
+  }
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -86,8 +93,8 @@ class _EventAlarmSectionState extends State<EventAlarmSection> {
                   isExpanded
                       ? 'assets/icons/arrow_down.png'
                       : 'assets/icons/arrow_right2.png',
-                  width: isExpanded?40.w:50.w,
-                  height: isExpanded?20.h:30.h,
+                  width: isExpanded ? 40.w : 50.w,
+                  height: isExpanded ? 20.h : 30.h,
                 ),
               ),
               SizedBox(width: 55.w),
@@ -108,17 +115,12 @@ class _EventAlarmSectionState extends State<EventAlarmSection> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-               DatePickerField(
-                    label: '날짜  :',
-                    initialDate: DateTime.tryParse(widget.alarmDate ?? ''),
-                    onDateSelected: (date) {
-                      // 여기에 상태 저장 또는 처리 로직
-                      print('선택된 시작일: $date');
-                    },
-                  )
-               ,
-
-           CustomDivider(),
+                DatePickerField(
+                  label: '날짜  :',
+                  initialDate: DateTime.tryParse(widget.alarmDate ?? ''),
+                  onDateSelected: (date) => setState(() => _selectedDate = date),
+                ),
+                CustomDivider(),
                 Container(
                   width: 2880.w,
                   height: 85.h,
@@ -130,21 +132,20 @@ class _EventAlarmSectionState extends State<EventAlarmSection> {
                     onMinuteChanged: (val) => setState(() => alarmMinute = val),
                   ),
                 ),
-           CustomDivider(),
+                CustomDivider(),
                 Container(
                   width: 2880.w,
                   height: 85.h,
-                  child: labeledTextField(
+                  child: LabeledDropdownField(
                     title: '유형 :',
-                    hint: '예: 정보/경고/주의',
-                    width: 1260,
-                    height: 60,
-                    textBoxwidth: 400,
-                    textBoxHeight: 50,
-                    controller: _alarmTypeController
+                    items: ['정보', '주의', '경고', '점검'],
+                    selectedValue: _selectedAlarmType,
+                    onChanged: (val) => setState(() {
+                      _selectedAlarmType = val;
+                    }),
                   ),
                 ),
-           CustomDivider(),
+                CustomDivider(),
                 Container(
                   width: 2880.w,
                   height: 85.h,
@@ -156,20 +157,58 @@ class _EventAlarmSectionState extends State<EventAlarmSection> {
                     textBoxwidth: 400,
                     textBoxHeight: 50,
                     controller: _messageController,
+                    onChanged: (_) => setState(() {}),
                   ),
                 ),
               ],
             ),
           ),
-
         ],
         SizedBox(height: 5.h),
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            ActionButton('변경', Color(0xff4ead8b)),
-            SizedBox(width: 18.w),
-            ActionButton('저장', Color(0xff3182ce)),
+            ActionButton(
+              '추가',
+              isFormValid ? const Color(0xffe98800) : Colors.grey,
+              onTap: isFormValid
+                  ? () async {
+                      final timestamp = DateTime(
+                        _selectedDate!.year,
+                        _selectedDate!.month,
+                        _selectedDate!.day,
+                        int.tryParse(alarmHour!) ?? 0,
+                        int.tryParse(alarmMinute!) ?? 0,
+                      );
+
+                      final success = await AlarmController.addAlarm(
+                        timestamp: timestamp,
+                        level: _selectedAlarmType!,
+                        message: _messageController.text.trim(),
+                      );
+
+                      if (success) {
+                        showDialog(
+                          context: context,
+                          builder: (_) => const DialogForm(
+                            mainText: '알람이 등록되었습니다.',
+                            btnText: '확인',
+                            fontSize: 20,
+                          ),
+                        );
+
+                        setState(() {
+                          _messageController.clear();
+                          _selectedDate = null;
+                          alarmHour = '00';
+                          alarmMinute = '00';
+                          _selectedAlarmType = '정보';
+                        });
+                      }
+
+              }
+                  : null,
+            ),
             SizedBox(width: 400.w),
           ],
         ),

@@ -35,4 +35,29 @@ class AlarmController {
       }
     }
   }
+
+  static Future<bool> addAlarm({
+    required DateTime timestamp,
+    required String level,
+    required String message,
+    String? sensorId, // ← optional
+  }) async {
+    final url = Uri.parse('$_baseUrl/alarms');
+
+    final body = jsonEncode({
+      'timestamp': timestamp.toIso8601String().substring(0, 16).replaceFirst('T', ' '),
+      'level': level,
+      'message': message,
+      if (sensorId != null) 'sensor_id': sensorId,
+    });
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
+
+    return response.statusCode == 200;
+  }
+
 }

@@ -39,6 +39,26 @@ class NoticeController {
       return false;
     }
   }
+
+  /// ✅ 공지 추가
+  static Future<bool> addNotice(String content) async {
+    final url = Uri.parse('$_baseUrl/notices');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'content': content}),
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      print('❌ 공지사항 등록 오류: $e');
+      return false;
+    }
+  }
+
+
   /// ✅ 공지 일괄 수정
   static Future<bool> updateNotices(List<Notice> notices) async {
     final url = Uri.parse('$_baseUrl/bulk-update-notices');

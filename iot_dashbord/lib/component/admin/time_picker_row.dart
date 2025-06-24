@@ -75,7 +75,7 @@ class TimePickerRow extends StatelessWidget {
                 value: hour,
                 child: Text(
                   hour,
-                  style: TextStyle(fontSize: 32.sp, fontFamily: 'PretendardGOV'),
+                  style: TextStyle(fontSize: 28.sp, fontFamily: 'PretendardGOV'),
                 ),
               );
             }).toList(),
@@ -109,7 +109,7 @@ class TimePickerRow extends StatelessWidget {
             iconStyleData: IconStyleData(
               iconSize: 24.sp,
             ),
-            items: hourList.map((min) {
+            items: minuteList.map((min) {
               return DropdownMenuItem<String>(
                 value: min,
                 child: Container(
@@ -117,7 +117,7 @@ class TimePickerRow extends StatelessWidget {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       min,
-                      style: TextStyle(fontSize: 32.sp, fontFamily: 'PretendardGOV'),
+                      style: TextStyle(fontSize: 28.sp, fontFamily: 'PretendardGOV'),
                     ),
                   ),
                 ),

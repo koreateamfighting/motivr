@@ -337,7 +337,6 @@ class _AdminScreenState extends State<AdminScreen> {
                             alarmDate: alarmDate,
                             alarmHour: alarmHour,
                             alarmMinute: alarmMinute,
-                            alarmTypeController: _alarmTypeController,
                             alarmMessageController: _alarmMessageController,
                           ),
                           NoticeInputSection(

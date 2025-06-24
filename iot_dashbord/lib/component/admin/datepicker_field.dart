@@ -99,7 +99,7 @@ class _DatePickerFieldState extends State<DatePickerField> {
                   Text(
                     displayText,
                     style: TextStyle(
-                      fontSize: 36.sp,
+                      fontSize: 32.sp,
                       fontFamily: 'PretendardGOV',
                       fontWeight: FontWeight.w300,
                       color: selectedDate == null
