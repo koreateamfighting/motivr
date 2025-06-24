@@ -1,10 +1,18 @@
 // admin_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:iot_dashboard/component/admin/input_alarm_event_section.dart';
+import 'package:iot_dashboard/component/admin/input_duty_section.dart';
+import 'package:iot_dashboard/component/admin/input_field_info_section.dart';
+import 'package:iot_dashboard/component/admin/input_iot_section.dart';
+import 'package:iot_dashboard/component/admin/input_title_logo_section.dart';
 import 'package:iot_dashboard/component/common/base_layout.dart';
+import 'package:iot_dashboard/component/common/dialog_form.dart';
+import 'package:iot_dashboard/component/common/dialog_form2.dart';
+import 'package:iot_dashboard/component/dashboard/notice_section.dart';
 import 'package:iot_dashboard/theme/colors.dart';
 import 'package:iot_dashboard/utils/auth_service.dart';
-import 'package:iot_dashboard/utils/image_picker_text_field.dart';
+import 'package:iot_dashboard/component/admin/image_picker_text_field.dart';
 import 'package:iot_dashboard/controller/setting_controller.dart';
 import 'package:iot_dashboard/utils/setting_service.dart';
 import 'dart:html' as html;
@@ -12,27 +20,133 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'dart:async'; // Completer를 위한 import
 import 'dart:typed_data'; // Uint8List를 위한 import
-
+import 'package:iot_dashboard/component/admin/section_title.dart';
+import 'package:iot_dashboard/component/admin/textfield_section.dart';
+import 'package:iot_dashboard/component/admin/input_notice_section.dart';
+import 'package:iot_dashboard/component/admin/input_cctv_section.dart';
+import 'package:iot_dashboard/component/admin/input_event_section.dart';
+import 'package:iot_dashboard/component/admin/input_sensor_section.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
 
   State<AdminScreen> createState() => _AdminScreenState();
-
 }
-class _AdminScreenState extends State<AdminScreen>{
 
+class _AdminScreenState extends State<AdminScreen> {
+
+ // 전체 타이틀 변수
   final _titleController = TextEditingController();
   html.File? selectedLogoFile;
+// 작업명 변수
+  final _dutyNameController = TextEditingController();
+  String? dutyStartDate;
+  String? dutyEndDate;
+  TextEditingController? _progressNameController = TextEditingController();
+// 최근 알람 / 이벤트 변수
+   String? alarmDate;
+   String? alarmHour;
+   String? alarmMinute;
+  TextEditingController? _alarmTypeController;
+  TextEditingController?  _alarmMessageController;
+//공지 및 주요일정 변수
+  final _noticeContentController = TextEditingController();
+//현장 정보 변수
+  final _constructionTypeController = TextEditingController();
+  final _constructionNameController = TextEditingController();
+  final _constructionAddressController = TextEditingController();
+  final _constructionCompanyController = TextEditingController();
+  final _constructionOrdererController = TextEditingController();
+  final _constructionLocationController = TextEditingController();
+  String? constructStartDate;
+  String? constructEndDate;
+  final _latitudeController = TextEditingController();
+  final _longtitudeController = TextEditingController();
+//iot 정보 입력 변수
+  final iotProductIDController = TextEditingController();
+  final iotLocationController = TextEditingController();
+  final iotStatusController = TextEditingController();
+  final batteryStatusController = TextEditingController();
+  final lastReceiveController = TextEditingController();
+  final x_MMController = TextEditingController();
+  final y_MMController = TextEditingController();
+  final z_MMController = TextEditingController();
+  final x_DegController = TextEditingController();
+  final y_DegController = TextEditingController();
+  final z_DegController = TextEditingController();
+  final batteryInfoController = TextEditingController();
+//cctv 정보 입력 변수
+  final cctvProductIDController = TextEditingController();
+  final cctvLocationController =TextEditingController();
+  final isConnectedController = TextEditingController();
+  final cctvEventController = TextEditingController();
+  final imageAnalysisController = TextEditingController();
+  final cctvAddressController = TextEditingController();
+  String? lastReceive;
+
+//이벤트 관리 (iot/cctv) 변수
+  final iotHistoryProductIDController = TextEditingController();
+  final iotHistoryLocationController = TextEditingController();
+  final iotHistoryEventController = TextEditingController();
+  String? iotHistoryDate;
+  String? iotHistoryHour;
+  String? iotHistoryMinute;
+  final iotHistoryLogController = TextEditingController();
+
+  final cctvHistoryProductIDController = TextEditingController();
+  final cctvHistoryLocationController = TextEditingController();
+  final cctvHistoryEventController = TextEditingController();
+  String? cctvHistoryDate;
+  String? cctvHistoryHour;
+  String? cctvHistoryMinute;
+  final cctvHistoryLogController = TextEditingController();
+
+  //센서 정보 변수
+   //지중경사계
+  final inclinometerIdController = TextEditingController();
+  final inclinometerLocationController = TextEditingController();
+  String? inclinometerDate;
+  final inclinometerMeasuredDepthsController = TextEditingController();
+  final Map<double, TextEditingController> inclinometerDepthValues = {};
+   //지하수위계
+  final piezometerIdController = TextEditingController();
+  final piezometerLocationController = TextEditingController();
+  String? piezometerDate;
+  final piezometerDryDaysController = TextEditingController();
+  final piezometerCurrentWaterLevelController = TextEditingController();
+  final piezometerGroundLevelController = TextEditingController();
+  final piezometerChangeAmountController = TextEditingController();
+  final piezometerCumulativeChangeController = TextEditingController();
+    //변형률계
+  final strainGaugeIdController = TextEditingController();
+  final strainGaugeLocationController = TextEditingController();
+  String? strainGaugeDate;
+  final strainGaugeReadingController = TextEditingController();
+  final strainGaugeStressController = TextEditingController(); // 단위: kg/cm²
+  final strainGaugeDepthController = TextEditingController(); // 단위: m
+    //지표침하계
+  final settlementGaugeIdController = TextEditingController();
+  final settlementGaugeLocationController = TextEditingController();
+  String? settlementGaugeDate;
+  final settlementGaugeDryDaysController = TextEditingController();
+  final settlementGaugeAbsoluteValues1 = TextEditingController();
+  final settlementGaugeAbsoluteValues2 = TextEditingController();
+  final settlementGaugeAbsoluteValues3 = TextEditingController();
+  final settlementGaugeSubsidenceValues1 = TextEditingController();
+  final settlementGaugeSubsidenceValues2 = TextEditingController();
+  final settlementGaugeSubsidenceValues3 = TextEditingController();
 
 
-
-
+  @override
+  void initState() {
+    super.initState();
+    _alarmTypeController ??= TextEditingController();
+    _alarmMessageController ??= TextEditingController();
+  }
 
 
   @override
   Widget build(BuildContext context) {
-
     // ✅ 관리자 권한 없으면 접근 차단
     if (!AuthService.isAdmin()) {
       // 마이크로태스크로 실행 → UI가 빌드된 후에 다이얼로그 띄우기
@@ -68,13 +182,13 @@ class _AdminScreenState extends State<AdminScreen>{
           return BaseLayout(
               child: Container(
             padding: EdgeInsets.only(left: 64.w, right: 68.w),
-            color: Color(0xff1b254b),
+            color: Color(0xffE7EAF4),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
                   height: 100.h,
-                  color: Color(0xff1b254b),
+                  color: Color(0xffE7EAF4),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
@@ -134,28 +248,47 @@ class _AdminScreenState extends State<AdminScreen>{
                               width: 2155.w,
                             ),
                             InkWell(
-                              onTap: () async {
-                                final title = _titleController.text.trim();
-                                if (title.isEmpty || selectedLogoFile == null) {
-                                  showDialog(
-                                    context: context,
-                                    builder: (_) => AlertDialog(
-                                      title: Text('입력 누락'),
-                                      content: Text('타이틀과 로고 파일을 모두 입력해주세요.'),
-                                      actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('확인'))],
-                                    ),
-                                  );
-                                  return;
-                                }
+                                onTap: () async {
+                                   final title = _titleController.text.trim();
+                                  // if (title.isEmpty ||
+                                  //     selectedLogoFile == null) {
+                                  //   showDialog(
+                                  //     context: context,
+                                  //     builder: (_) => AlertDialog(
+                                  //       title: Text('입력 누락'),
+                                  //       content: Text('타이틀과 로고 파일을 모두 입력해주세요.'),
+                                  //       actions: [
+                                  //         TextButton(
+                                  //             onPressed: () =>
+                                  //                 Navigator.pop(context),
+                                  //             child: Text('확인'))
+                                  //       ],
+                                  //     ),
+                                  //   );
+                                  //   return;
+                                  // }
 
-                                final result = await SettingController.uploadTitleAndLogo(title, selectedLogoFile!);
-                                if (result.success) {
-                                  print('✅ ${result.message}');
-                                  await SettingService.refresh(); // 🔁 TopAppBar 갱신 트리거
-                                } else {
-                                  print('❌ ${result.message}');
-                                }
-                              },
+                                  final result = await SettingController
+                                      .uploadTitleAndLogo(
+                                          title, selectedLogoFile!);
+                                  if (result.success) {
+                                    print('✅ ${result.message}');
+                                    showDialog(
+                                      context: context,
+                                      builder: (_) =>
+                                      const DialogForm(
+                                        mainText:
+                                        '저장되었습니다.',
+                                        btnText: '확인',
+                                        fontSize: 20,
+                                      ),
+                                    );
+                                    await SettingService
+                                        .refresh(); // 🔁 TopAppBar 갱신 트리거
+                                  } else {
+                                    print('❌ ${result.message}');
+                                  }
+                                },
                                 child: Container(
                                   width: 347.w,
                                   height: 60.h,
@@ -165,7 +298,7 @@ class _AdminScreenState extends State<AdminScreen>{
                                   ),
                                   alignment: Alignment.center,
                                   child: Text(
-                                    '저장',
+                                    '전체 저장',
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontFamily: 'PretendardGOV',
@@ -188,637 +321,127 @@ class _AdminScreenState extends State<AdminScreen>{
                   color: Color(0xff3182ce),
                 ),
 
-                SizedBox(height: 40.h),
+                SizedBox(height: 65.h),
 
                 Expanded(
                   child: SingleChildScrollView(
                     child: Center(
                       child: Column(
                         children: [
-                          Container(
-                            width: 2880.w,
-
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 30.w,
-                                      height: 30.h,
-                                      child: Image.asset(
-                                          'assets/icons/uncolor_setting.png'),
-                                    ),
-                                    SizedBox(
-                                      width: 5.w,
-                                    ),
-                                    sectionTitle('계정 관리')
-                                  ],
-                                ),
-                                Container(
-                                  width: 2880.w,
-                                  height: 127.h,
-                                  decoration: BoxDecoration(
-                                    color: Color(0xff414c67),
-                                    borderRadius: BorderRadius.circular(5.r),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      SizedBox(
-                                        width: 99.w,
-                                      ),
-                                      labeledTextField(
-                                          title: '사용자 이름',
-                                          hint: '예) : 관리자',
-                                          width: 1309,
-                                          height: 60),
-                                      SizedBox(
-                                        width: 61.w,
-                                      ),
-                                      labeledTextField(
-                                          title: '권한',
-                                          hint: '관리자',
-                                          width: 1309,
-                                          height: 60),
-                                    ],
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 30.w,
-                                      height: 30.h,
-                                      child: Image.asset(
-                                          'assets/icons/edit2.png'),
-                                    ),
-                                    SizedBox(
-                                      width: 5.w,
-                                    ),
-                                    sectionTitle('전체 타이틀 변경')
-                                  ],
-                                ),
-                                Container(
-                                  width: 2880.w,
-                                  height: 130.h,
-                                  decoration: BoxDecoration(
-                                    color: Color(0xff414c67),
-                                    borderRadius: BorderRadius.circular(5.r),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      SizedBox(
-                                        width: 99.w,
-                                      ),
-                                      labeledTextField(
-                                          title: '타이틀 이름',
-                                          hint:
-                                              '예: Digital Twin EMS > 스마트 안전 시스템',
-                                          width: 1309,
-                                          height: 60,
-                                        controller: _titleController,),
-                                      SizedBox(
-                                        width: 61.w,
-                                      ),
-                                  ImagePickerTextField(
-                                    title: '로고 변경',
-                                    hint: '예: 이미지 파일을 업로드 하세요',
-                                    width: 1309,
-                                    height: 58,
-                                    onFileSelected: (file) {
-                                      selectedLogoFile = file; // AdminScreen 상태 변수에 저장
-                                    },
-                                  ),
-                                    ],
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 30.w,
-                                      height: 30.h,
-                                      child: Image.asset(
-                                          'assets/icons/inputdata.png'),
-                                    ),
-                                    SizedBox(
-                                      width: 5.w,
-                                    ),
-                                    sectionTitle('기초 데이터 입력')
-                                  ],
-                                ),
-                                Container(
-                                  width: 2880.w,
-                                  height: 502.03.h,
-                                  decoration: BoxDecoration(
-                                    color: Color(0xff414c67),
-                                    borderRadius: BorderRadius.circular(5.r),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      Row(
-                                        children: [
-                                          SizedBox(width:60.w),
-                                          Container(
-                                            width: 30.w,
-                                            height: 30.h,
-                                            child:
-                                            Image.asset('assets/icons/edit3.png'),
-                                          ),
-                                          SizedBox(
-                                            width: 5.w,
-                                          ),
-                                          blockTitle('작업명')
-                                        ],
-                                      ),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        children: [
-                                          SizedBox(
-                                            width: 99.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '작업명',
-                                              hint:
-                                              '예: 콘크리트 타설',
-                                              width: 1000,
-                                              height: 55.17),
-                                          SizedBox(
-                                            width: 61.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '시작일',
-                                              hint: '예: 20250517',
-                                              width: 500,
-                                              height: 55.17),
-                                          SizedBox(
-                                            width: 61.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '완료일',
-                                              hint: '예: 20250531',
-                                              width: 500,
-                                              height: 55.17),
-                                          SizedBox(
-                                            width: 61.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '공정률',
-                                              hint: '예: 70',
-                                              width: 495,
-                                              height: 55),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          SizedBox(width:60.w),
-                                          Container(
-                                            width: 30.w,
-                                            height: 30.h,
-                                            child:
-                                            Image.asset('assets/icons/alarm.png'),
-                                          ),
-                                          SizedBox(
-                                            width: 5.w,
-                                          ),
-                                          blockTitle('최근알람 / 이벤트')
-                                        ],
-                                      ),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        children: [
-                                          SizedBox(
-                                            width: 99.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '날짜 / 시간',
-                                              hint:
-                                              '예: ',
-                                              width: 1000,
-                                              height: 60),
-                                          SizedBox(
-                                            width: 61.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '유형',
-                                              hint: '예: 경고/주의/경보',
-                                              width: 269,
-                                              height: 60),
-                                          SizedBox(
-                                            width: 61.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '메세지',
-                                              hint: '예: 20250531',
-                                              width: 1287,
-                                              height: 60),
-
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          SizedBox(width:60.w),
-                                          Container(
-                                            width: 30.w,
-                                            height: 30.h,
-                                            child:
-                                            Image.asset('assets/icons/clipboard2.png'),
-                                          ),
-                                          SizedBox(
-                                            width: 5.w,
-                                          ),
-                                          blockTitle('공지 및 주요 일정')
-                                        ],
-                                      ),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        children: [
-                                          SizedBox(
-                                            width: 99.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '날짜 / 시간',
-                                              hint:
-                                              '예: ',
-                                              width: 541,
-                                              height: 60),
-                                          SizedBox(
-                                            width: 61.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '유형',
-                                              hint: '예: 경고/주의/경보',
-                                              width: 269,
-                                              height: 60),
-                                          SizedBox(
-                                            width: 61.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '내용',
-                                              hint: '예: 20250531',
-                                              width: 1745,
-                                              height: 60),
-
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 30.w,
-                                      height: 30.h,
-                                      child:
-                                          Image.asset('assets/icons/edit.png'),
-                                    ),
-                                    SizedBox(
-                                      width: 5.w,
-                                    ),
-                                    sectionTitle('측정 데이터 수동 입력')
-                                  ],
-                                ),
-                                Container(
-                                  width: 2880.w,
-                                  height: 710.h,
-                                  decoration: BoxDecoration(
-                                    color: Color(0xff414c67),
-                                    borderRadius: BorderRadius.circular(5.r),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      Row(
-                                        children: [
-                                          SizedBox(width:60.w),
-                                          Container(
-                                            width: 30.w,
-                                            height: 30.h,
-                                            child:
-                                            Image.asset('assets/icons/iot.png'),
-                                          ),
-                                          SizedBox(
-                                            width: 5.w,
-                                          ),
-                                          blockTitle('Iot 정보 입력')
-                                        ],
-                                      ),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        children: [
-                                          SizedBox(
-                                            width: 99.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '제품 식별자(ID)',
-                                              hint:
-                                              '예: 콘크리트 타설',
-                                              width: 207,
-                                              height: 60),
-                                          SizedBox(
-                                            width: 61.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '설치 위치 (추진구/도달구)',
-                                              hint: '예: 추진구_1',
-                                              width: 326,
-                                              height: 60),
-                                          SizedBox(
-                                            width: 61.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '상태',
-                                              hint: '예: 정상',
-                                              width: 210,
-                                              height: 60),
-                                          SizedBox(
-                                            width: 61.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '상태',
-                                              hint: '예: 정상',
-                                              width: 210,
-                                              height: 60),
-                                          SizedBox(
-                                            width: 61.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '마지막 수신',
-                                              hint: '예: 2025-05-20 14:23',
-                                              width: 266,
-                                              height: 60),
-                                          SizedBox(
-                                            width: 61.w,
-                                          ),
-                                          labeledTextField(
-                                              title: 'X (mm / 0°)',
-                                              hint: '예 : 0.3 /  24°',
-                                              width: 163,
-                                              height: 60),
-                                          SizedBox(
-                                            width: 61.w,
-                                          ),
-                                          labeledTextField(
-                                              title: 'Y (mm / 0°)',
-                                              hint: '예 : 0.3 /  24°',
-                                              width: 163,
-                                              height: 60),
-                                          SizedBox(
-                                            width: 61.w,
-                                          ),
-                                          labeledTextField(
-                                              title:'Z (mm / 0°)',
-                                              hint: '예 : 0.3 /  24°',
-                                              width: 163,
-                                              height: 60),
-                                          SizedBox(
-                                            width: 61.w,
-                                          ),
-                                          labeledTextField(
-                                              title:'경사 (0°)',
-                                              hint: '예 : 5',
-                                              width: 163,
-                                              height: 60),
-                                          SizedBox(
-                                            width: 61.w,
-                                          ),
-                                          labeledTextField(
-                                              title:'배터리 정보',
-                                              hint: '예 : 5',
-                                              width: 257,
-                                              height: 60),
-
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          SizedBox(width:60.w),
-                                          Container(
-                                            width: 30.w,
-                                            height: 30.h,
-                                            child:
-                                            Image.asset('assets/icons/cctv.png'),
-                                          ),
-                                          SizedBox(
-                                            width: 5.w,
-                                          ),
-                                          blockTitle('CCTV 정보 입력')
-                                        ],
-                                      ),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        children: [
-                                          SizedBox(
-                                            width: 99.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '카메라 이름 / 번호',
-                                              hint:
-                                              '예: CCTV-01',
-                                              width: 207,
-                                              height: 60),
-                                          SizedBox(
-                                            width: 61.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '설치 위치 (추진구/도달구)',
-                                              hint: '예: sensor-001',
-                                              width: 326,
-                                              height: 60),
-                                          SizedBox(
-                                            width: 61.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '상태',
-                                              hint: '예: 정상',
-                                              width: 210,
-                                              height: 60),
-                                          SizedBox(
-                                            width: 61.w,
-                                          ),
-                                          labeledTextField(
-                                              title: 'RTSP 주소',
-                                              hint: 'rstp://..',
-                                              width: 1000,
-                                              height: 60),
-                                          SizedBox(
-                                            width: 61.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '변위 측정 값',
-                                              hint: '예 : 0.3 /  24°',
-                                              width: 691,
-                                              height: 60),
-
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          SizedBox(width:60.w),
-                                          Container(
-                                            width: 30.w,
-                                            height: 30.h,
-                                            child:
-                                            Image.asset('assets/icons/clock2.png'),
-                                          ),
-                                          SizedBox(
-                                            width: 5.w,
-                                          ),
-                                          blockTitle('알람 히스토리')
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          SizedBox(width:108.97.w),
-                                          blockTitle('IoT')
-                                        ],
-                                      ),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        children: [
-                                          SizedBox(
-                                            width: 99.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '제품 식별자(ID)',
-                                              hint:
-                                              '예: sensor-001',
-                                              width: 206.85,
-                                              height: 60),
-                                          SizedBox(
-                                            width: 61.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '날짜 / 시간',
-                                              hint: '예: 2025-05-20 14:23',
-                                              width: 595.56,
-                                              height: 60),
-                                          SizedBox(
-                                            width: 61.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '로그',
-                                              hint: '예: 센서_3_INFO',
-                                              width: 1747.71,
-                                              height: 60),
-
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          SizedBox(width:108.97.w),
-                                          blockTitle('CCTV')
-                                        ],
-                                      ),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        children: [
-                                          SizedBox(
-                                            width: 99.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '제품 식별자(ID)',
-                                              hint:
-                                              '예: sensor-001',
-                                              width: 206.85,
-                                              height: 60),
-                                          SizedBox(
-                                            width: 61.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '날짜 / 시간',
-                                              hint: '예: 2025-05-20 14:23',
-                                              width: 595.56,
-                                              height: 60),
-                                          SizedBox(
-                                            width: 61.w,
-                                          ),
-                                          labeledTextField(
-                                              title: '로그',
-                                              hint: '예: 센서_3_INFO',
-                                              width: 1747.71,
-                                              height: 60),
-
-                                        ],
-                                      ),
-
-                                    ],
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 30.w,
-                                      height: 30.h,
-                                      child:
-                                          Image.asset('assets/icons/flag.png'),
-                                    ),
-                                    SizedBox(
-                                      width: 5.w,
-                                    ),
-                                    sectionTitle('현장명 정보 입력')
-                                  ],
-                                ),
-                                Container(
-                                  width: 2880.w,
-                                  height: 130.h,
-                                  decoration: BoxDecoration(
-                                    color: Color(0xff414c67),
-                                    borderRadius: BorderRadius.circular(5.r),
-                                  ),
-                                  child:  Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      SizedBox(
-                                        width: 99.w,
-                                      ),
-                                      labeledTextField(
-                                          title: '공사명',
-                                          hint:
-                                          '예 : 절토사면 안정화 공사',
-                                          width: 600.42,
-                                          height: 60),
-                                      SizedBox(
-                                        width: 61.w,
-                                      ),
-                                      labeledTextField(
-                                          title: '현장 주소',
-                                          hint: '예 : 대구광역시 수성구 알파시티1로 35, 17',
-                                          width: 600.42,
-                                          height: 60),
-                                      SizedBox(
-                                        width: 61.w,
-                                      ),
-                                      labeledTextField(
-                                          title: '발주처',
-                                          hint: '예: 한림기술',
-                                          width: 420.29,
-                                          height: 60),
-                                      SizedBox(
-                                        width: 61.w,
-                                      ),
-                                      labeledTextField(
-                                          title: '공사 기간',
-                                          hint: '예: 20250520',
-                                          width: 420.29,
-                                          height: 60),
-                                      SizedBox(
-                                        width: 61.w,
-                                      ),
-                                      labeledTextField(
-                                          title: '시공사',
-                                          hint: '예: 한림기술',
-                                          width: 397.28,
-                                          height: 60),
-
-                                    ],
-                                  ),
-                                ),
-
-                                //////////
-                              ],
-                            ),
+                          TitleLogoSection(
+                            titleController: _titleController,
+                            onLogoSelected: (file) {
+                              selectedLogoFile = file; // ✅ AdminScreen의 상태에 저장
+                            },
                           ),
+                          SizedBox(height: 82.h,),
+                          DutySection(dutyNameController: _dutyNameController,dutyStartDate: dutyStartDate, dutyEndDate:dutyEndDate ,progressController: _progressNameController,),
+                          SizedBox(height: 82.h,),
+                          EventAlarmSection(
+                            alarmDate: alarmDate,
+                            alarmHour: alarmHour,
+                            alarmMinute: alarmMinute,
+                            alarmTypeController: _alarmTypeController,
+                            alarmMessageController: _alarmMessageController,
+                          ),
+                          SizedBox(height: 82.h,),
+                          NoticeInputSection(noticeContentController: _noticeContentController),
+                          SizedBox(height: 82.h,),
+                          FieldInfoSection(
+                            constructionTypeController: _constructionTypeController,
+                            constructionNameController: _constructionNameController,
+                            constructionAddressController: _constructionAddressController,
+                            constructionCompanyController: _constructionCompanyController,
+                            constructionOrdererController: _constructionOrdererController,
+                            constructionLocationController: _constructionLocationController,
+                            constructStartDate: constructStartDate,
+                            constructEndDate:  constructEndDate,
+                            latitudeController:  _latitudeController,
+                            longtitudeController: _longtitudeController,
+                          ),
+                          SizedBox(height: 82.h,),
+                          IotInputSection(
+                            iotProductIDController: iotProductIDController,
+                            iotLocationController: iotLocationController,
+                            iotStatusController: iotStatusController,
+                            batteryStatusController: batteryStatusController,
+                            lastReceiveController: lastReceiveController,
+                            x_MMController: x_MMController,
+                            y_MMController: y_MMController,
+                            z_MMController: z_MMController,
+                            x_DegController: x_DegController,
+                            y_DegController: y_DegController,
+                            z_DegController: z_DegController,
+                            batteryInfoController: batteryInfoController,
+                          ),
+                          SizedBox(height: 82.h,),
+                          CCTVInputSection(
+                            cctvProductIDController: cctvProductIDController,
+                            cctvLocationController: cctvLocationController,
+                            isConnectedController: isConnectedController,
+                            cctvEventController: cctvEventController,
+                            imageAnalysisController: imageAnalysisController,
+                            cctvAddressController: cctvAddressController,
+                            lastReceive : lastReceive,
+                          ),
+                          SizedBox(height: 82.h,),
+                          EventInputSection(
+                            iotHistoryProductIDController: iotHistoryProductIDController,
+                            iotHistoryLocationController: iotHistoryLocationController,
+                            iotHistoryEventController: iotHistoryEventController,
+                            iotHistoryDate: iotHistoryDate,
+                            iotHistoryHour: iotHistoryHour,
+                            iotHistoryMinute: iotHistoryMinute,
+                            iotHistoryLogController: iotHistoryLogController,
+                            cctvHistoryProductIDController: cctvHistoryProductIDController,
+                            cctvHistoryLocationController: cctvHistoryLocationController,
+                            cctvHistoryEventController: cctvHistoryEventController,
+                            cctvHistoryDate: cctvHistoryDate,
+                            cctvHistoryHour: cctvHistoryHour,
+                            cctvHistoryMinute: cctvHistoryMinute,
+                            cctvHistoryLogController: cctvHistoryLogController,
+                          ),
+                          SizedBox(height: 82.h,),
+                          InputSensorSection(
+                            // 지중경사계
+                            inclinometerIdController: inclinometerIdController,
+                            inclinometerLocationController: inclinometerLocationController,
+                            inclinometerDate: inclinometerDate,
+                            inclinometerMeasuredDepthsController: inclinometerMeasuredDepthsController,
+                            inclinometerDepthValues: inclinometerDepthValues,
+
+                            // 지하수위계
+                            piezometerIdController: piezometerIdController,
+                            piezometerLocationController: piezometerLocationController,
+                            piezometerDate: piezometerDate,
+                            piezometerDryDaysController: piezometerDryDaysController,
+                            piezometerCurrentWaterLevelController: piezometerCurrentWaterLevelController,
+                            piezometerGroundLevelController: piezometerGroundLevelController,
+                            piezometerChangeAmountController: piezometerChangeAmountController,
+                            piezometerCumulativeChangeController: piezometerCumulativeChangeController,
+
+                            // 변형률계
+                            strainGaugeIdController: strainGaugeIdController,
+                            strainGaugeLocationController: strainGaugeLocationController,
+                            strainGaugeDate: strainGaugeDate,
+                            strainGaugeReadingController: strainGaugeReadingController,
+                            strainGaugeStressController: strainGaugeStressController,
+                            strainGaugeDepthController: strainGaugeDepthController,
+
+                            // 지표침하계
+                            settlementGaugeIdController: settlementGaugeIdController,
+                            settlementGaugeLocationController: settlementGaugeLocationController,
+                            settlementGaugeDate: settlementGaugeDate,
+                            settlementGaugeDryDaysController: settlementGaugeDryDaysController,
+                            settlementGaugeAbsoluteValues1: settlementGaugeAbsoluteValues1,
+                            settlementGaugeAbsoluteValues2: settlementGaugeAbsoluteValues2,
+                            settlementGaugeAbsoluteValues3: settlementGaugeAbsoluteValues3,
+                            settlementGaugeSubsidenceValues1: settlementGaugeSubsidenceValues1,
+                            settlementGaugeSubsidenceValues2: settlementGaugeSubsidenceValues2,
+                            settlementGaugeSubsidenceValues3: settlementGaugeSubsidenceValues3,
+                          ),
+                          SizedBox(height: 82.h,),
+
                         ],
                       ),
                     ),
@@ -828,84 +451,5 @@ class _AdminScreenState extends State<AdminScreen>{
             ),
           ));
         });
-  }
-
-  Widget sectionTitle(String title) {
-    ScreenUtil.ensureScreenSize();
-    return Text(
-      title,
-      style: TextStyle(
-        fontFamily: 'PretendardGOV',
-        fontSize: 32.sp,
-        fontWeight: FontWeight.w700,
-        color: Colors.white,
-      ),
-    );
-  }
-
-  Widget blockTitle(String title) {
-    ScreenUtil.ensureScreenSize();
-    return Text(
-      title,
-      style: TextStyle(
-        fontFamily: 'PretendardGOV',
-        fontSize: 32.sp,
-        fontWeight: FontWeight.w400,
-        color: Colors.white,
-      ),
-    );
-  }
-
-  Widget labeledTextField(
-      {required String title,
-      String? hint,
-      required double width,
-      required double height,
-      TextEditingController? controller}) {
-    ScreenUtil.ensureScreenSize();
-    return Container(
-      width: width.w,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontFamily: 'PretendardGOV',
-              fontSize: 24.sp,
-              fontWeight: FontWeight.w400,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 6.h),
-          Container(
-              width: width.w,
-              height: height.h,
-              child: TextField(
-                controller: controller,
-
-                style: TextStyle(color: Colors.black),
-                decoration: InputDecoration(
-
-                  hintText: hint ?? '',
-                  hintStyle: TextStyle(
-                      color: Color(0xff9eaea2),
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.w300,
-                      fontFamily: 'PretendardGOV'),
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.r),
-                    borderSide: BorderSide(color: Colors.white),
-                  ),
-                  focusedBorder: AppColors.focusedBorder(2.w), // ✅ 여기에 적용
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 12.h),
-                ),
-              )),
-        ],
-      ),
-    );
   }
 }

@@ -52,19 +52,28 @@ class _ImagePickerTextFieldState extends State<ImagePickerTextField> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: _pickImage,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+
         children: [
-          Text(
-            widget.title,
-            style: TextStyle(
-              fontFamily: 'PretendardGOV',
-              fontSize: 24.sp,
-              fontWeight: FontWeight.w400,
-              color: Colors.white,
+          SizedBox(
+            width: 41.w,
+          ),
+          Container(
+            width: 400.w,
+            height: 50.h,
+            alignment: Alignment.centerLeft,
+            child:    Text(
+              widget.title,
+              style: TextStyle(
+                fontFamily: 'PretendardGOV',
+                fontSize: 36.sp,
+                fontWeight: FontWeight.w400,
+                color: Colors.white,
+              ),
             ),
           ),
-          SizedBox(height: 6.h),
+
+          SizedBox(width: 12.h),
           Container(
             width: widget.width.w,
             height: widget.height.h,
@@ -72,7 +81,7 @@ class _ImagePickerTextFieldState extends State<ImagePickerTextField> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(8.r),
             ),
-            padding:  EdgeInsets.symmetric(horizontal: 8.w, vertical: 12.h),
+            padding:  EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             alignment: Alignment.centerLeft,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -80,7 +89,7 @@ class _ImagePickerTextFieldState extends State<ImagePickerTextField> {
                 Text(
                   fileName ?? widget.hint,
                   style: TextStyle(
-                    fontSize: 20.sp,
+                    fontSize: 36.sp,
                     fontWeight: FontWeight.w300,
                     fontFamily: 'PretendardGOV',
                     color: fileName == null ? Colors.grey : Colors.black,
