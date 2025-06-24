@@ -7,13 +7,14 @@ class DatePickerField extends StatefulWidget {
   final String label;
   final DateTime? initialDate;
   final void Function(DateTime) onDateSelected;
+  final bool enabled;
 
   const DatePickerField({
     Key? key,
     required this.label,
     this.initialDate,
     required this.onDateSelected,
-    thi
+    this.enabled = true, // ✅ 기본값 true
   }) : super(key: key);
 
   @override
@@ -30,6 +31,8 @@ class _DatePickerFieldState extends State<DatePickerField> {
   }
 
   Future<void> _pickDate() async {
+    if (!widget.enabled) return; // 🔒 비활성화 시 무시
+
     final picked = await showDialog<DateTime>(
       context: context,
       builder: (context) => Dialog(
@@ -47,6 +50,8 @@ class _DatePickerFieldState extends State<DatePickerField> {
   }
 
   void _selectToday() {
+    if (!widget.enabled) return; // 🔒 비활성화 시 무시
+
     final today = DateTime.now();
     setState(() {
       selectedDate = today;
@@ -85,7 +90,7 @@ class _DatePickerFieldState extends State<DatePickerField> {
               height: 60.h,
               padding: EdgeInsets.symmetric(horizontal: 16.w),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: widget.enabled? Colors.white : Color(0xffe0e0e0),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Row(
@@ -118,7 +123,7 @@ class _DatePickerFieldState extends State<DatePickerField> {
                 height: 60.h,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: Color(0xff3182ce),
+                  color: widget.enabled? Color(0xff3182ce):Colors.grey,
                   borderRadius: BorderRadius.circular(5.r),
                 ),
                 child: Text(

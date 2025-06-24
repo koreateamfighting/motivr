@@ -7,15 +7,18 @@ class ImagePickerTextField extends StatefulWidget {
   final String hint;
   final double width;
   final double height;
+  final String? initialFileName;
   final void Function(html.File)? onFileSelected;
+  final bool enabled;
 
   const ImagePickerTextField({
     required this.title,
     required this.hint,
     required this.width,
     required this.height,
+    this.initialFileName,
     required this.onFileSelected,
-
+  this.enabled = true,
   });
 
   @override
@@ -24,9 +27,15 @@ class ImagePickerTextField extends StatefulWidget {
 
 class _ImagePickerTextFieldState extends State<ImagePickerTextField> {
   String? fileName;
-
-
+  @override
+  void initState() {
+    super.initState();
+    fileName = widget.initialFileName;
+  }
   void _pickImage() {
+
+    if (!widget.enabled) return; // ✅ 비활성화 시 업로드 금지
+
     html.FileUploadInputElement uploadInput = html.FileUploadInputElement();
     uploadInput.accept = 'image/*';
     uploadInput.click();
@@ -89,7 +98,7 @@ class _ImagePickerTextFieldState extends State<ImagePickerTextField> {
                 Text(
                   fileName ?? widget.hint,
                   style: TextStyle(
-                    fontSize: 36.sp,
+                    fontSize: 32.sp,
                     fontWeight: FontWeight.w300,
                     fontFamily: 'PretendardGOV',
                     color: fileName == null ? Colors.grey : Colors.black,

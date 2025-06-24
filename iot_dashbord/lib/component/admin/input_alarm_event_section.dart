@@ -6,6 +6,7 @@ import 'package:iot_dashboard/component/admin/textfield_section.dart';
 import 'package:iot_dashboard/component/admin/action_button.dart';
 import 'package:iot_dashboard/component/admin/section_title.dart';
 import 'package:iot_dashboard/component/admin/time_picker_row.dart';
+import 'package:iot_dashboard/component/admin/custom_divider.dart';
 
 class EventAlarmSection extends StatefulWidget {
   final String? alarmDate;
@@ -117,16 +118,7 @@ class _EventAlarmSectionState extends State<EventAlarmSection> {
                   )
                ,
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 Container(
                   width: 2880.w,
                   height: 85.h,
@@ -138,16 +130,7 @@ class _EventAlarmSectionState extends State<EventAlarmSection> {
                     onMinuteChanged: (val) => setState(() => alarmMinute = val),
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 Container(
                   width: 2880.w,
                   height: 85.h,
@@ -161,16 +144,7 @@ class _EventAlarmSectionState extends State<EventAlarmSection> {
                     controller: _alarmTypeController
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 Container(
                   width: 2880.w,
                   height: 85.h,
@@ -187,18 +161,19 @@ class _EventAlarmSectionState extends State<EventAlarmSection> {
               ],
             ),
           ),
-          SizedBox(height: 5.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              ActionButton('변경', Color(0xff4ead8b)),
-              SizedBox(width: 18.w),
-              ActionButton('저장', Color(0xff3182ce)),
-              SizedBox(width: 400.w),
-            ],
-          ),
-          SizedBox(height: 5.h),
+
         ],
+        SizedBox(height: 5.h),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            ActionButton('변경', Color(0xff4ead8b)),
+            SizedBox(width: 18.w),
+            ActionButton('저장', Color(0xff3182ce)),
+            SizedBox(width: 400.w),
+          ],
+        ),
+        SizedBox(height: 5.h),
       ],
     );
   }

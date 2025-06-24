@@ -5,7 +5,7 @@ import 'package:iot_dashboard/component/admin/image_picker_text_field.dart';
 import 'package:iot_dashboard/component/admin/textfield_section.dart';
 import 'package:iot_dashboard/component/admin/action_button.dart';
 import 'package:iot_dashboard/component/admin/section_title.dart';
-
+import 'package:iot_dashboard/component/admin/custom_divider.dart';
 
 
 class CCTVInputSection extends StatefulWidget {
@@ -134,16 +134,7 @@ class _CCTVInputSectionState extends State<CCTVInputSection> {
                     controller: cctvProductIDController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -157,16 +148,7 @@ class _CCTVInputSectionState extends State<CCTVInputSection> {
                     controller: cctvProductIDController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -180,16 +162,7 @@ class _CCTVInputSectionState extends State<CCTVInputSection> {
                     controller: isConnectedController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -203,16 +176,7 @@ class _CCTVInputSectionState extends State<CCTVInputSection> {
                     controller: cctvEventController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -226,16 +190,7 @@ class _CCTVInputSectionState extends State<CCTVInputSection> {
                     controller: imageAnalysisController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -249,16 +204,7 @@ class _CCTVInputSectionState extends State<CCTVInputSection> {
                     controller: cctvAddressController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(height: 16.h,),
                 DatePickerField(
                   label: '마지막계측 :',
@@ -271,16 +217,17 @@ class _CCTVInputSectionState extends State<CCTVInputSection> {
               ],
             ),
           ),
-          SizedBox(height: 5.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              ActionButton('추가', Color(0xffe98800)),
-              SizedBox(width: 400.w),
-            ],
-          ),
-          SizedBox(height: 5.h),
+
         ],
+        SizedBox(height: 5.h),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            ActionButton('추가', Color(0xffe98800)),
+            SizedBox(width: 400.w),
+          ],
+        ),
+        SizedBox(height: 5.h),
       ],
     );
   }

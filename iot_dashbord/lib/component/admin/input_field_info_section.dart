@@ -5,6 +5,7 @@ import 'package:iot_dashboard/component/admin/image_picker_text_field.dart';
 import 'package:iot_dashboard/component/admin/textfield_section.dart';
 import 'package:iot_dashboard/component/admin/action_button.dart';
 import 'package:iot_dashboard/component/admin/section_title.dart';
+import 'package:iot_dashboard/component/admin/custom_divider.dart';
 
 class FieldInfoSection extends StatefulWidget {
   final TextEditingController? constructionTypeController;
@@ -143,16 +144,7 @@ class _FieldInfoSectionState extends State<FieldInfoSection> {
                     controller: constructionTypeController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -166,16 +158,7 @@ class _FieldInfoSectionState extends State<FieldInfoSection> {
                     controller: constructionNameController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -189,16 +172,7 @@ class _FieldInfoSectionState extends State<FieldInfoSection> {
                     controller: constructionTypeController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -212,16 +186,7 @@ class _FieldInfoSectionState extends State<FieldInfoSection> {
                     controller: constructionTypeController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -235,16 +200,7 @@ class _FieldInfoSectionState extends State<FieldInfoSection> {
                     controller: constructionTypeController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -258,16 +214,7 @@ class _FieldInfoSectionState extends State<FieldInfoSection> {
                     controller: constructionTypeController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 Row(
                   children: [
                     DatePickerField(
@@ -290,16 +237,7 @@ class _FieldInfoSectionState extends State<FieldInfoSection> {
                   ],
                 ),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 Row(
                   children: [
                     SizedBox(
@@ -335,18 +273,19 @@ width: 875.w,
               ],
             ),
           ),
-          SizedBox(height: 5.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              ActionButton('변경', Color(0xff4ead8b)),
-              SizedBox(width: 18.w),
-              ActionButton('저장', Color(0xff3182ce)),
-              SizedBox(width: 400.w),
-            ],
-          ),
-          SizedBox(height: 5.h),
+
         ],
+        SizedBox(height: 5.h),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            ActionButton('변경', Color(0xff4ead8b)),
+            SizedBox(width: 18.w),
+            ActionButton('저장', Color(0xff3182ce)),
+            SizedBox(width: 400.w),
+          ],
+        ),
+        SizedBox(height: 5.h),
       ],
     );
   }

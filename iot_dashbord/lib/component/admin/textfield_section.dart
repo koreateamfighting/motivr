@@ -10,7 +10,8 @@ Widget labeledTextField(
       required double height,
       required double textBoxwidth,
       required double textBoxHeight,
-      TextEditingController? controller}) {
+      TextEditingController? controller,
+    bool enabled = true}) {
   ScreenUtil.ensureScreenSize();
   return Container(
     child: Row(
@@ -39,6 +40,7 @@ Widget labeledTextField(
             width: width.w,
             height: height.h,
             child: TextField(
+              enabled: enabled,
               controller: controller,
               style: TextStyle(color: Colors.black),
               decoration: InputDecoration(

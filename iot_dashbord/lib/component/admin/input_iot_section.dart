@@ -6,7 +6,7 @@ import 'package:iot_dashboard/theme/colors.dart';
 import 'package:iot_dashboard/component/admin/textfield_section.dart';
 import 'package:iot_dashboard/component/admin/action_button.dart';
 import 'package:iot_dashboard/component/admin/section_title.dart';
-
+import 'package:iot_dashboard/component/admin/custom_divider.dart';
 class IotInputSection extends StatefulWidget {
   final TextEditingController? iotProductIDController;
   final TextEditingController? iotLocationController;
@@ -149,16 +149,7 @@ class _IotInputSectionState extends State<IotInputSection> {
                     controller: iotProductIDController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -172,16 +163,7 @@ class _IotInputSectionState extends State<IotInputSection> {
                     controller: iotLocationController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -195,16 +177,7 @@ class _IotInputSectionState extends State<IotInputSection> {
                     controller: iotStatusController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -218,16 +191,7 @@ class _IotInputSectionState extends State<IotInputSection> {
                     controller: batteryStatusController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -241,16 +205,7 @@ class _IotInputSectionState extends State<IotInputSection> {
                     controller: lastReceiveController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                     width: 2880.w,
                     height: 85.h,
@@ -357,16 +312,7 @@ class _IotInputSectionState extends State<IotInputSection> {
                             ))
                       ],
                     )),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                     width: 2880.w,
                     height: 85.h,
@@ -473,16 +419,7 @@ class _IotInputSectionState extends State<IotInputSection> {
                             ))
                       ],
                     )),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(height: 8.h,),
                 SizedBox(
                   width: 2880.w,
@@ -501,17 +438,18 @@ class _IotInputSectionState extends State<IotInputSection> {
               ],
             ),
           ),
-          SizedBox(height: 5.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
 
-              ActionButton('추가', Color(0xffe98800)),
-              SizedBox(width: 400.w),
-            ],
-          ),
-          SizedBox(height: 5.h),
         ],
+        SizedBox(height: 5.h),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+
+            ActionButton('추가', Color(0xffe98800)),
+            SizedBox(width: 400.w),
+          ],
+        ),
+        SizedBox(height: 5.h),
       ],
     );
   }

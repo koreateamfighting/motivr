@@ -7,7 +7,8 @@ import 'package:flutter/services.dart'; // ✅ inputFormatter용
 import 'package:iot_dashboard/utils/auth_service.dart';
 import 'package:iot_dashboard/component/common/dialog_form.dart';
 import 'package:iot_dashboard/utils/iframe_visibility.dart';
-import 'package:iot_dashboard/controller/work_progress_controller.dart';
+import 'package:iot_dashboard/controller/duty_controller.dart';
+import 'package:iot_dashboard/model/duty_model.dart';
 
 class WorkProcessStatus extends StatefulWidget {
   const WorkProcessStatus({super.key});
@@ -27,12 +28,14 @@ class _WorkProcessStatusState extends State<WorkProcessStatus> {
   }
   Future<void> _loadInitialProgress() async {
     try {
-      final result = await WorkProgressController.fetchProgress();
-      setState(() {
-        progress = result.progress / 100.0;
-      });
+      final duty = await DutyController.fetchLatestDuty();
+      if (duty != null) {
+        setState(() {
+          progress = duty.progress / 100.0;
+        });
+      }
     } catch (e) {
-      print('Failed to fetch progress: $e');
+      print('❌ Failed to load duty progress: $e');
     }
   }
 
@@ -455,15 +458,37 @@ class _WorkProcessStatusState extends State<WorkProcessStatus> {
                     onTap: () async {
                       double? input = double.tryParse(_controller.text);
                       if (input != null && input >= 0 && input <= 100) {
-                        // ✅ 서버에 저장
-                        await WorkProgressController.saveProgress(input);
+                        // ✅ 기존 duty를 불러와서 progress만 수정
+                        final duty = await DutyController.fetchLatestDuty();
+                        if (duty != null) {
+                          final updated = Duty(
+                            id: duty.id,
+                            dutyName: duty.dutyName,
+                            startDate: duty.startDate,
+                            endDate: duty.endDate,
+                            progress: input.toInt(), // ✅ progress만 변경
+                          );
 
-                        setState(() {
-                          progress = input / 100;
-                          isEditing = false;
-                        });
+                          await DutyController.updateLatestDuty(updated);
+
+                          setState(() {
+                            progress = input / 100;
+                            isEditing = false;
+                          });
+                        } else {
+                          // 예외 처리: duty가 없을 때
+                          await showDialog(
+                            context: context,
+                            builder: (_) => const DialogForm(
+                              mainText: '진행 중인 작업이 없습니다.',
+                              btnText: '확인',
+                              fontSize: 20,
+                            ),
+                          );
+                        }
                       }
                     },
+
                     child: Text(
                       '완료',
                       textAlign: TextAlign.center,

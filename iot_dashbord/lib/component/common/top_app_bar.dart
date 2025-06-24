@@ -70,22 +70,24 @@ class TopAppBar extends StatelessWidget {
                 ,
                 SizedBox(width: 140.w),
                 Container(
-                  alignment: Alignment.center, // 내부에서 우측 정렬
-                  child: Container(
-                    width: 288.w,
-                    height: 100.h,
-                    color: Colors.white,
-                    // padding: EdgeInsets.symmetric(vertical: 8.h), // ✅ 내부 여백 추가
-                    child: Image.network(
-                      'https://hanlimtwin.kr:3030${SettingService.setting
-                          ?.logoUrl ?? ''}',
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.image_not_supported);
-                      },
-                    ),
+                  width: 288.w,
+                  height: 100.h,
+                  color: Colors.white,
+                  child: (SettingService.setting?.logoUrl != null &&
+                      SettingService.setting!.logoUrl!.trim().isNotEmpty)
+                      ? Image.network(
+                    'https://hanlimtwin.kr:3030${SettingService.setting!.logoUrl!}',
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(Icons.image_not_supported);
+                    },
+                  )
+                      : Image.asset(
+                    'assets/images/default_logo.png', // ✅ 기본 로고 이미지
+                    fit: BoxFit.contain,
                   ),
                 ),
+
                 SizedBox(
                   width: 169.w,
                 ),
@@ -96,7 +98,9 @@ class TopAppBar extends StatelessWidget {
                 Container(
                   width: 1500.w,
                   child: Text(
-                    SettingService.setting?.title ?? '_',
+                    (SettingService.setting?.title?.trim().isNotEmpty ?? false)
+                        ? SettingService.setting!.title!
+                        : '타이틀을 입력하세요.', // ✅ 안내 문구
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontFamily: 'PretendardGOV',

@@ -6,7 +6,7 @@ import 'package:iot_dashboard/component/admin/textfield_section.dart';
 import 'package:iot_dashboard/component/admin/action_button.dart';
 import 'package:iot_dashboard/component/admin/section_title.dart';
 import 'package:iot_dashboard/component/admin/time_picker_row.dart';
-
+import 'package:iot_dashboard/component/admin/custom_divider.dart';
 class EventInputSection extends StatefulWidget {
   final TextEditingController? iotHistoryProductIDController;
   final TextEditingController? iotHistoryLocationController;
@@ -173,16 +173,7 @@ class _EventInputSectionState extends State<EventInputSection> {
                     controller: iotHistoryProductIDController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -196,16 +187,7 @@ class _EventInputSectionState extends State<EventInputSection> {
                     controller: iotHistoryLocationController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -219,16 +201,7 @@ class _EventInputSectionState extends State<EventInputSection> {
                     controller: iotHistoryEventController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 Row(
                   children: [
                     DatePickerField(
@@ -248,16 +221,7 @@ class _EventInputSectionState extends State<EventInputSection> {
                   ],
 
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -306,16 +270,7 @@ class _EventInputSectionState extends State<EventInputSection> {
                     controller: cctvHistoryProductIDController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -329,16 +284,7 @@ class _EventInputSectionState extends State<EventInputSection> {
                     controller: cctvHistoryLocationController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -352,16 +298,7 @@ class _EventInputSectionState extends State<EventInputSection> {
                     controller: cctvHistoryEventController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 Row(
                   children: [
                     DatePickerField(
@@ -381,16 +318,7 @@ class _EventInputSectionState extends State<EventInputSection> {
                   ],
 
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,

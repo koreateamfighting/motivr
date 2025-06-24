@@ -7,28 +7,31 @@ import 'package:iot_dashboard/model/setting_model.dart'; // 위에서 만든 모
 import 'dart:convert';
 
 class SettingController {
-  static Future<SettingUploadResult> uploadTitleAndLogo(String title, html.File logoFile) async {
+  static Future<SettingUploadResult> uploadTitleAndLogo(String title, html.File? logoFile) async {
     try {
-      final reader = html.FileReader();
-      final completer = Completer<Uint8List>();
-
-      reader.readAsArrayBuffer(logoFile);
-      reader.onLoadEnd.listen((_) {
-        completer.complete(reader.result as Uint8List);
-      });
-      reader.onError.listen((e) => completer.completeError(e));
-
-      final bytes = await completer.future;
-
       final uri = Uri.parse('https://hanlimtwin.kr:3030/api/update-settings');
       final request = http.MultipartRequest('POST', uri)
-        ..fields['title'] = title
-        ..files.add(http.MultipartFile.fromBytes(
+        ..fields['title'] = title;
+
+      if (logoFile != null) {
+        final reader = html.FileReader();
+        final completer = Completer<Uint8List>();
+
+        reader.readAsArrayBuffer(logoFile);
+        reader.onLoadEnd.listen((_) {
+          completer.complete(reader.result as Uint8List);
+        });
+        reader.onError.listen((e) => completer.completeError(e));
+
+        final bytes = await completer.future;
+
+        request.files.add(http.MultipartFile.fromBytes(
           'logo',
           bytes,
           filename: logoFile.name,
           contentType: MediaType('image', 'png'),
         ));
+      }
 
       final response = await request.send();
       if (response.statusCode == 200) {
@@ -40,6 +43,8 @@ class SettingController {
       return SettingUploadResult(success: false, message: '오류: $e');
     }
   }
+
+
   static Future<SiteSetting?> fetchLatestSetting() async {
     try {
       final uri = Uri.parse('https://hanlimtwin.kr:3030/api/get-settings');

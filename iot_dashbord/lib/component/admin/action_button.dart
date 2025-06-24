@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-Widget ActionButton(String label, Color color) {
+Widget ActionButton(String label, Color color, {VoidCallback? onTap}) {
   return InkWell(
-    onTap: () {}, // TODO: 기능 연결
+    onTap: onTap, // ✅ 외부에서 동작 주입
     child: Container(
       width: 103.w,
       height: 60.h,

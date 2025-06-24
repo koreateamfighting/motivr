@@ -5,7 +5,10 @@ import 'package:iot_dashboard/component/admin/image_picker_text_field.dart';
 import 'package:iot_dashboard/component/admin/textfield_section.dart';
 import 'package:iot_dashboard/component/admin/action_button.dart';
 import 'package:iot_dashboard/component/admin/section_title.dart';
-
+import 'package:iot_dashboard/component/admin/custom_divider.dart';
+import 'package:iot_dashboard/controller/duty_controller.dart';
+import 'package:iot_dashboard/model/duty_model.dart';
+import 'package:iot_dashboard/component/common/dialog_form.dart';
 
 
 class DutySection extends StatefulWidget {
@@ -14,15 +17,13 @@ class DutySection extends StatefulWidget {
   final String? dutyEndDate;
   final TextEditingController? progressController;
 
-
-
-  const DutySection({
-    Key? key,
-    required this.dutyNameController,
-    this.dutyStartDate,
-    this.dutyEndDate,
-    this.progressController
-  }) : super(key: key);
+  const DutySection(
+      {Key? key,
+      required this.dutyNameController,
+      this.dutyStartDate,
+      this.dutyEndDate,
+      this.progressController})
+      : super(key: key);
 
   @override
   State<DutySection> createState() => _DutySectionState();
@@ -30,8 +31,75 @@ class DutySection extends StatefulWidget {
 
 class _DutySectionState extends State<DutySection> {
   bool isExpanded = false; // ✅ 펼침 여부 상태
+  bool isEditing = false;
+
+  DateTime? startDate;
+  DateTime? endDate;
 
 
+  @override
+  void initState() {
+    super.initState();
+    _loadLatestDuty();
+  }
+  Future<void> _loadLatestDuty() async {
+    final duty = await DutyController.fetchLatestDuty();
+    if (duty != null) {
+      widget.dutyNameController.text = duty.dutyName;
+      widget.progressController?.text = duty.progress.toString();
+      setState(() {
+        startDate = duty.startDate;
+        endDate = duty.endDate;
+      });
+    }
+  }
+
+  Future<void> _saveDuty() async {
+    final name = widget.dutyNameController.text.trim();
+    final progress = int.tryParse(widget.progressController?.text ?? '');
+    if (name.isEmpty || startDate == null || endDate == null || progress == null) {
+      showDialog(
+        context: context,
+        builder: (_) => const DialogForm(
+          mainText: '입력값이 누락되었습니다.',
+          btnText: '확인',
+          fontSize: 20,
+        ),
+      );
+      return;
+    }
+
+    final result = await DutyController.updateLatestDuty(
+      Duty(
+        id: 0, // 서버에서 최신 Id를 찾기 때문에 의미 없음
+        dutyName: name,
+        startDate: startDate!,
+        endDate: endDate!,
+        progress: progress,
+      ),
+    );
+
+    if (result) {
+      showDialog(
+        context: context,
+        builder: (_) => const DialogForm(
+          mainText: '저장되었습니다.',
+          btnText: '확인',
+          fontSize: 20,
+        ),
+      );
+      setState(() => isEditing = false);
+    } else {
+      showDialog(
+        context: context,
+        builder: (_) => const DialogForm(
+          mainText: '저장 실패',
+          btnText: '닫기',
+          fontSize: 20,
+        ),
+      );
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -67,8 +135,8 @@ class _DutySectionState extends State<DutySection> {
                   isExpanded
                       ? 'assets/icons/arrow_down.png'
                       : 'assets/icons/arrow_right2.png',
-                  width: isExpanded?40.w:50.w,
-                  height: isExpanded?20.h:30.h,
+                  width: isExpanded ? 40.w : 50.w,
+                  height: isExpanded ? 20.h : 30.h,
                 ),
               ),
               SizedBox(width: 55.w),
@@ -100,56 +168,34 @@ class _DutySectionState extends State<DutySection> {
                     textBoxwidth: 400,
                     textBoxHeight: 50,
                     controller: widget.dutyNameController,
+                    enabled: isEditing, // 🔸 편집 가능 여부
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+                CustomDivider(),
                 SizedBox(height: 16.h),
                 DatePickerField(
                   label: '시작일 :',
-                  initialDate: DateTime.tryParse(widget.dutyStartDate ?? ''),
+                  initialDate: startDate, // ⬅️ 이 부분 변경
                   onDateSelected: (date) {
-                    // 여기에 상태 저장 또는 처리 로직
-                    print('선택된 시작일: $date');
+                    setState(() {
+                      startDate = date; // ⬅️ 선택된 날짜 저장
+                    });
                   },
+                  enabled: isEditing,
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+                CustomDivider(),
                 SizedBox(height: 16.h),
                 DatePickerField(
                   label: '종료일 :',
-                  initialDate: DateTime.tryParse(widget.dutyEndDate ?? ''),
+                  initialDate: endDate, // ⬅️ 이 부분 변경
                   onDateSelected: (date) {
-                    // 여기에 상태 저장 또는 처리 로직
-                    print('선택된 종료일: $date');
+                    setState(() {
+                      endDate = date; // ⬅️ 선택된 날짜 저장
+                    });
                   },
+                  enabled: isEditing,
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+                CustomDivider(),
                 SizedBox(height: 8.h),
                 Container(
                   width: 2880.w,
@@ -162,24 +208,32 @@ class _DutySectionState extends State<DutySection> {
                     textBoxwidth: 400,
                     textBoxHeight: 50,
                     controller: widget.progressController,
+                    enabled: isEditing, // 🔸 편집 가능 여부
                   ),
                 ),
-
               ],
             ),
           ),
-          SizedBox(height: 5.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              ActionButton('변경', Color(0xff4ead8b)),
-              SizedBox(width: 18.w),
-              ActionButton('저장', Color(0xff3182ce)),
-              SizedBox(width: 400.w),
-            ],
-          ),
-          SizedBox(height: 5.h),
         ],
+        SizedBox(height: 5.h),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children:  [
+            ActionButton(
+              isEditing ? '완료' : '수정',
+              isEditing ? const Color(0xff3182ce) : const Color(0xff4ead8b),
+              onTap: () {
+                if (isEditing) {
+                  _saveDuty();
+                } else {
+                  setState(() => isEditing = true);
+                }
+              },
+            ),
+            SizedBox(width: 400.w),
+          ],
+        ),
+        SizedBox(height: 5.h),
       ],
     );
   }

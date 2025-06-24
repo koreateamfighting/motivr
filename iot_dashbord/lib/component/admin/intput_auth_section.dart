@@ -6,6 +6,7 @@ import 'package:iot_dashboard/component/admin/textfield_section.dart';
 import 'package:iot_dashboard/component/admin/action_button.dart';
 import 'package:iot_dashboard/component/admin/section_title.dart';
 import 'package:iot_dashboard/theme/colors.dart';
+import 'package:iot_dashboard/component/admin/custom_divider.dart';
 
 class IntputAuthSection extends StatefulWidget {
   final TextEditingController? inclinometerIdController;
@@ -264,16 +265,7 @@ class _IntputAuthSectionState extends State<IntputAuthSection> {
                     controller: inclinometerIdController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -287,16 +279,7 @@ class _IntputAuthSectionState extends State<IntputAuthSection> {
                     controller: inclinometerLocationController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
 
                 SizedBox(
                   height: 16.h,
@@ -308,16 +291,7 @@ class _IntputAuthSectionState extends State<IntputAuthSection> {
                     // 여기에 상태 저장 또는 처리 로직
                   },
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -331,16 +305,7 @@ class _IntputAuthSectionState extends State<IntputAuthSection> {
                     controller: inclinometerMeasuredDepthsController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
 // 깊이 입력 헤더
                 Padding(
                   padding: EdgeInsets.only(left: 41.w, bottom: 12.h, top: 12.h),
@@ -454,16 +419,7 @@ class _IntputAuthSectionState extends State<IntputAuthSection> {
                     controller: piezometerIdController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -477,16 +433,7 @@ class _IntputAuthSectionState extends State<IntputAuthSection> {
                     controller: piezometerLocationController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
 
                 SizedBox(
                   height: 16.h,
@@ -498,16 +445,7 @@ class _IntputAuthSectionState extends State<IntputAuthSection> {
                     // 여기에 상태 저장 또는 처리 로직
                   },
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -521,16 +459,7 @@ class _IntputAuthSectionState extends State<IntputAuthSection> {
                     controller: piezometerDryDaysController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -544,16 +473,7 @@ class _IntputAuthSectionState extends State<IntputAuthSection> {
                     controller: piezometerCurrentWaterLevelController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -567,16 +487,7 @@ class _IntputAuthSectionState extends State<IntputAuthSection> {
                     controller: piezometerGroundLevelController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -590,16 +501,7 @@ class _IntputAuthSectionState extends State<IntputAuthSection> {
                     controller: piezometerChangeAmountController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -613,16 +515,7 @@ class _IntputAuthSectionState extends State<IntputAuthSection> {
                     controller: piezometerCumulativeChangeController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 Container(
                   color: Color(0xffe7eaf4),
                   child: Row(
@@ -657,16 +550,7 @@ class _IntputAuthSectionState extends State<IntputAuthSection> {
                     controller: strainGaugeIdController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -680,16 +564,7 @@ class _IntputAuthSectionState extends State<IntputAuthSection> {
                     controller: strainGaugeLocationController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
 
                 SizedBox(
                   height: 16.h,
@@ -701,16 +576,7 @@ class _IntputAuthSectionState extends State<IntputAuthSection> {
                     // 여기에 상태 저장 또는 처리 로직
                   },
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -724,16 +590,7 @@ class _IntputAuthSectionState extends State<IntputAuthSection> {
                     controller: strainGaugeReadingController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -747,16 +604,7 @@ class _IntputAuthSectionState extends State<IntputAuthSection> {
                     controller: strainGaugeStressController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -770,16 +618,7 @@ class _IntputAuthSectionState extends State<IntputAuthSection> {
                     controller: strainGaugeDepthController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 Container(
                   color: Color(0xffe7eaf4),
                   child: Row(
@@ -814,16 +653,7 @@ class _IntputAuthSectionState extends State<IntputAuthSection> {
                     controller: settlementGaugeIdController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -837,16 +667,7 @@ class _IntputAuthSectionState extends State<IntputAuthSection> {
                     controller: settlementGaugeLocationController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
 
                 SizedBox(
                   height: 16.h,
@@ -861,16 +682,7 @@ class _IntputAuthSectionState extends State<IntputAuthSection> {
                 SizedBox(
                   height: 16.h,
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -884,16 +696,7 @@ class _IntputAuthSectionState extends State<IntputAuthSection> {
                     controller: settlementGaugeDryDaysController,
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 Container(
                   height: 88.h,
                   alignment: Alignment.centerLeft,
@@ -930,16 +733,7 @@ class _IntputAuthSectionState extends State<IntputAuthSection> {
                     ],
                   ) ,
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 2800.w,
-                      height: 1.h,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
+           CustomDivider(),
                 Container(
                   height: 88.h,
                   alignment: Alignment.centerLeft,

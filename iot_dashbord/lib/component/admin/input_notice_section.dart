@@ -111,18 +111,19 @@ class _NoticeInputSectionState extends State<NoticeInputSection> {
               ],
             ),
           ),
-          SizedBox(height: 5.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              ActionButton('변경', Color(0xff4ead8b)),
-              SizedBox(width: 18.w),
-              ActionButton('저장', Color(0xff3182ce)),
-              SizedBox(width: 400.w),
-            ],
-          ),
-          SizedBox(height: 5.h),
+
         ],
+        SizedBox(height: 5.h),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            ActionButton('변경', Color(0xff4ead8b)),
+            SizedBox(width: 18.w),
+            ActionButton('저장', Color(0xff3182ce)),
+            SizedBox(width: 400.w),
+          ],
+        ),
+        SizedBox(height: 5.h),
       ],
     );
   }
