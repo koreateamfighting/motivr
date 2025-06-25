@@ -14,6 +14,7 @@ import 'package:iot_dashboard/component/admin/input_notice_section.dart';
 import 'package:iot_dashboard/component/admin/input_cctv_section.dart';
 import 'package:iot_dashboard/component/admin/input_event_section.dart';
 import 'package:iot_dashboard/component/admin/input_special_sensor_section.dart';
+import 'package:iot_dashboard/component/admin/input_auth_section.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -132,6 +133,17 @@ class _AdminScreenState extends State<AdminScreen> {
   final settlementGaugeSubsidenceValues1 = TextEditingController();
   final settlementGaugeSubsidenceValues2 = TextEditingController();
   final settlementGaugeSubsidenceValues3 = TextEditingController();
+
+ //계정 및 권한
+  final idController = TextEditingController();
+  final pwController = TextEditingController();
+  final nameController = TextEditingController();
+  final phoneController = TextEditingController();
+  final emailController = TextEditingController();
+  final companyController = TextEditingController();
+  final deptController = TextEditingController();
+  final positionController = TextEditingController();
+  final roleController = TextEditingController();
 
   @override
   void initState() {
@@ -463,6 +475,18 @@ class _AdminScreenState extends State<AdminScreen> {
                           SizedBox(
                             height: 80.h,
                           ),
+                          AuthSection(
+                              idController:
+                              idController,
+                            pwController: pwController,
+                            emailController: emailController,
+                            nameController: nameController,
+                            phoneController: phoneController,
+                            companyController: companyController,
+                            deptController: deptController,
+                            positionController: positionController,
+                            roleController: roleController,
+                          )
                         ],
                       ),
                     ),

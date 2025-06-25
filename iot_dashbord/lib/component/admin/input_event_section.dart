@@ -108,7 +108,7 @@ class _EventInputSectionState extends State<EventInputSection> {
             children: [
               SizedBox(width: 41.w),
               Text(
-                '이벤트 관리',
+                '이벤트 관리(준비중)',
                 style: TextStyle(
                   fontFamily: 'PretendardGOV',
                   fontSize: 36.sp,

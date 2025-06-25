@@ -43,7 +43,7 @@ Widget labeledTextField(
               enabled: enabled,
               controller: controller,
               onChanged: onChanged,
-              style: TextStyle(color: Colors.black),
+              style: TextStyle(fontSize: 36.sp,color: Colors.black),
               decoration: InputDecoration(
                 hintText: hint ?? '',
                 hintStyle: TextStyle(

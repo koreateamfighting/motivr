@@ -61,6 +61,34 @@ class _RegisterWidgetState extends State<RegisterWidget> {
       return;
     }
 
+    // 이메일 형식 검사 (간단한 정규식)
+    final emailPattern = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+    if (!emailPattern.hasMatch(_emailController.text.trim())) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => DialogForm(
+          mainText: "유효한 이메일 주소를 입력해주세요.",
+          btnText: "닫기",
+        ),
+      );
+      return;
+    }
+
+    // 비밀번호 길이 검사 (4자리 이상)
+    if (_pwController.text.length < 4) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => DialogForm(
+          mainText: "비밀번호는 4자리 이상이어야 합니다.",
+          btnText: "닫기",
+        ),
+      );
+      return;
+    }
+
+
     if (_pwController.text != _pwConfirmController.text) {
       showDialog(
         context: context,
