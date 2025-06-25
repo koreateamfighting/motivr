@@ -2,22 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iot_dashboard/component/admin/datepicker_field.dart';
 import 'package:iot_dashboard/component/admin/image_picker_text_field.dart';
-import 'package:iot_dashboard/component/admin/textfield_section.dart';
+import 'package:iot_dashboard/component/admin/labeled_textfield_section.dart';
 import 'package:iot_dashboard/component/admin/action_button.dart';
 import 'package:iot_dashboard/component/admin/section_title.dart';
 import 'package:iot_dashboard/theme/colors.dart';
 import 'package:iot_dashboard/component/admin/custom_divider.dart';
+import 'package:iot_dashboard/model/special_sensor_model.dart';
+import 'package:iot_dashboard/controller/special_sensor_controller.dart';
+import 'package:iot_dashboard/component/common/dialog_form.dart';
+import 'package:iot_dashboard/component/admin/labeled_dropdown_field.dart';
 
-class InputSensorSection extends StatefulWidget {
+class InputSpecialSensorSection extends StatefulWidget {
   final TextEditingController? inclinometerIdController;
-  final TextEditingController? inclinometerLocationController;
-  final String? inclinometerDate;
+    final String? inclinometerDate;
   final TextEditingController? inclinometerMeasuredDepthsController;
   final Map<double, TextEditingController>? inclinometerDepthValues;
 
   final TextEditingController? piezometerIdController;
-  final TextEditingController? piezometerLocationController;
-  final String? piezometerDate;
+    final String? piezometerDate;
   final TextEditingController? piezometerDryDaysController;
   final TextEditingController? piezometerCurrentWaterLevelController;
   final TextEditingController? piezometerGroundLevelController;
@@ -25,15 +27,13 @@ class InputSensorSection extends StatefulWidget {
   final TextEditingController? piezometerCumulativeChangeController;
 
   final TextEditingController? strainGaugeIdController;
-  final TextEditingController? strainGaugeLocationController;
-  final String? strainGaugeDate;
+   final String? strainGaugeDate;
   final TextEditingController? strainGaugeReadingController;
   final TextEditingController? strainGaugeStressController;
   final TextEditingController? strainGaugeDepthController;
 
   final TextEditingController? settlementGaugeIdController;
-  final TextEditingController? settlementGaugeLocationController;
-  final String? settlementGaugeDate;
+    final String? settlementGaugeDate;
   final TextEditingController? settlementGaugeDryDaysController;
   final TextEditingController? settlementGaugeAbsoluteValues1;
   final TextEditingController? settlementGaugeAbsoluteValues2;
@@ -42,15 +42,14 @@ class InputSensorSection extends StatefulWidget {
   final TextEditingController? settlementGaugeSubsidenceValues2;
   final TextEditingController? settlementGaugeSubsidenceValues3;
 
-  const InputSensorSection({
+  const InputSpecialSensorSection({
     Key? key,
     this.inclinometerIdController,
-    this.inclinometerLocationController,
     this.inclinometerDate,
     this.inclinometerMeasuredDepthsController,
     this.inclinometerDepthValues,
     this.piezometerIdController,
-    this.piezometerLocationController,
+
     this.piezometerDate,
     this.piezometerDryDaysController,
     this.piezometerCurrentWaterLevelController,
@@ -58,13 +57,11 @@ class InputSensorSection extends StatefulWidget {
     this.piezometerChangeAmountController,
     this.piezometerCumulativeChangeController,
     this.strainGaugeIdController,
-    this.strainGaugeLocationController,
     this.strainGaugeDate,
     this.strainGaugeReadingController,
     this.strainGaugeStressController,
     this.strainGaugeDepthController,
     this.settlementGaugeIdController,
-    this.settlementGaugeLocationController,
     this.settlementGaugeDate,
     this.settlementGaugeDryDaysController,
     this.settlementGaugeAbsoluteValues1,
@@ -76,36 +73,40 @@ class InputSensorSection extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<InputSensorSection> createState() => _InputSensorSectionState();
+  State<InputSpecialSensorSection> createState() => _InputSpecialSensorSectionSectionState();
 }
 
-class _InputSensorSectionState extends State<InputSensorSection> {
+class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSection> {
   bool isExpanded = false;
-
+  bool get isInclinometerIdValid => inclinometerIdController.text.trim().isNotEmpty;
+  late String _selectedInclinometerLocation; // 연결
   late TextEditingController inclinometerIdController;
-  late TextEditingController inclinometerLocationController;
   late String? inclinometerDate;
   late TextEditingController inclinometerMeasuredDepthsController;
   late Map<double, TextEditingController> inclinometerDepthValues;
+  DateTime? _selectedInclinometerDate;
 
   late TextEditingController piezometerIdController;
-  late TextEditingController piezometerLocationController;
+  late String _selectedPiezometerLocation; // 연결
   late String? piezometerDate;
   late TextEditingController piezometerDryDaysController;
   late TextEditingController piezometerCurrentWaterLevelController;
   late TextEditingController piezometerGroundLevelController;
   late TextEditingController piezometerChangeAmountController;
   late TextEditingController piezometerCumulativeChangeController;
+  DateTime? _selectedPiezometerDate;
 
   late TextEditingController strainGaugeIdController;
-  late TextEditingController strainGaugeLocationController;
+  late String _selectedStrainGaugeLocation; // 연결
   late String? strainGaugeDate;
   late TextEditingController strainGaugeReadingController;
   late TextEditingController strainGaugeStressController;
   late TextEditingController strainGaugeDepthController;
+  DateTime? _selectedStrainGaugeDate;
+
 
   late TextEditingController settlementGaugeIdController;
-  late TextEditingController settlementGaugeLocationController;
+  late String _selectedSettlementGaugeLocation; // 연결
   late String? settlementGaugeDate;
   late TextEditingController settlementGaugeDryDaysController;
   late TextEditingController settlementGaugeAbsoluteValues1;
@@ -114,15 +115,14 @@ class _InputSensorSectionState extends State<InputSensorSection> {
   late TextEditingController settlementGaugeSubsidenceValues1;
   late TextEditingController settlementGaugeSubsidenceValues2;
   late TextEditingController settlementGaugeSubsidenceValues3;
-
+  DateTime? _selectedSettlementGaugeDate;
   @override
   void initState() {
     super.initState();
 
     inclinometerIdController =
         widget.inclinometerIdController ?? TextEditingController();
-    inclinometerLocationController =
-        widget.inclinometerLocationController ?? TextEditingController();
+ _selectedInclinometerLocation = '추진구';
     inclinometerDate = widget.inclinometerDate;
     inclinometerMeasuredDepthsController =
         widget.inclinometerMeasuredDepthsController ?? TextEditingController();
@@ -130,8 +130,7 @@ class _InputSensorSectionState extends State<InputSensorSection> {
 
     piezometerIdController =
         widget.piezometerIdController ?? TextEditingController();
-    piezometerLocationController =
-        widget.piezometerLocationController ?? TextEditingController();
+    _selectedPiezometerLocation = '추진구';
     piezometerDate = widget.piezometerDate;
     piezometerDryDaysController =
         widget.piezometerDryDaysController ?? TextEditingController();
@@ -146,8 +145,7 @@ class _InputSensorSectionState extends State<InputSensorSection> {
 
     strainGaugeIdController =
         widget.strainGaugeIdController ?? TextEditingController();
-    strainGaugeLocationController =
-        widget.strainGaugeLocationController ?? TextEditingController();
+    _selectedStrainGaugeLocation = '추진구';
     strainGaugeDate = widget.strainGaugeDate;
     strainGaugeReadingController =
         widget.strainGaugeReadingController ?? TextEditingController();
@@ -158,8 +156,7 @@ class _InputSensorSectionState extends State<InputSensorSection> {
 
     settlementGaugeIdController =
         widget.settlementGaugeIdController ?? TextEditingController();
-    settlementGaugeLocationController =
-        widget.settlementGaugeLocationController ?? TextEditingController();
+    _selectedSettlementGaugeLocation = '추진구';
     settlementGaugeDate = widget.settlementGaugeDate;
     settlementGaugeDryDaysController =
         widget.settlementGaugeDryDaysController ?? TextEditingController();
@@ -175,7 +172,201 @@ class _InputSensorSectionState extends State<InputSensorSection> {
         widget.settlementGaugeSubsidenceValues2 ?? TextEditingController();
     settlementGaugeSubsidenceValues3 =
         widget.settlementGaugeSubsidenceValues3 ?? TextEditingController();
+    if (widget.inclinometerDate != null) {
+      try {
+        _selectedInclinometerDate = DateTime.parse(widget.inclinometerDate!);
+      } catch (_) {
+        _selectedInclinometerDate = null;
+      }
+    }
+    if (widget.piezometerDate != null) {
+      try {
+        _selectedPiezometerDate = DateTime.parse(widget.piezometerDate!);
+      } catch (_) {
+        _selectedPiezometerDate = null;
+      }
+    }
+    if (widget.strainGaugeDate != null) {
+      try {
+        _selectedStrainGaugeDate = DateTime.parse(widget.strainGaugeDate!);
+      } catch (_) {
+        _selectedStrainGaugeDate = null;
+      }
+    }
+    if (widget.settlementGaugeDate != null) {
+      try {
+        _selectedSettlementGaugeDate = DateTime.parse(widget.settlementGaugeDate!);
+      } catch (_) {
+        _selectedSettlementGaugeDate = null;
+      }
+    }
+
   }
+  Future<void> _saveInclinometer() async {
+    final data = SpecialSensorData(
+      installationID: inclinometerIdController.text.trim(),
+      type: '지중경사계',
+      installationLocation: _selectedInclinometerLocation,
+      measurementDate: _selectedInclinometerDate,
+      measurementDepth:
+      double.tryParse(inclinometerMeasuredDepthsController.text),
+      depthMinus0_0: double.tryParse(inclinometerDepthValues[-0.0]?.text ?? ''),
+      depthMinus0_5: double.tryParse(inclinometerDepthValues[-0.5]?.text ?? ''),
+      depthMinus1_0: double.tryParse(inclinometerDepthValues[-1.0]?.text ?? ''),
+      depthMinus1_5: double.tryParse(inclinometerDepthValues[-1.5]?.text ?? ''),
+      depthMinus2_0: double.tryParse(inclinometerDepthValues[-2.0]?.text ?? ''),
+      depthMinus2_5: double.tryParse(inclinometerDepthValues[-2.5]?.text ?? ''),
+      depthMinus3_0: double.tryParse(inclinometerDepthValues[-3.0]?.text ?? ''),
+      depthMinus3_5: double.tryParse(inclinometerDepthValues[-3.5]?.text ?? ''),
+      depthMinus4_0: double.tryParse(inclinometerDepthValues[-4.0]?.text ?? ''),
+      depthMinus4_5: double.tryParse(inclinometerDepthValues[-4.5]?.text ?? ''),
+      depthMinus5_0: double.tryParse(inclinometerDepthValues[-5.0]?.text ?? ''),
+      depthMinus5_5: double.tryParse(inclinometerDepthValues[-5.5]?.text ?? ''),
+      depthMinus6_0: double.tryParse(inclinometerDepthValues[-6.0]?.text ?? ''),
+      depthMinus6_5: double.tryParse(inclinometerDepthValues[-6.5]?.text ?? ''),
+      depthMinus7_0: double.tryParse(inclinometerDepthValues[-7.0]?.text ?? ''),
+      depthMinus7_5: double.tryParse(inclinometerDepthValues[-7.5]?.text ?? ''),
+      depthMinus8_0: double.tryParse(inclinometerDepthValues[-8.0]?.text ?? ''),
+      depthMinus8_5: double.tryParse(inclinometerDepthValues[-8.5]?.text ?? ''),
+      depthMinus9_0: double.tryParse(inclinometerDepthValues[-9.0]?.text ?? ''),
+      depthMinus9_5: double.tryParse(inclinometerDepthValues[-9.5]?.text ?? ''),
+      depthMinus10_0: double.tryParse(inclinometerDepthValues[-10.0]?.text ?? ''),
+      depthMinus10_5: double.tryParse(inclinometerDepthValues[-10.5]?.text ?? ''),
+      depthMinus11_0: double.tryParse(inclinometerDepthValues[-11.0]?.text ?? ''),
+      depthMinus11_5: double.tryParse(inclinometerDepthValues[-11.5]?.text ?? ''),
+      depthMinus12_0: double.tryParse(inclinometerDepthValues[-12.0]?.text ?? ''),
+      depthMinus12_5: double.tryParse(inclinometerDepthValues[-12.5]?.text ?? ''),
+      depthMinus13_0: double.tryParse(inclinometerDepthValues[-13.0]?.text ?? ''),
+      depthMinus13_5: double.tryParse(inclinometerDepthValues[-13.5]?.text ?? ''),
+      depthMinus14_0: double.tryParse(inclinometerDepthValues[-14.0]?.text ?? ''),
+      depthMinus14_5: double.tryParse(inclinometerDepthValues[-14.5]?.text ?? ''),
+      depthMinus15_0: double.tryParse(inclinometerDepthValues[-15.0]?.text ?? ''),
+    );
+
+    final success = await SpecialSensorController.upsertSensorData(data);
+
+    if (success) {
+      showDialog(
+        context: context,
+        builder: (context) => DialogForm(
+          mainText: '지중경사계 데이터가 저장되었습니다..',
+          btnText: '닫기',
+        ),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => DialogForm(
+          mainText: '저장 중 오류가 발생했습니다.\n서버 상태를 확인하세요.',
+          btnText: '닫기',
+          fontSize: 20,
+        ),
+      );
+    }
+  }
+  Future<void> _savePiezometer() async {
+    final data = SpecialSensorData(
+      installationID: piezometerIdController.text.trim(),
+      type: '지하수위계',
+      installationLocation: _selectedPiezometerLocation,
+      measurementDate: _selectedPiezometerDate,
+      elapsedDays: int.tryParse(piezometerDryDaysController.text),
+      currentWaterLevel: double.tryParse(piezometerCurrentWaterLevelController.text),
+      excavationLevel: double.tryParse(piezometerGroundLevelController.text),
+      changeAmount: double.tryParse(piezometerChangeAmountController.text),
+      cumulativeDisplacement: double.tryParse(piezometerCumulativeChangeController.text),
+    );
+
+    final success = await SpecialSensorController.upsertSensorData(data);
+
+    if (success) {
+      showDialog(
+        context: context,
+        builder: (context) => DialogForm(
+          mainText: '지하수위계 데이터가 저장되었습니다.',
+          btnText: '닫기',
+        ),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => DialogForm(
+          mainText: '저장 중 오류가 발생했습니다.\n서버 상태를 확인하세요.',
+          btnText: '닫기',
+          fontSize: 20,
+        ),
+      );
+    }
+  }
+  Future<void> _saveStrainGauge() async {
+    final data = SpecialSensorData(
+      installationID: strainGaugeIdController.text.trim(),
+      type: '변형률계',
+      installationLocation: _selectedStrainGaugeLocation,
+      measurementDate: _selectedStrainGaugeDate,
+      strainGaugeReading: double.tryParse(strainGaugeReadingController.text),
+      stress: double.tryParse(strainGaugeStressController.text),
+      excavationDepth: double.tryParse(strainGaugeDepthController.text),
+    );
+
+    final success = await SpecialSensorController.upsertSensorData(data);
+
+    if (success) {
+      showDialog(
+        context: context,
+        builder: (_) => DialogForm(
+          mainText: '변형률계 데이터가 저장되었습니다.',
+          btnText: '닫기',
+        ),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (_) => DialogForm(
+          mainText: '저장 중 오류가 발생했습니다.\n서버 상태를 확인하세요.',
+          btnText: '닫기',
+          fontSize: 20,
+        ),
+      );
+    }
+  }
+  Future<void> _saveSettlementGauge() async {
+    final data = SpecialSensorData(
+      installationID: settlementGaugeIdController.text.trim(),
+      type: '지표침하계',
+      installationLocation: _selectedSettlementGaugeLocation,
+      measurementDate: _selectedSettlementGaugeDate,
+      elapsedDays: int.tryParse(settlementGaugeDryDaysController.text),
+      absoluteAltitude1: double.tryParse(settlementGaugeAbsoluteValues1.text),
+      absoluteAltitude2: double.tryParse(settlementGaugeAbsoluteValues2.text),
+      absoluteAltitude3: double.tryParse(settlementGaugeAbsoluteValues3.text),
+      subsidence1: double.tryParse(settlementGaugeSubsidenceValues1.text),
+      subsidence2: double.tryParse(settlementGaugeSubsidenceValues2.text),
+      subsidence3: double.tryParse(settlementGaugeSubsidenceValues3.text),
+    );
+
+    final success = await SpecialSensorController.upsertSensorData(data);
+
+    if (success) {
+      showDialog(
+        context: context,
+        builder: (_) => DialogForm(
+          mainText: '지표침하계 데이터가 저장되었습니다.',
+          btnText: '닫기',
+        ),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (_) => DialogForm(
+          mainText: '저장 중 오류가 발생했습니다.\n서버 상태를 확인하세요.',
+          btnText: '닫기',
+          fontSize: 20,
+        ),
+      );
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -263,20 +454,18 @@ class _InputSensorSectionState extends State<InputSensorSection> {
                     textBoxwidth: 400,
                     textBoxHeight: 50,
                     controller: inclinometerIdController,
+                    onChanged: (_) => setState(() {}),
                   ),
                 ),
            CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
-                  child: labeledTextField(
+                  child: LabeledDropdownField(
                     title: '설치 위치 :',
-                    hint: '',
-                    width: 420,
-                    height: 60,
-                    textBoxwidth: 400,
-                    textBoxHeight: 50,
-                    controller: inclinometerLocationController,
+                    items: ['추진구', '도달구'],
+                    selectedValue: _selectedInclinometerLocation,
+                    onChanged: (val) => setState(() => _selectedInclinometerLocation = val!),
                   ),
                 ),
            CustomDivider(),
@@ -288,7 +477,9 @@ class _InputSensorSectionState extends State<InputSensorSection> {
                   label: '측정 날짜  :',
                   initialDate: DateTime.tryParse(inclinometerDate ?? ''),
                   onDateSelected: (date) {
-                    // 여기에 상태 저장 또는 처리 로직
+                    setState(() {
+                      _selectedInclinometerDate = date;
+                    });
                   },
                 ),
            CustomDivider(),
@@ -388,7 +579,13 @@ class _InputSensorSectionState extends State<InputSensorSection> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      ActionButton('추가', Color(0xffe98800)),
+                      ActionButton(
+                        '저장',
+                        isInclinometerIdValid ? Color(0xff3182ce) : Colors.grey,
+                        onTap: isInclinometerIdValid ? () async {
+                          await _saveInclinometer();
+                        } : null,
+                      ),
                     ],
                   ),
                 ),
@@ -417,20 +614,18 @@ class _InputSensorSectionState extends State<InputSensorSection> {
                     textBoxwidth: 400,
                     textBoxHeight: 50,
                     controller: piezometerIdController,
+                    onChanged: (_) => setState(() {}),
                   ),
                 ),
            CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
-                  child: labeledTextField(
+                  child: LabeledDropdownField(
                     title: '설치 위치 :',
-                    hint: '',
-                    width: 420,
-                    height: 60,
-                    textBoxwidth: 400,
-                    textBoxHeight: 50,
-                    controller: piezometerLocationController,
+                    items: ['추진구', '도달구'],
+                    selectedValue: _selectedPiezometerLocation,
+                    onChanged: (val) => setState(() => _selectedPiezometerLocation = val!),
                   ),
                 ),
            CustomDivider(),
@@ -442,7 +637,9 @@ class _InputSensorSectionState extends State<InputSensorSection> {
                   label: '측정 날짜  :',
                   initialDate: DateTime.tryParse(piezometerDate ?? ''),
                   onDateSelected: (date) {
-                    // 여기에 상태 저장 또는 처리 로직
+                    setState(() {
+                      _selectedPiezometerDate = date;
+                    });
                   },
                 ),
            CustomDivider(),
@@ -521,7 +718,14 @@ class _InputSensorSectionState extends State<InputSensorSection> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      ActionButton('추가', Color(0xffe98800)),
+                      ActionButton(
+                        '저장',
+                        piezometerIdController.text.trim().isNotEmpty ? Color(0xff3182ce) : Colors.grey,
+                        onTap: piezometerIdController.text.trim().isNotEmpty ? () async {
+                          await _savePiezometer();
+                        } : null,
+                      ),
+
                     ],
                   ),
                 ),
@@ -548,20 +752,18 @@ class _InputSensorSectionState extends State<InputSensorSection> {
                     textBoxwidth: 400,
                     textBoxHeight: 50,
                     controller: strainGaugeIdController,
+                    onChanged: (_) => setState(() {}),
                   ),
                 ),
            CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
-                  child: labeledTextField(
+                  child: LabeledDropdownField(
                     title: '설치 위치 :',
-                    hint: '',
-                    width: 420,
-                    height: 60,
-                    textBoxwidth: 400,
-                    textBoxHeight: 50,
-                    controller: strainGaugeLocationController,
+                    items: ['추진구', '도달구'],
+                    selectedValue: _selectedStrainGaugeLocation,
+                    onChanged: (val) => setState(() => _selectedStrainGaugeLocation = val!),
                   ),
                 ),
            CustomDivider(),
@@ -573,7 +775,9 @@ class _InputSensorSectionState extends State<InputSensorSection> {
                   label: '측정 날짜  :',
                   initialDate: DateTime.tryParse(strainGaugeDate ?? ''),
                   onDateSelected: (date) {
-                    // 여기에 상태 저장 또는 처리 로직
+                    setState(() {
+                      _selectedStrainGaugeDate = date;
+                    });
                   },
                 ),
            CustomDivider(),
@@ -624,7 +828,13 @@ class _InputSensorSectionState extends State<InputSensorSection> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      ActionButton('추가', Color(0xffe98800)),
+                      ActionButton(
+                        '저장',
+                        strainGaugeIdController.text.trim().isNotEmpty ? Color(0xff3182ce) : Colors.grey,
+                        onTap: strainGaugeIdController.text.trim().isNotEmpty ? () async {
+                          await _saveStrainGauge();
+                        } : null,
+                      ),
                     ],
                   ),
                 ),
@@ -651,20 +861,18 @@ class _InputSensorSectionState extends State<InputSensorSection> {
                     textBoxwidth: 400,
                     textBoxHeight: 50,
                     controller: settlementGaugeIdController,
+                    onChanged: (_) => setState(() {}),
                   ),
                 ),
            CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
-                  child: labeledTextField(
+                  child:  LabeledDropdownField(
                     title: '설치 위치 :',
-                    hint: '',
-                    width: 420,
-                    height: 60,
-                    textBoxwidth: 400,
-                    textBoxHeight: 50,
-                    controller: settlementGaugeLocationController,
+                    items: ['추진구', '도달구'],
+                    selectedValue: _selectedSettlementGaugeLocation,
+                    onChanged: (val) => setState(() => _selectedSettlementGaugeLocation = val!),
                   ),
                 ),
            CustomDivider(),
@@ -778,7 +986,13 @@ class _InputSensorSectionState extends State<InputSensorSection> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              ActionButton('추가', Color(0xffe98800)),
+              ActionButton(
+                '저장',
+                settlementGaugeIdController.text.trim().isNotEmpty ? Color(0xff3182ce) : Colors.grey,
+                onTap: settlementGaugeIdController.text.trim().isNotEmpty ? () async {
+                  await _saveSettlementGauge();
+                } : null,
+              ),
               SizedBox(width: 400.w),
             ],
           ),

@@ -13,7 +13,7 @@ import 'dart:async'; // Completer를 위한 import
 import 'package:iot_dashboard/component/admin/input_notice_section.dart';
 import 'package:iot_dashboard/component/admin/input_cctv_section.dart';
 import 'package:iot_dashboard/component/admin/input_event_section.dart';
-import 'package:iot_dashboard/component/admin/input_sensor_section.dart';
+import 'package:iot_dashboard/component/admin/input_special_sensor_section.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -75,7 +75,9 @@ class _AdminScreenState extends State<AdminScreen> {
   final cctvEventController = TextEditingController();
   final imageAnalysisController = TextEditingController();
   final cctvAddressController = TextEditingController();
-  String? lastReceive;
+  String? lastReceiveDate;
+  String? lastReceiveHour;
+  String? lastReceiveMinute;
 
 //이벤트 관리 (iot/cctv) 변수
   final iotHistoryProductIDController = TextEditingController();
@@ -376,12 +378,11 @@ class _AdminScreenState extends State<AdminScreen> {
                           ),
                           CCTVInputSection(
                             cctvProductIDController: cctvProductIDController,
-                            cctvLocationController: cctvLocationController,
-                            isConnectedController: isConnectedController,
-                            cctvEventController: cctvEventController,
                             imageAnalysisController: imageAnalysisController,
                             cctvAddressController: cctvAddressController,
-                            lastReceive: lastReceive,
+                            lastReceiveDate: lastReceiveDate,
+                            lastReceiveHour: lastReceiveHour,
+                            lastReceiveMinute: lastReceiveMinute,
                           ),
                           EventInputSection(
                             iotHistoryProductIDController:
@@ -408,11 +409,9 @@ class _AdminScreenState extends State<AdminScreen> {
                           SizedBox(
                             height: 80.h,
                           ),
-                          InputSensorSection(
+                          InputSpecialSensorSection(
                             // 지중경사계
                             inclinometerIdController: inclinometerIdController,
-                            inclinometerLocationController:
-                                inclinometerLocationController,
                             inclinometerDate: inclinometerDate,
                             inclinometerMeasuredDepthsController:
                                 inclinometerMeasuredDepthsController,
@@ -420,8 +419,6 @@ class _AdminScreenState extends State<AdminScreen> {
 
                             // 지하수위계
                             piezometerIdController: piezometerIdController,
-                            piezometerLocationController:
-                                piezometerLocationController,
                             piezometerDate: piezometerDate,
                             piezometerDryDaysController:
                                 piezometerDryDaysController,
@@ -436,8 +433,6 @@ class _AdminScreenState extends State<AdminScreen> {
 
                             // 변형률계
                             strainGaugeIdController: strainGaugeIdController,
-                            strainGaugeLocationController:
-                                strainGaugeLocationController,
                             strainGaugeDate: strainGaugeDate,
                             strainGaugeReadingController:
                                 strainGaugeReadingController,
@@ -449,8 +444,6 @@ class _AdminScreenState extends State<AdminScreen> {
                             // 지표침하계
                             settlementGaugeIdController:
                                 settlementGaugeIdController,
-                            settlementGaugeLocationController:
-                                settlementGaugeLocationController,
                             settlementGaugeDate: settlementGaugeDate,
                             settlementGaugeDryDaysController:
                                 settlementGaugeDryDaysController,

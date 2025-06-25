@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iot_dashboard/component/admin/datepicker_field.dart';
 import 'package:iot_dashboard/component/admin/image_picker_text_field.dart';
-import 'package:iot_dashboard/component/admin/textfield_section.dart';
+import 'package:iot_dashboard/component/admin/labeled_textfield_section.dart';
 import 'package:iot_dashboard/component/admin/action_button.dart';
 import 'package:iot_dashboard/component/admin/section_title.dart';
 import 'package:iot_dashboard/component/admin/custom_divider.dart';
@@ -372,7 +372,7 @@ width: 875.w,
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             ActionButton(
-              isEditing ? '저장' : '변경',
+              isEditing ? '저장' : '수정',
               isEditing ? const Color(0xff3182ce) : const Color(0xff4ead8b),
               onTap: () async {
                 if (isEditing) {
