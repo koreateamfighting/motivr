@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iot_dashboard/component/login/register.dart';
+import 'package:iot_dashboard/component/login/register_view.dart';
 import 'package:iot_dashboard/theme/colors.dart'; // ✅ 추가
 import 'package:iot_dashboard/controller/user_controller.dart';
 import 'package:iot_dashboard/component/common/dialog_form.dart';
@@ -58,6 +58,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final errorMessage = await UserController.login(userID, password);
     if (errorMessage == null) {
+      // 로그인 성공 후 role 검사
+      final user = UserController.currentUser;
+      if (user?.role == 'disabled') {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => const DialogForm(
+            mainText: '회원 승인 요청이 필요합니다.\n관리자에게 문의하세요.',
+            btnText: '확인',
+          ),
+        );
+        return;
+      }
       context.go('/DashBoard');
     } else {
       showDialog(
@@ -65,10 +78,11 @@ class _LoginScreenState extends State<LoginScreen> {
         barrierDismissible: false,
         builder: (_) => DialogForm(
           mainText: errorMessage,
-          btnText: "닫기",
+          btnText: '닫기',
         ),
       );
     }
+
   }
 
   @override
@@ -105,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Container(
                         width: 215.59.w,
                         height: 74.8.h,
-                        child: Text('버전:20250624',style: TextStyle(color: Colors.white,fontSize: 16.sp),),
+                        child: Text('버전:20250626',style: TextStyle(color: Colors.white,fontSize: 16.sp),),
                       ),
                       bottom: 0.2.h,
                       left: 80.w,

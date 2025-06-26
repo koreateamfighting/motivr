@@ -27,7 +27,7 @@ class _RegisterWidgetState extends State<RegisterWidget> {
   final _companyController = TextEditingController();
   final _deptController = TextEditingController();
   final _positionController = TextEditingController();
-  final _roleController = TextEditingController();
+  final _responsibilitiesController = TextEditingController();
   bool checkedID = false;
 
   @override
@@ -41,7 +41,7 @@ class _RegisterWidgetState extends State<RegisterWidget> {
     _companyController.dispose();
     _deptController.dispose();
     _positionController.dispose();
-    _roleController.dispose();
+    _responsibilitiesController.dispose();
     super.dispose();
   }
 
@@ -123,7 +123,7 @@ class _RegisterWidgetState extends State<RegisterWidget> {
       company: _companyController.text,
       department: _deptController.text,
       position: _positionController.text,
-      role: _roleController.text,
+      role: _responsibilitiesController.text,
     );
 
     final errorMessage = await UserController.registerUser(user, context);
@@ -371,7 +371,7 @@ class _RegisterWidgetState extends State<RegisterWidget> {
                             formTextField('직급을 입력해주세요', _positionController,
                                 fieldType: FormFieldType.normal),
                             formLabel('담당업무',false),
-                            formTextField('담당업무를 입력해주세요', _roleController,
+                            formTextField('담당업무를 입력해주세요', _responsibilitiesController,
                                 fieldType: FormFieldType.normal),
                             SizedBox(
                               height: 54.h,

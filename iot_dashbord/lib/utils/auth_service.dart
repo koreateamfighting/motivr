@@ -33,6 +33,10 @@ class AuthService {
     return html.window.localStorage['role'] == 'admin';
   }
 
+  static bool isRoot() {
+    return html.window.localStorage['role'] == 'root';
+  }
+
   static String? getUserID() {
     return html.window.localStorage['userID'];
   }

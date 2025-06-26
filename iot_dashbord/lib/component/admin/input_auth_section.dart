@@ -9,6 +9,10 @@ import 'package:iot_dashboard/component/admin/section_title.dart';
 import 'package:iot_dashboard/controller/user_controller.dart';
 import 'package:iot_dashboard/model/user_model.dart';
 import 'package:iot_dashboard/component/common/dialog_form.dart';
+import 'package:iot_dashboard/component/admin/custom_radio.dart';
+import 'package:iot_dashboard/component/admin/group_selector.dart';
+import 'package:provider/provider.dart';
+import 'package:iot_dashboard/state/user_role_state.dart'; // 직접 만든 클래스 경로
 
 class AuthSection extends StatefulWidget {
   final TextEditingController? idController;
@@ -19,7 +23,7 @@ class AuthSection extends StatefulWidget {
   final TextEditingController? companyController;
   final TextEditingController? deptController;
   final TextEditingController? positionController;
-  final TextEditingController? roleController;
+  final TextEditingController? responsibilitiesController;
 
   const AuthSection({
     Key? key,
@@ -31,7 +35,7 @@ class AuthSection extends StatefulWidget {
     this.companyController,
     this.deptController,
     this.positionController,
-    this.roleController,
+    this.responsibilitiesController,
   }) : super(key: key);
 
   @override
@@ -39,7 +43,7 @@ class AuthSection extends StatefulWidget {
 }
 
 class _AuthSectionState extends State<AuthSection> {
-  bool isExpanded = false; // ✅ 펼침 여부 상태
+  bool isExpanded = true; // ✅ 펼침 여부 상태
   bool _checkedID = false;
   bool _isCheckingId = false;
   late TextEditingController idController;
@@ -50,7 +54,8 @@ class _AuthSectionState extends State<AuthSection> {
   late TextEditingController companyController;
   late TextEditingController deptController;
   late TextEditingController positionController;
-  late TextEditingController roleController;
+  late TextEditingController responsibilitiesController;
+  String? _selectedRole;
 
   @override
   void initState() {
@@ -63,7 +68,8 @@ class _AuthSectionState extends State<AuthSection> {
     companyController = widget.companyController ?? TextEditingController();
     deptController = widget.deptController ?? TextEditingController();
     positionController = widget.positionController ?? TextEditingController();
-    roleController = widget.roleController ?? TextEditingController();
+    responsibilitiesController =
+        widget.responsibilitiesController ?? TextEditingController();
   }
 
   bool get _isFormValid {
@@ -149,13 +155,17 @@ class _AuthSectionState extends State<AuthSection> {
       company: companyController.text,
       department: deptController.text,
       position: positionController.text,
-      role: roleController.text,
+      responsibilities: responsibilitiesController.text,
+      role: _selectedRole ?? 'disabled',
     );
 
     final errorMessage = await UserController.registerUser(user, context);
 
     if (errorMessage == null) {
       _showDialog('회원가입이 성공적으로 완료되었습니다.');
+      // ✅ 추가된 코드: 상태 갱신 → GroupSelector 자동 반영
+      final roleState = Provider.of<UserRoleState>(context, listen: false);
+      await roleState.fetchRoles();
       _clearForm();
     } else {
       _showDialog(errorMessage);
@@ -171,7 +181,7 @@ class _AuthSectionState extends State<AuthSection> {
     companyController.clear();
     deptController.clear();
     positionController.clear();
-    roleController.clear();
+    responsibilitiesController.clear();
     _checkedID = false;
     setState(() {});
   }
@@ -261,28 +271,28 @@ class _AuthSectionState extends State<AuthSection> {
                             color: _checkedID
                                 ? Colors.green
                                 : (_isCheckingId
-                                    ? Colors.grey
-                                    : Color(0xff3182ce)),
+                                ? Colors.grey
+                                : Color(0xff3182ce)),
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: _isCheckingId
                               ? SizedBox(
-                                  width: 20.w,
-                                  height: 20.h,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 3.w,
-                                    color: Colors.white,
-                                  ),
-                                )
+                            width: 20.w,
+                            height: 20.h,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3.w,
+                              color: Colors.white,
+                            ),
+                          )
                               : Text(
-                                  _checkedID ? '확인됨' : '중복체크',
-                                  style: TextStyle(
-                                    fontFamily: 'PretendardGOV',
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 30.sp,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                            _checkedID ? '확인됨' : '중복체크',
+                            style: TextStyle(
+                              fontFamily: 'PretendardGOV',
+                              fontWeight: FontWeight.w700,
+                              fontSize: 30.sp,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -399,7 +409,96 @@ class _AuthSectionState extends State<AuthSection> {
                     height: 60,
                     textBoxwidth: 401,
                     textBoxHeight: 50,
-                    controller: roleController,
+                    controller: responsibilitiesController,
+                  ),
+                ),
+                CustomDivider(),
+                Container(
+                  height: 363.h,
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 40.w,
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            height: 18.h,
+                          ),
+                          Container(
+                            width: 200.w,
+                            height: 50.h,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              '권한 :',
+                              style: TextStyle(
+                                fontFamily: 'PretendardGOV',
+                                fontSize: 36.sp,
+                                fontWeight: FontWeight.w400,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(width: 106.w),
+                      Container(
+                        width: 2500.w,
+                        height: 380.h,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              height: 55.h,
+                              child: customRadio(
+                                  value: 'enabled',
+                                  groupValue: _selectedRole ?? '',
+                                  onChanged: (val) {
+                                    setState(() {
+                                      _selectedRole = val;
+                                    });
+                                  },
+                                  title: '활성',
+                                  subtitle:
+                                  '이 사용자가 활성화 되어 있는지를 나타냅니다. 계정을 비활성화 하려면 이것을 선택 해제 하세요.'),
+                            ),
+                            SizedBox(
+                              height: 60.h,
+                            ),
+                            Container(
+                              height: 55.h,
+                              child: customRadio(
+                                  value: 'staff',
+                                  groupValue: _selectedRole ?? '',
+                                  onChanged: (val) {
+                                    setState(() {
+                                      _selectedRole = val;
+                                    });
+                                  },
+                                  title: '스태프 권한',
+                                  subtitle: '관리자 페이지에 진입 가능, 파일 다운로드 등이 가능'),
+                            ),
+                            SizedBox(
+                              height: 60.h,
+                            ),
+                            Container(
+                              height: 55.h,
+                              child: customRadio(
+                                  value: 'admin',
+                                  groupValue: _selectedRole ?? '',
+                                  onChanged: (val) {
+                                    setState(() {
+                                      _selectedRole = val;
+                                    });
+                                  },
+                                  title: '최상위 사용자 권한',
+                                  subtitle: '전반적인 웹 페이지 기능 제어 가능'),
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
                   ),
                 ),
                 CustomDivider(),
@@ -412,10 +511,129 @@ class _AuthSectionState extends State<AuthSection> {
                       _isFormValid ? const Color(0xffe98800) : Colors.grey,
                       onTap: _isFormValid ? _onRegisterTap : null,
                     ),
-                    SizedBox(width: 34.w),
+                    SizedBox(width: 38.w),
                   ],
                 ),
-                SizedBox(height: 5.h),
+                SizedBox(height: 15.h),
+                CustomDivider(),
+                Container(
+                    height: 923.h,
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 40.w,
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              height: 18.h,
+                            ),
+                            Container(
+                              width: 200.w,
+                              height: 50.h,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                '활성 :',
+                                style: TextStyle(
+                                  fontFamily: 'PretendardGOV',
+                                  fontSize: 36.sp,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(
+                          width: 213.w,
+                        ),
+                        GroupSelector(
+                            sourceRoles: ['disabled'],
+                            targetRole: 'enabled',
+                            hintText:
+                            '이 사용자가 속한 그룹, 사용자는 그룹에 부여된 모든 권한을 물려 받습니다.',
+                            demoteRole: 'disabled'),
+                      ],
+                    )),
+                Container(
+                    height: 923.h,
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 40.w,
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              height: 18.h,
+                            ),
+                            Container(
+                              width: 200.w,
+                              height: 50.h,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                '스태프 권한 :',
+                                style: TextStyle(
+                                  fontFamily: 'PretendardGOV',
+                                  fontSize: 36.sp,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(
+                          width: 213.w,
+                        ),
+                        GroupSelector(
+                            sourceRoles: ['disabled', 'enabled'],
+                            targetRole: 'admin',
+                            hintText: '이 사용자에게 부여할 스태프 권한을 선택하세요.',
+                            demoteRole: 'enabled'),
+                      ],
+                    )),
+                Container(
+                    height: 923.h,
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 40.w,
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              height: 18.h,
+                            ),
+                            Container(
+                              width: 200.w,
+                              height: 50.h,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                '최상위 사용자 :',
+                                style: TextStyle(
+                                  fontFamily: 'PretendardGOV',
+                                  fontSize: 36.sp,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(
+                          width: 213.w,
+                        ),
+                        GroupSelector(
+                            sourceRoles: ['admin'],
+                            targetRole: 'root',
+                            hintText: '최상위 사용자를 위한 권한 전환을 설정하세요.',
+                            demoteRole: 'enabled'),
+                      ],
+                    ))
               ],
             ),
           ),

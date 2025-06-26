@@ -7,6 +7,7 @@ import 'package:iot_dashboard/component/admin/input_field_info_section.dart';
 import 'package:iot_dashboard/component/admin/input_iot_section.dart';
 import 'package:iot_dashboard/component/admin/input_title_logo_section.dart';
 import 'package:iot_dashboard/component/common/base_layout.dart';
+import 'package:iot_dashboard/state/user_role_state.dart';
 import 'package:iot_dashboard/utils/auth_service.dart';
 import 'dart:html' as html;
 import 'dart:async'; // Completer를 위한 import
@@ -15,6 +16,7 @@ import 'package:iot_dashboard/component/admin/input_cctv_section.dart';
 import 'package:iot_dashboard/component/admin/input_event_section.dart';
 import 'package:iot_dashboard/component/admin/input_special_sensor_section.dart';
 import 'package:iot_dashboard/component/admin/input_auth_section.dart';
+import 'package:provider/provider.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -134,7 +136,7 @@ class _AdminScreenState extends State<AdminScreen> {
   final settlementGaugeSubsidenceValues2 = TextEditingController();
   final settlementGaugeSubsidenceValues3 = TextEditingController();
 
- //계정 및 권한
+  //계정 및 권한
   final idController = TextEditingController();
   final pwController = TextEditingController();
   final nameController = TextEditingController();
@@ -143,7 +145,7 @@ class _AdminScreenState extends State<AdminScreen> {
   final companyController = TextEditingController();
   final deptController = TextEditingController();
   final positionController = TextEditingController();
-  final roleController = TextEditingController();
+  final responsibilitiesController = TextEditingController();
 
   @override
   void initState() {
@@ -155,7 +157,7 @@ class _AdminScreenState extends State<AdminScreen> {
   @override
   Widget build(BuildContext context) {
     // ✅ 관리자 권한 없으면 접근 차단
-    if (!AuthService.isAdmin()) {
+    if (!AuthService.isAdmin() || !AuthService.isRoot()) {
       // 마이크로태스크로 실행 → UI가 빌드된 후에 다이얼로그 띄우기
       Future.microtask(() {
         showDialog(
@@ -181,320 +183,332 @@ class _AdminScreenState extends State<AdminScreen> {
       return const Scaffold(body: SizedBox());
     }
 
-    return ScreenUtilInit(
-        designSize: const Size(3812, 2144),
-        minTextAdapt: true,
-        splitScreenMode: true,
-        builder: (context, child) {
-          return BaseLayout(
-              child: Container(
-            padding: EdgeInsets.only(left: 64.w, right: 68.w),
-            color: Color(0xffE7EAF4),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  height: 100.h,
-                  color: Color(0xffE7EAF4),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 60.w,
-                        height: 60.h,
-                        child: Image.asset(
-                          'assets/icons/color_setting2.png',
-                        ),
-                      ),
-                      SizedBox(width: 18.w),
-                      Container(
-                          width: 200.w,
-                          child: Text(
-                            '관리자',
-                            style: TextStyle(
-                              fontFamily: 'PretendardGOV',
-                              fontWeight: FontWeight.w700,
-                              fontSize: 48.sp,
-                              color: Colors.white,
-                            ),
-                          )),
-                      SizedBox(width: 125.w),
-                      Container(
-                        width: 2880.w,
-                        height: 72.h,
-                        decoration: BoxDecoration(
-                          color: Color(0xff414767),
-                          borderRadius: BorderRadius.circular(5.r),
-                        ),
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 11.w,
-                            ),
-                            Container(
-                              width: 50.w,
-                              height: 50.h,
-                              child: Image.asset('assets/icons/profile.png'),
-                            ),
-                            SizedBox(
-                              width: 45.w,
-                            ),
-                            Container(
-                                width: 261.w,
-                                height: 50.h,
-                                child: Text(
-                                  '관리자 설정 입력',
-                                  style: TextStyle(
-                                    fontFamily: 'PretendardGOV',
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 36.sp,
-                                    color: Colors.white,
-                                  ),
-                                )),
-                            SizedBox(
-                              width: 2155.w,
-                            ),
-                            // InkWell(
-                            //     onTap: () async {
-                            //        final title = _titleController.text.trim();
-                            //       // if (title.isEmpty ||
-                            //       //     selectedLogoFile == null) {
-                            //       //   showDialog(
-                            //       //     context: context,
-                            //       //     builder: (_) => AlertDialog(
-                            //       //       title: Text('입력 누락'),
-                            //       //       content: Text('타이틀과 로고 파일을 모두 입력해주세요.'),
-                            //       //       actions: [
-                            //       //         TextButton(
-                            //       //             onPressed: () =>
-                            //       //                 Navigator.pop(context),
-                            //       //             child: Text('확인'))
-                            //       //       ],
-                            //       //     ),
-                            //       //   );
-                            //       //   return;
-                            //       // }
-                            //
-                            //       final result = await SettingController
-                            //           .uploadTitleAndLogo(
-                            //               title, selectedLogoFile!);
-                            //       if (result.success) {
-                            //         print('✅ ${result.message}');
-                            //         showDialog(
-                            //           context: context,
-                            //           builder: (_) =>
-                            //           const DialogForm(
-                            //             mainText:
-                            //             '저장되었습니다.',
-                            //             btnText: '확인',
-                            //             fontSize: 20,
-                            //           ),
-                            //         );
-                            //         await SettingService
-                            //             .refresh(); // 🔁 TopAppBar 갱신 트리거
-                            //       } else {
-                            //         print('❌ ${result.message}');
-                            //       }
-                            //     },
-                            //     child: Container(
-                            //       width: 347.w,
-                            //       height: 60.h,
-                            //       decoration: BoxDecoration(
-                            //         color: Color(0xff3182ce),
-                            //         borderRadius: BorderRadius.circular(5.r),
-                            //       ),
-                            //       alignment: Alignment.center,
-                            //       child: Text(
-                            //         '전체 저장',
-                            //         textAlign: TextAlign.center,
-                            //         style: TextStyle(
-                            //           fontFamily: 'PretendardGOV',
-                            //           fontWeight: FontWeight.w700,
-                            //           fontSize: 36.sp,
-                            //           color: Colors.white,
-                            //         ),
-                            //       ),
-                            //     ))
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-                // ✅ 헤더 하단 선
-                Container(
-                  width: double.infinity,
-                  height: 2.h,
-                  color: Color(0xff3182ce),
-                ),
-
-                SizedBox(height: 65.h),
-
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Center(
-                      child: Column(
+    return ChangeNotifierProvider(
+        create: (_) => UserRoleState()..fetchRoles(),
+        child: ScreenUtilInit(
+            designSize: const Size(3812, 2144),
+            minTextAdapt: true,
+            splitScreenMode: true,
+            builder: (context, child) {
+              return BaseLayout(
+                  child: Container(
+                padding: EdgeInsets.only(left: 64.w, right: 68.w),
+                color: Color(0xffE7EAF4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      height: 100.h,
+                      color: Color(0xffE7EAF4),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          TitleLogoSection(
-                            titleController: _titleController,
-                            onLogoSelected: (file) {
-                              selectedLogoFile = file; // ✅ AdminScreen의 상태에 저장
-                            },
+                          Container(
+                            width: 60.w,
+                            height: 60.h,
+                            child: Image.asset(
+                              'assets/icons/color_setting2.png',
+                            ),
                           ),
-                          DutySection(
-                            dutyNameController: _dutyNameController,
-                            dutyStartDate: dutyStartDate,
-                            dutyEndDate: dutyEndDate,
-                            progressController: _progressNameController,
-                          ),
-                          EventAlarmSection(
-                            alarmDate: alarmDate,
-                            alarmHour: alarmHour,
-                            alarmMinute: alarmMinute,
-                            alarmMessageController: _alarmMessageController,
-                          ),
-                          NoticeInputSection(
-                              noticeContentController:
-                                  _noticeContentController),
-                          FieldInfoSection(
-                            constructionTypeController:
-                                _constructionTypeController,
-                            constructionNameController:
-                                _constructionNameController,
-                            constructionAddressController:
-                                _constructionAddressController,
-                            constructionCompanyController:
-                                _constructionCompanyController,
-                            constructionOrdererController:
-                                _constructionOrdererController,
-                            constructionLocationController:
-                                _constructionLocationController,
-                            constructStartDate: constructStartDate,
-                            constructEndDate: constructEndDate,
-                            latitudeController: _latitudeController,
-                            longtitudeController: _longtitudeController,
-                          ),
-                          IotInputSection(
-                            iotProductIDController: iotProductIDController,
-                            iotLocationController: iotLocationController,
-                            iotStatusController: iotStatusController,
-                            batteryStatusController: batteryStatusController,
-                            lastReceiveController: lastReceiveController,
-                            x_MMController: x_MMController,
-                            y_MMController: y_MMController,
-                            z_MMController: z_MMController,
-                            x_DegController: x_DegController,
-                            y_DegController: y_DegController,
-                            z_DegController: z_DegController,
-                            batteryInfoController: batteryInfoController,
-                          ),
-                          CCTVInputSection(
-                            cctvProductIDController: cctvProductIDController,
-                            imageAnalysisController: imageAnalysisController,
-                            cctvAddressController: cctvAddressController,
-                            lastReceiveDate: lastReceiveDate,
-                            lastReceiveHour: lastReceiveHour,
-                            lastReceiveMinute: lastReceiveMinute,
-                          ),
-                          EventInputSection(
-                            iotHistoryProductIDController:
-                                iotHistoryProductIDController,
-                            iotHistoryLocationController:
-                                iotHistoryLocationController,
-                            iotHistoryEventController:
-                                iotHistoryEventController,
-                            iotHistoryDate: iotHistoryDate,
-                            iotHistoryHour: iotHistoryHour,
-                            iotHistoryMinute: iotHistoryMinute,
-                            iotHistoryLogController: iotHistoryLogController,
-                            cctvHistoryProductIDController:
-                                cctvHistoryProductIDController,
-                            cctvHistoryLocationController:
-                                cctvHistoryLocationController,
-                            cctvHistoryEventController:
-                                cctvHistoryEventController,
-                            cctvHistoryDate: cctvHistoryDate,
-                            cctvHistoryHour: cctvHistoryHour,
-                            cctvHistoryMinute: cctvHistoryMinute,
-                            cctvHistoryLogController: cctvHistoryLogController,
-                          ),
-                          SizedBox(
-                            height: 80.h,
-                          ),
-                          InputSpecialSensorSection(
-                            // 지중경사계
-                            inclinometerIdController: inclinometerIdController,
-                            inclinometerDate: inclinometerDate,
-                            inclinometerMeasuredDepthsController:
-                                inclinometerMeasuredDepthsController,
-                            inclinometerDepthValues: inclinometerDepthValues,
-
-                            // 지하수위계
-                            piezometerIdController: piezometerIdController,
-                            piezometerDate: piezometerDate,
-                            piezometerDryDaysController:
-                                piezometerDryDaysController,
-                            piezometerCurrentWaterLevelController:
-                                piezometerCurrentWaterLevelController,
-                            piezometerGroundLevelController:
-                                piezometerGroundLevelController,
-                            piezometerChangeAmountController:
-                                piezometerChangeAmountController,
-                            piezometerCumulativeChangeController:
-                                piezometerCumulativeChangeController,
-
-                            // 변형률계
-                            strainGaugeIdController: strainGaugeIdController,
-                            strainGaugeDate: strainGaugeDate,
-                            strainGaugeReadingController:
-                                strainGaugeReadingController,
-                            strainGaugeStressController:
-                                strainGaugeStressController,
-                            strainGaugeDepthController:
-                                strainGaugeDepthController,
-
-                            // 지표침하계
-                            settlementGaugeIdController:
-                                settlementGaugeIdController,
-                            settlementGaugeDate: settlementGaugeDate,
-                            settlementGaugeDryDaysController:
-                                settlementGaugeDryDaysController,
-                            settlementGaugeAbsoluteValues1:
-                                settlementGaugeAbsoluteValues1,
-                            settlementGaugeAbsoluteValues2:
-                                settlementGaugeAbsoluteValues2,
-                            settlementGaugeAbsoluteValues3:
-                                settlementGaugeAbsoluteValues3,
-                            settlementGaugeSubsidenceValues1:
-                                settlementGaugeSubsidenceValues1,
-                            settlementGaugeSubsidenceValues2:
-                                settlementGaugeSubsidenceValues2,
-                            settlementGaugeSubsidenceValues3:
-                                settlementGaugeSubsidenceValues3,
-                          ),
-                          SizedBox(
-                            height: 80.h,
-                          ),
-                          AuthSection(
-                              idController:
-                              idController,
-                            pwController: pwController,
-                            emailController: emailController,
-                            nameController: nameController,
-                            phoneController: phoneController,
-                            companyController: companyController,
-                            deptController: deptController,
-                            positionController: positionController,
-                            roleController: roleController,
+                          SizedBox(width: 18.w),
+                          Container(
+                              width: 200.w,
+                              child: Text(
+                                '관리자',
+                                style: TextStyle(
+                                  fontFamily: 'PretendardGOV',
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 48.sp,
+                                  color: Colors.white,
+                                ),
+                              )),
+                          SizedBox(width: 125.w),
+                          Container(
+                            width: 2880.w,
+                            height: 72.h,
+                            decoration: BoxDecoration(
+                              color: Color(0xff414767),
+                              borderRadius: BorderRadius.circular(5.r),
+                            ),
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 11.w,
+                                ),
+                                Container(
+                                  width: 50.w,
+                                  height: 50.h,
+                                  child:
+                                      Image.asset('assets/icons/profile.png'),
+                                ),
+                                SizedBox(
+                                  width: 45.w,
+                                ),
+                                Container(
+                                    width: 261.w,
+                                    height: 50.h,
+                                    child: Text(
+                                      '관리자 설정 입력',
+                                      style: TextStyle(
+                                        fontFamily: 'PretendardGOV',
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 36.sp,
+                                        color: Colors.white,
+                                      ),
+                                    )),
+                                SizedBox(
+                                  width: 2155.w,
+                                ),
+                                // InkWell(
+                                //     onTap: () async {
+                                //        final title = _titleController.text.trim();
+                                //       // if (title.isEmpty ||
+                                //       //     selectedLogoFile == null) {
+                                //       //   showDialog(
+                                //       //     context: context,
+                                //       //     builder: (_) => AlertDialog(
+                                //       //       title: Text('입력 누락'),
+                                //       //       content: Text('타이틀과 로고 파일을 모두 입력해주세요.'),
+                                //       //       actions: [
+                                //       //         TextButton(
+                                //       //             onPressed: () =>
+                                //       //                 Navigator.pop(context),
+                                //       //             child: Text('확인'))
+                                //       //       ],
+                                //       //     ),
+                                //       //   );
+                                //       //   return;
+                                //       // }
+                                //
+                                //       final result = await SettingController
+                                //           .uploadTitleAndLogo(
+                                //               title, selectedLogoFile!);
+                                //       if (result.success) {
+                                //         print('✅ ${result.message}');
+                                //         showDialog(
+                                //           context: context,
+                                //           builder: (_) =>
+                                //           const DialogForm(
+                                //             mainText:
+                                //             '저장되었습니다.',
+                                //             btnText: '확인',
+                                //             fontSize: 20,
+                                //           ),
+                                //         );
+                                //         await SettingService
+                                //             .refresh(); // 🔁 TopAppBar 갱신 트리거
+                                //       } else {
+                                //         print('❌ ${result.message}');
+                                //       }
+                                //     },
+                                //     child: Container(
+                                //       width: 347.w,
+                                //       height: 60.h,
+                                //       decoration: BoxDecoration(
+                                //         color: Color(0xff3182ce),
+                                //         borderRadius: BorderRadius.circular(5.r),
+                                //       ),
+                                //       alignment: Alignment.center,
+                                //       child: Text(
+                                //         '전체 저장',
+                                //         textAlign: TextAlign.center,
+                                //         style: TextStyle(
+                                //           fontFamily: 'PretendardGOV',
+                                //           fontWeight: FontWeight.w700,
+                                //           fontSize: 36.sp,
+                                //           color: Colors.white,
+                                //         ),
+                                //       ),
+                                //     ))
+                              ],
+                            ),
                           )
                         ],
                       ),
                     ),
-                  ),
-                )
-              ],
-            ),
-          ));
-        });
+                    // ✅ 헤더 하단 선
+                    Container(
+                      width: double.infinity,
+                      height: 2.h,
+                      color: Color(0xff3182ce),
+                    ),
+
+                    SizedBox(height: 65.h),
+
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Center(
+                          child: Column(
+                            children: [
+                              TitleLogoSection(
+                                titleController: _titleController,
+                                onLogoSelected: (file) {
+                                  selectedLogoFile =
+                                      file; // ✅ AdminScreen의 상태에 저장
+                                },
+                              ),
+                              DutySection(
+                                dutyNameController: _dutyNameController,
+                                dutyStartDate: dutyStartDate,
+                                dutyEndDate: dutyEndDate,
+                                progressController: _progressNameController,
+                              ),
+                              EventAlarmSection(
+                                alarmDate: alarmDate,
+                                alarmHour: alarmHour,
+                                alarmMinute: alarmMinute,
+                                alarmMessageController: _alarmMessageController,
+                              ),
+                              NoticeInputSection(
+                                  noticeContentController:
+                                      _noticeContentController),
+                              FieldInfoSection(
+                                constructionTypeController:
+                                    _constructionTypeController,
+                                constructionNameController:
+                                    _constructionNameController,
+                                constructionAddressController:
+                                    _constructionAddressController,
+                                constructionCompanyController:
+                                    _constructionCompanyController,
+                                constructionOrdererController:
+                                    _constructionOrdererController,
+                                constructionLocationController:
+                                    _constructionLocationController,
+                                constructStartDate: constructStartDate,
+                                constructEndDate: constructEndDate,
+                                latitudeController: _latitudeController,
+                                longtitudeController: _longtitudeController,
+                              ),
+                              IotInputSection(
+                                iotProductIDController: iotProductIDController,
+                                iotLocationController: iotLocationController,
+                                iotStatusController: iotStatusController,
+                                batteryStatusController:
+                                    batteryStatusController,
+                                lastReceiveController: lastReceiveController,
+                                x_MMController: x_MMController,
+                                y_MMController: y_MMController,
+                                z_MMController: z_MMController,
+                                x_DegController: x_DegController,
+                                y_DegController: y_DegController,
+                                z_DegController: z_DegController,
+                                batteryInfoController: batteryInfoController,
+                              ),
+                              CCTVInputSection(
+                                cctvProductIDController:
+                                    cctvProductIDController,
+                                imageAnalysisController:
+                                    imageAnalysisController,
+                                cctvAddressController: cctvAddressController,
+                                lastReceiveDate: lastReceiveDate,
+                                lastReceiveHour: lastReceiveHour,
+                                lastReceiveMinute: lastReceiveMinute,
+                              ),
+                              EventInputSection(
+                                iotHistoryProductIDController:
+                                    iotHistoryProductIDController,
+                                iotHistoryLocationController:
+                                    iotHistoryLocationController,
+                                iotHistoryEventController:
+                                    iotHistoryEventController,
+                                iotHistoryDate: iotHistoryDate,
+                                iotHistoryHour: iotHistoryHour,
+                                iotHistoryMinute: iotHistoryMinute,
+                                iotHistoryLogController:
+                                    iotHistoryLogController,
+                                cctvHistoryProductIDController:
+                                    cctvHistoryProductIDController,
+                                cctvHistoryLocationController:
+                                    cctvHistoryLocationController,
+                                cctvHistoryEventController:
+                                    cctvHistoryEventController,
+                                cctvHistoryDate: cctvHistoryDate,
+                                cctvHistoryHour: cctvHistoryHour,
+                                cctvHistoryMinute: cctvHistoryMinute,
+                                cctvHistoryLogController:
+                                    cctvHistoryLogController,
+                              ),
+                              SizedBox(
+                                height: 80.h,
+                              ),
+                              InputSpecialSensorSection(
+                                // 지중경사계
+                                inclinometerIdController:
+                                    inclinometerIdController,
+                                inclinometerDate: inclinometerDate,
+                                inclinometerMeasuredDepthsController:
+                                    inclinometerMeasuredDepthsController,
+                                inclinometerDepthValues:
+                                    inclinometerDepthValues,
+
+                                // 지하수위계
+                                piezometerIdController: piezometerIdController,
+                                piezometerDate: piezometerDate,
+                                piezometerDryDaysController:
+                                    piezometerDryDaysController,
+                                piezometerCurrentWaterLevelController:
+                                    piezometerCurrentWaterLevelController,
+                                piezometerGroundLevelController:
+                                    piezometerGroundLevelController,
+                                piezometerChangeAmountController:
+                                    piezometerChangeAmountController,
+                                piezometerCumulativeChangeController:
+                                    piezometerCumulativeChangeController,
+
+                                // 변형률계
+                                strainGaugeIdController:
+                                    strainGaugeIdController,
+                                strainGaugeDate: strainGaugeDate,
+                                strainGaugeReadingController:
+                                    strainGaugeReadingController,
+                                strainGaugeStressController:
+                                    strainGaugeStressController,
+                                strainGaugeDepthController:
+                                    strainGaugeDepthController,
+
+                                // 지표침하계
+                                settlementGaugeIdController:
+                                    settlementGaugeIdController,
+                                settlementGaugeDate: settlementGaugeDate,
+                                settlementGaugeDryDaysController:
+                                    settlementGaugeDryDaysController,
+                                settlementGaugeAbsoluteValues1:
+                                    settlementGaugeAbsoluteValues1,
+                                settlementGaugeAbsoluteValues2:
+                                    settlementGaugeAbsoluteValues2,
+                                settlementGaugeAbsoluteValues3:
+                                    settlementGaugeAbsoluteValues3,
+                                settlementGaugeSubsidenceValues1:
+                                    settlementGaugeSubsidenceValues1,
+                                settlementGaugeSubsidenceValues2:
+                                    settlementGaugeSubsidenceValues2,
+                                settlementGaugeSubsidenceValues3:
+                                    settlementGaugeSubsidenceValues3,
+                              ),
+                              SizedBox(
+                                height: 80.h,
+                              ),
+                              AuthSection(
+                                idController: idController,
+                                pwController: pwController,
+                                emailController: emailController,
+                                nameController: nameController,
+                                phoneController: phoneController,
+                                companyController: companyController,
+                                deptController: deptController,
+                                positionController: positionController,
+                                responsibilitiesController:
+                                    responsibilitiesController,
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ));
+            }));
   }
 }

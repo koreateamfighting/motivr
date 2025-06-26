@@ -17,7 +17,8 @@ final router = GoRouter(
   initialLocation: '/login',
   redirect: (context, state) {
     final isLoggedIn = AuthService.isAuthenticated();
-    final isAdmin = AuthService.isAdmin();
+    final isAdmin = AuthService.isAdmin() || AuthService.isRoot();
+
     final path = state.uri.path;
 
     final isLogin = path == '/login';

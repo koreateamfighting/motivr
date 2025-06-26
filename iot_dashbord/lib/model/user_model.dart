@@ -7,6 +7,7 @@ class UserModel {
   final String? company;
   final String? department;
   final String? position;
+  final String? responsibilities;
   final String? role;
 
   UserModel({
@@ -18,6 +19,7 @@ class UserModel {
     this.company,
     this.department,
     this.position,
+    this.responsibilities,
     this.role,
   });
 
@@ -30,6 +32,7 @@ class UserModel {
     'company': company,
     'department': department,
     'position': position,
+    'responsibilities' : responsibilities,
     'role': role,
   };
 }
