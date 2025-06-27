@@ -13,7 +13,7 @@ class IotItem {
   final String Z_Deg;
   final String batteryInfo;
   final String download;
-  final String createAt; // 🆕 서버 시간 기반
+  final String createAt;
 
   IotItem({
     required this.id,
@@ -30,7 +30,7 @@ class IotItem {
     required this.Z_Deg,
     required this.batteryInfo,
     required this.download,
-    required this.createAt, // 🆕
+    required this.createAt,
   });
 
   factory IotItem.fromJson(Map<String, dynamic> json) {

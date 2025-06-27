@@ -7,20 +7,25 @@ import 'package:iot_dashboard/component/admin/action_button.dart';
 import 'package:iot_dashboard/component/admin/section_title.dart';
 import 'package:iot_dashboard/component/admin/time_picker_row.dart';
 import 'package:iot_dashboard/component/admin/custom_divider.dart';
+import 'package:iot_dashboard/component/admin/labeled_dropdown_field.dart';
 import 'package:iot_dashboard/component/common/dialog_form.dart';
+import 'package:iot_dashboard/model/alarm_history_model.dart';
+import 'package:iot_dashboard/controller/alarm_history_controller.dart';
+import 'package:intl/intl.dart';
 
 class EventInputSection extends StatefulWidget {
   final TextEditingController? iotHistoryProductIDController;
-  final TextEditingController? iotHistoryLocationController;
-  final TextEditingController? iotHistoryEventController;
+  final TextEditingController? iotHistoryLatitudeController;
+  final TextEditingController? iotHistoryLongitudeController;
+
   final String? iotHistoryDate;
   final String? iotHistoryHour;
   final String? iotHistoryMinute;
   final String? iotHistorySecond;
   final TextEditingController? iotHistoryLogController;
   final TextEditingController? cctvHistoryProductIDController;
-  final TextEditingController? cctvHistoryLocationController;
-  final TextEditingController? cctvHistoryEventController;
+
+
   final String? cctvHistoryDate;
   final String? cctvHistoryHour;
   final String? cctvHistoryMinute;
@@ -30,16 +35,17 @@ class EventInputSection extends StatefulWidget {
   const EventInputSection({
     Key? key,
     this.iotHistoryProductIDController,
-    this.iotHistoryLocationController,
-    this.iotHistoryEventController,
+    this.iotHistoryLatitudeController,
+    this.iotHistoryLongitudeController,
+
     this.iotHistoryDate,
     this.iotHistoryHour,
     this.iotHistoryMinute,
     this.iotHistorySecond,
     this.iotHistoryLogController,
     this.cctvHistoryProductIDController,
-    this.cctvHistoryLocationController,
-    this.cctvHistoryEventController,
+
+
     this.cctvHistoryDate,
     this.cctvHistoryHour,
     this.cctvHistoryMinute,
@@ -53,43 +59,46 @@ class EventInputSection extends StatefulWidget {
 
 class _EventInputSectionState extends State<EventInputSection> {
   bool isExpanded = false; // ✅ 펼침 여부 상태
+  bool isIotDeviceIdEmpty = true;
+  bool isCctvDeviceIdEmpty = true;
 
   late TextEditingController iotHistoryProductIDController;
-  late TextEditingController iotHistoryLocationController;
-  late TextEditingController iotHistoryEventController;
+  late TextEditingController iotHistoryLatitudeController;
+  late TextEditingController iotHistoryLongitudeController;
+
   late String? iotHistoryDate;
   late String? iotHistoryHour;
   late String? iotHistoryMinute;
   late String? iotHistorySecond;
   late TextEditingController iotHistoryLogController;
   late TextEditingController cctvHistoryProductIDController;
-  late TextEditingController cctvHistoryLocationController;
-  late TextEditingController cctvHistoryEventController;
+
+
   late String? cctvHistoryDate;
   late String? cctvHistoryHour;
   late String? cctvHistoryMinute;
   late String? cctvHistorySecond;
   late TextEditingController cctvHistoryLogController;
-
+  String _selectedIotEvent = '정상';
+  String _selectedCctvEvent = '정상';
+  String _selectedLocation = '추진구';
   @override
   void initState() {
     super.initState();
 
     iotHistoryProductIDController =
         widget.iotHistoryProductIDController ?? TextEditingController();
-    iotHistoryLocationController =
-        widget.iotHistoryLocationController ?? TextEditingController();
-    iotHistoryEventController =
-        widget.iotHistoryEventController ?? TextEditingController();
+    iotHistoryLatitudeController =
+        widget.iotHistoryLatitudeController ?? TextEditingController();
+    iotHistoryLongitudeController = widget.iotHistoryLongitudeController ?? TextEditingController();
+
     iotHistoryLogController =
         widget.iotHistoryLogController ?? TextEditingController();
 
     cctvHistoryProductIDController =
         widget.cctvHistoryProductIDController ?? TextEditingController();
-    cctvHistoryLocationController =
-        widget.cctvHistoryLocationController ?? TextEditingController();
-    cctvHistoryEventController =
-        widget.cctvHistoryEventController ?? TextEditingController();
+
+
     cctvHistoryLogController =
         widget.cctvHistoryLogController ?? TextEditingController();
     iotHistoryDate = widget.iotHistoryDate;
@@ -100,55 +109,70 @@ class _EventInputSectionState extends State<EventInputSection> {
     cctvHistoryHour = widget.cctvHistoryHour;
     cctvHistoryMinute = widget.cctvHistoryMinute;
     cctvHistorySecond = widget.cctvHistorySecond;
+    iotHistoryProductIDController.addListener(() {
+      final isEmpty = iotHistoryProductIDController.text.trim().isEmpty;
+      if (isIotDeviceIdEmpty != isEmpty) {
+        setState(() {
+          isIotDeviceIdEmpty = isEmpty;
+        });
+      }
+    });
+
+    cctvHistoryProductIDController.addListener(() {
+      final isEmpty = cctvHistoryProductIDController.text.trim().isEmpty;
+      if (isCctvDeviceIdEmpty != isEmpty) {
+        setState(() {
+          isCctvDeviceIdEmpty = isEmpty;
+        });
+      }
+    });
   }
+
   DateTime? _composeTimestamp(String? dateStr, String? hour, String? minute, String? second) {
-    final date = DateTime.tryParse(dateStr ?? '');
-    if (date == null) return null;
-    return DateTime(
-      date.year,
-      date.month,
-      date.day,
-      int.tryParse(hour ?? '00') ?? 0,
-      int.tryParse(minute ?? '00') ?? 0,
-      int.tryParse(second ?? '00') ?? 0,
-    );
+    try {
+      if (dateStr == null || dateStr.isEmpty) return null;
+
+      final paddedHour = hour?.padLeft(2, '0') ?? '00';
+      final paddedMinute = minute?.padLeft(2, '0') ?? '00';
+      final paddedSecond = second?.padLeft(2, '0') ?? '00';
+
+      return DateTime.parse('${dateStr}T$paddedHour:$paddedMinute:$paddedSecond').toLocal();
+    } catch (_) {
+      return null;
+    }
+  }
+  void _resetIotFields() {
+    iotHistoryProductIDController.clear();
+    iotHistoryLatitudeController.clear();
+    iotHistoryLongitudeController.clear();
+    iotHistoryLogController.clear();
+    setState(() {
+      iotHistoryDate = null;
+      iotHistoryHour = '00';
+      iotHistoryMinute = '00';
+      iotHistorySecond = '00';
+      _selectedIotEvent = '정상';
+      isIotDeviceIdEmpty = true;
+    });
   }
 
-  // void _submitIotHistory() async {
-  //   final timestamp = _composeTimestamp(iotHistoryDate, iotHistoryHour, iotHistoryMinute, iotHistorySecond);
-  //   if (timestamp == null) return;
-  //   final success = await EventController.submitIotHistory(
-  //     timestamp: timestamp,
-  //     productId: iotHistoryProductIDController.text.trim(),
-  //     location: iotHistoryLocationController.text.trim(),
-  //     event: iotHistoryEventController.text.trim(),
-  //     log: iotHistoryLogController.text.trim(),
-  //   );
-  //   if (success) {
-  //     showDialog(
-  //       context: context,
-  //       builder: (_) => const DialogForm(mainText: 'IOT 이벤트가 등록되었습니다.', btnText: '확인'),
-  //     );
-  //   }
-  // }
+  void _resetCctvFields() {
+    cctvHistoryProductIDController.clear();
+    cctvHistoryLogController.clear();
+    setState(() {
+      cctvHistoryDate = null;
+      cctvHistoryHour = '00';
+      cctvHistoryMinute = '00';
+      cctvHistorySecond = '00';
+      _selectedCctvEvent = '정상';
+      _selectedLocation = '추진구';
+      isCctvDeviceIdEmpty = true;
+    });
+  }
 
-  // void _submitCctvHistory() async {
-  //   final timestamp = _composeTimestamp(cctvHistoryDate, cctvHistoryHour, cctvHistoryMinute, cctvHistorySecond);
-  //   if (timestamp == null) return;
-  //   final success = await EventController.submitCctvHistory(
-  //     timestamp: timestamp,
-  //     productId: cctvHistoryProductIDController.text.trim(),
-  //     location: cctvHistoryLocationController.text.trim(),
-  //     event: cctvHistoryEventController.text.trim(),
-  //     log: cctvHistoryLogController.text.trim(),
-  //   );
-  //   if (success) {
-  //     showDialog(
-  //       context: context,
-  //       builder: (_) => const DialogForm(mainText: 'CCTV 이벤트가 등록되었습니다.', btnText: '확인'),
-  //     );
-  //   }
-  // }
+
+
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -165,7 +189,7 @@ class _EventInputSectionState extends State<EventInputSection> {
             children: [
               SizedBox(width: 41.w),
               Text(
-                '이벤트 관리(준비중)',
+                '이벤트 관리',
                 style: TextStyle(
                   fontFamily: 'PretendardGOV',
                   fontSize: 36.sp,
@@ -222,7 +246,7 @@ class _EventInputSectionState extends State<EventInputSection> {
                   height: 85.h,
                   child: labeledTextField(
                     title: '제품 식별자(ID) :',
-                    hint: 'S1_001',
+                    hint: '예) S1_001',
                     width: 420,
                     height: 60,
                     textBoxwidth: 400,
@@ -231,31 +255,47 @@ class _EventInputSectionState extends State<EventInputSection> {
                   ),
                 ),
            CustomDivider(),
-                SizedBox(
-                  width: 2880.w,
-                  height: 85.h,
-                  child: labeledTextField(
-                    title: '설치 위치(추진구/도달구) :',
-                    hint: '추진구',
-                    width: 420,
-                    height: 60,
-                    textBoxwidth: 400,
-                    textBoxHeight: 50,
-                    controller: iotHistoryLocationController,
-                  ),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 1000.w,
+                      height: 85.h,
+                      child: labeledTextField(
+                          title: '위도 :',
+                          hint: '',
+                          width: 420,
+                          height: 60,
+                          textBoxwidth: 400,
+                          textBoxHeight: 50,
+                          controller: iotHistoryLatitudeController,
+                          isNumeric: true
+                      ),
+                    ),
+                    SizedBox(
+                      width: 1000.w,
+                      height: 85.h,
+                      child: labeledTextField(
+                          title: '경도 :',
+                          hint: '',
+                          width: 420,
+                          height: 60,
+                          textBoxwidth: 270,
+                          textBoxHeight: 50,
+                          controller: iotHistoryLongitudeController,
+                          isNumeric: true
+                      ),
+                    ),
+                  ],
                 ),
            CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
-                  child: labeledTextField(
+                  child:  LabeledDropdownField(
                     title: '이벤트 :',
-                    hint: '정상',
-                    width: 420,
-                    height: 60,
-                    textBoxwidth: 400,
-                    textBoxHeight: 50,
-                    controller: iotHistoryEventController,
+                    items: ['정상','경고','위험','점검필요'],
+                    selectedValue: _selectedIotEvent,
+                    onChanged: (val) => setState(() => _selectedIotEvent = val!),
                   ),
                 ),
            CustomDivider(),
@@ -264,7 +304,11 @@ class _EventInputSectionState extends State<EventInputSection> {
                     DatePickerField(
                       label: '날짜/시간 :',
                       initialDate: DateTime.tryParse(iotHistoryDate ?? ''),
-                      onDateSelected: (date) {},
+                      onDateSelected: (date) {
+                        setState(() {
+                          iotHistoryDate = date.toIso8601String().substring(0, 10); // 'yyyy-MM-dd' 형식
+                        });
+                      },
                     ),
                     SizedBox(
                       width: 43.15.w,
@@ -300,7 +344,68 @@ class _EventInputSectionState extends State<EventInputSection> {
                   child:   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      ActionButton('추가', Color(0xffe98800)),
+                      ActionButton(
+                        '저장',
+                        isIotDeviceIdEmpty ? Colors.grey : const Color(0xff3182ce),
+                        onTap: isIotDeviceIdEmpty
+                            ? null
+                            : () async {
+                          final timestamp = _composeTimestamp(
+                            iotHistoryDate,
+                            iotHistoryHour,
+                            iotHistoryMinute,
+                            iotHistorySecond,
+                          );
+
+                          if (timestamp == null) {
+                            showDialog(
+                              context: context,
+                              builder: (_) => const DialogForm(
+                                mainText: '날짜 또는 시간 형식이 올바르지 않습니다.',
+                                btnText: '확인',
+                              ),
+                            );
+                            return;
+                          }
+
+                          final alarm = AlarmHistory(
+                            deviceId: iotHistoryProductIDController.text,
+                            timestamp: timestamp,
+                            event: _selectedIotEvent,
+                            log: iotHistoryLogController.text,
+                            location: null,
+                            latitude: double.tryParse(iotHistoryLatitudeController.text),
+                            longitude: double.tryParse(iotHistoryLongitudeController.text),
+                            type: 'iot',
+                          );
+
+                          final success = await AlarmHistoryController.upsertAlarm(alarm);
+
+                          if (success) {
+                            iotHistoryProductIDController.clear();
+                            iotHistoryLatitudeController.clear();
+                            iotHistoryLongitudeController.clear();
+                            iotHistoryLogController.clear();
+                            setState(() {
+                              iotHistoryDate = null;
+                              iotHistoryHour = '00';
+                              iotHistoryMinute = '00';
+                              iotHistorySecond = '00';
+                              _selectedIotEvent = '정상';
+                              isIotDeviceIdEmpty = true;
+                            });
+                          }
+
+                          showDialog(
+                            context: context,
+                            builder: (_) => DialogForm(
+                              mainText: success ? 'IoT 알람 저장 완료!' : 'IoT 알람 저장 실패!',
+                              btnText: '확인',
+                            ),
+                          );
+                        },
+                      ),
+
                     ],
                   ),
                 ),
@@ -321,7 +426,7 @@ class _EventInputSectionState extends State<EventInputSection> {
                   height: 85.h,
                   child: labeledTextField(
                     title: '제품 식별자(ID) :',
-                    hint: 'S1_001',
+                    hint: '예) S1_001',
                     width: 420,
                     height: 60,
                     textBoxwidth: 400,
@@ -333,37 +438,37 @@ class _EventInputSectionState extends State<EventInputSection> {
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
-                  child: labeledTextField(
-                    title: '설치 위치(추진구/도달구) :',
-                    hint: '추진구',
-                    width: 420,
-                    height: 60,
-                    textBoxwidth: 400,
-                    textBoxHeight: 50,
-                    controller: cctvHistoryLocationController,
+                  child: LabeledDropdownField(
+                    title: '설치 위치 :',
+                    items: ['추진구', '도달구'],
+                    selectedValue: _selectedLocation,
+                    onChanged: (val) => setState(() => _selectedLocation = val!),
                   ),
                 ),
            CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
-                  child: labeledTextField(
+                  child: LabeledDropdownField(
                     title: '이벤트 :',
-                    hint: '정상',
-                    width: 420,
-                    height: 60,
-                    textBoxwidth: 400,
-                    textBoxHeight: 50,
-                    controller: cctvHistoryEventController,
+                    items: ['정상','경고','위험','점검필요'],
+                    selectedValue: _selectedCctvEvent,
+                    onChanged: (val) => setState(() => _selectedCctvEvent = val!),
                   ),
                 ),
-           CustomDivider(),
+
+                CustomDivider(),
                 Row(
                   children: [
                     DatePickerField(
                       label: '날짜/시간 :',
                       initialDate: DateTime.tryParse(cctvHistoryDate ?? ''),
-                      onDateSelected: (date) {},
+                      onDateSelected: (date) {
+                        setState(() {
+                          cctvHistoryDate = date.toIso8601String().substring(0, 10);
+                        });
+                      },
+
                     ),
                     SizedBox(
                       width: 43.15.w,
@@ -401,7 +506,68 @@ class _EventInputSectionState extends State<EventInputSection> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              ActionButton('추가', Color(0xffe98800)),
+              ActionButton(
+                '저장',
+                isCctvDeviceIdEmpty ? Colors.grey : const Color(0xff3182ce),
+                onTap: isCctvDeviceIdEmpty
+                    ? null
+                    : () async {
+                  final timestamp = _composeTimestamp(
+                    cctvHistoryDate,
+                    cctvHistoryHour,
+                    cctvHistoryMinute,
+                    cctvHistorySecond,
+                  );
+
+                  if (timestamp == null) {
+                    showDialog(
+                      context: context,
+                      builder: (_) => const DialogForm(
+                        mainText: '날짜 또는 시간 형식이 올바르지 않습니다.',
+                        btnText: '확인',
+                      ),
+                    );
+                    return;
+                  }
+
+                  final alarm = AlarmHistory(
+                    deviceId: cctvHistoryProductIDController.text,
+                    timestamp: timestamp,
+                    event: _selectedCctvEvent,
+                    log: cctvHistoryLogController.text,
+                    location: _selectedLocation,
+                    latitude: null,
+                    longitude: null,
+                    type: 'cctv',
+                  );
+
+                  final success = await AlarmHistoryController.upsertAlarm(alarm);
+
+                  if (success) {
+                    cctvHistoryProductIDController.clear();
+                    cctvHistoryLogController.clear();
+                    setState(() {
+                      cctvHistoryDate = null;
+                      cctvHistoryHour = '00';
+                      cctvHistoryMinute = '00';
+                      cctvHistorySecond = '00';
+                      _selectedCctvEvent = '정상';
+                      _selectedLocation = '추진구';
+                      isCctvDeviceIdEmpty = true;
+                    });
+                  }
+
+                  showDialog(
+                    context: context,
+                    builder: (_) => DialogForm(
+                      mainText: success ? 'CCTV 알람 저장 완료!' : 'CCTV 알람 저장 실패!',
+                      btnText: '확인',
+                    ),
+                  );
+                },
+              ),
+
+
               SizedBox(width: 400.w),
             ],
           ),

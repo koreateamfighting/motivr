@@ -18,7 +18,6 @@ class AlarmController {
         throw Exception('서버 응답 오류: ${response.statusCode}');
       }
     } catch (e) {
-      // 재시도
       try {
         await Future.delayed(Duration(milliseconds: 500));
         final retryResponse = await http
@@ -40,7 +39,6 @@ class AlarmController {
     required DateTime timestamp,
     required String level,
     required String message,
-    String? sensorId, // ← optional
   }) async {
     final url = Uri.parse('$_baseUrl/alarms');
 
@@ -48,7 +46,6 @@ class AlarmController {
       'timestamp': timestamp.toIso8601String().substring(0, 16).replaceFirst('T', ' '),
       'level': level,
       'message': message,
-      if (sensorId != null) 'sensor_id': sensorId,
     });
 
     final response = await http.post(
@@ -57,7 +54,9 @@ class AlarmController {
       body: body,
     );
 
+    print('POST status: ${response.statusCode}');
+    print('POST body: ${response.body}');
+
     return response.statusCode == 200;
   }
-
 }

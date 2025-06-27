@@ -285,7 +285,7 @@ class _CCTVInputSectionState extends State<CCTVInputSection> {
                   height: 85.h,
                   child: labeledTextField(
                     title: '제품 식별자(ID) :',
-                    hint: 'S1_001',
+                    hint: '예 ) S1_001',
                     width: 420,
                     height: 60,
                     textBoxwidth: 400,

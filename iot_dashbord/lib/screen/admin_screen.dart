@@ -90,16 +90,17 @@ class _AdminScreenState extends State<AdminScreen> {
 
 //이벤트 관리 (iot/cctv) 변수
   final iotHistoryProductIDController = TextEditingController();
-  final iotHistoryLocationController = TextEditingController();
-  final iotHistoryEventController = TextEditingController();
+  final iotHistoryLatitudeController = TextEditingController();
+  final iotHistoryLongitudeController = TextEditingController();
+
   String? iotHistoryDate;
   String? iotHistoryHour;
   String? iotHistoryMinute;
   final iotHistoryLogController = TextEditingController();
 
   final cctvHistoryProductIDController = TextEditingController();
-  final cctvHistoryLocationController = TextEditingController();
-  final cctvHistoryEventController = TextEditingController();
+
+
   String? cctvHistoryDate;
   String? cctvHistoryHour;
   String? cctvHistoryMinute;
@@ -414,10 +415,11 @@ class _AdminScreenState extends State<AdminScreen> {
                               EventInputSection(
                                 iotHistoryProductIDController:
                                     iotHistoryProductIDController,
-                                iotHistoryLocationController:
-                                    iotHistoryLocationController,
-                                iotHistoryEventController:
-                                    iotHistoryEventController,
+                                iotHistoryLatitudeController:
+                                iotHistoryLatitudeController,
+                                iotHistoryLongitudeController:
+                                iotHistoryLongitudeController,
+
                                 iotHistoryDate: iotHistoryDate,
                                 iotHistoryHour: iotHistoryHour,
                                 iotHistoryMinute: iotHistoryMinute,
@@ -426,10 +428,8 @@ class _AdminScreenState extends State<AdminScreen> {
                                     iotHistoryLogController,
                                 cctvHistoryProductIDController:
                                     cctvHistoryProductIDController,
-                                cctvHistoryLocationController:
-                                    cctvHistoryLocationController,
-                                cctvHistoryEventController:
-                                    cctvHistoryEventController,
+
+
                                 cctvHistoryDate: cctvHistoryDate,
                                 cctvHistoryHour: cctvHistoryHour,
                                 cctvHistoryMinute: cctvHistoryMinute,
