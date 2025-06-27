@@ -43,7 +43,7 @@ class AuthSection extends StatefulWidget {
 }
 
 class _AuthSectionState extends State<AuthSection> {
-  bool isExpanded = true; // ✅ 펼침 여부 상태
+  bool isExpanded = false; // ✅ 펼침 여부 상태
   bool _checkedID = false;
   bool _isCheckingId = false;
   late TextEditingController idController;

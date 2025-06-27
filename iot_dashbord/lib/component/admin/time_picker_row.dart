@@ -5,16 +5,20 @@ class TimePickerRow extends StatelessWidget {
   final String? label;
   final String? selectedHour;
   final String? selectedMinute;
+  final String? selectedSecond;
   final void Function(String?) onHourChanged;
   final void Function(String?) onMinuteChanged;
+  final void Function(String?) onSecondChanged;
 
   const TimePickerRow({
     Key? key,
     this.label,
     this.selectedHour,
     this.selectedMinute,
+    this.selectedSecond,
     required this.onHourChanged,
     required this.onMinuteChanged,
+    required this.onSecondChanged
   }) : super(key: key);
 
   List<String> _generateNumberList(int max) {
@@ -25,6 +29,7 @@ class TimePickerRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final hourList = _generateNumberList(23);
     final minuteList = _generateNumberList(59);
+    final secondList = _generateNumberList(59);
 
     return Row(
       children: [
@@ -127,7 +132,31 @@ class TimePickerRow extends StatelessWidget {
             onChanged: onMinuteChanged,
           ),
         ),
-        SizedBox(width: 18.w),
+        SizedBox(width: 12.w),
+        Text(':', style: TextStyle(fontSize: 36.sp, color: Colors.white)),
+        SizedBox(width: 12.w),
+
+
+        DropdownButtonHideUnderline(
+          child: DropdownButton2<String>(
+            isExpanded: true,
+            value: secondList.contains(selectedSecond) ? selectedSecond : '00',
+            buttonStyleData: ButtonStyleData(
+              height: 60.h,
+              width: 100.w,
+              padding: EdgeInsets.symmetric(horizontal: 8.w),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+            ),
+            dropdownStyleData: DropdownStyleData(maxHeight: 240.h),
+            menuItemStyleData: MenuItemStyleData(height: 50.h),
+            iconStyleData: IconStyleData(iconSize: 24.sp),
+            items: secondList.map((sec) => DropdownMenuItem(value: sec, child: Text(sec, style: TextStyle(fontSize: 28.sp, fontFamily: 'PretendardGOV')))).toList(),
+            onChanged: onSecondChanged,
+          ),
+        ),
         Container(
           width: 40.w,
           height: 40.h,

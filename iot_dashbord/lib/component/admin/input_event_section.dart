@@ -7,6 +7,8 @@ import 'package:iot_dashboard/component/admin/action_button.dart';
 import 'package:iot_dashboard/component/admin/section_title.dart';
 import 'package:iot_dashboard/component/admin/time_picker_row.dart';
 import 'package:iot_dashboard/component/admin/custom_divider.dart';
+import 'package:iot_dashboard/component/common/dialog_form.dart';
+
 class EventInputSection extends StatefulWidget {
   final TextEditingController? iotHistoryProductIDController;
   final TextEditingController? iotHistoryLocationController;
@@ -14,6 +16,7 @@ class EventInputSection extends StatefulWidget {
   final String? iotHistoryDate;
   final String? iotHistoryHour;
   final String? iotHistoryMinute;
+  final String? iotHistorySecond;
   final TextEditingController? iotHistoryLogController;
   final TextEditingController? cctvHistoryProductIDController;
   final TextEditingController? cctvHistoryLocationController;
@@ -21,6 +24,7 @@ class EventInputSection extends StatefulWidget {
   final String? cctvHistoryDate;
   final String? cctvHistoryHour;
   final String? cctvHistoryMinute;
+  final String? cctvHistorySecond;
   final TextEditingController? cctvHistoryLogController;
 
   const EventInputSection({
@@ -31,6 +35,7 @@ class EventInputSection extends StatefulWidget {
     this.iotHistoryDate,
     this.iotHistoryHour,
     this.iotHistoryMinute,
+    this.iotHistorySecond,
     this.iotHistoryLogController,
     this.cctvHistoryProductIDController,
     this.cctvHistoryLocationController,
@@ -38,6 +43,7 @@ class EventInputSection extends StatefulWidget {
     this.cctvHistoryDate,
     this.cctvHistoryHour,
     this.cctvHistoryMinute,
+    this.cctvHistorySecond,
     this.cctvHistoryLogController,
   }) : super(key: key);
 
@@ -54,6 +60,7 @@ class _EventInputSectionState extends State<EventInputSection> {
   late String? iotHistoryDate;
   late String? iotHistoryHour;
   late String? iotHistoryMinute;
+  late String? iotHistorySecond;
   late TextEditingController iotHistoryLogController;
   late TextEditingController cctvHistoryProductIDController;
   late TextEditingController cctvHistoryLocationController;
@@ -61,6 +68,7 @@ class _EventInputSectionState extends State<EventInputSection> {
   late String? cctvHistoryDate;
   late String? cctvHistoryHour;
   late String? cctvHistoryMinute;
+  late String? cctvHistorySecond;
   late TextEditingController cctvHistoryLogController;
 
   @override
@@ -87,11 +95,60 @@ class _EventInputSectionState extends State<EventInputSection> {
     iotHistoryDate = widget.iotHistoryDate;
     iotHistoryHour = widget.iotHistoryHour;
     iotHistoryMinute = widget.iotHistoryMinute;
+    iotHistorySecond = widget.iotHistorySecond;
     cctvHistoryDate = widget.cctvHistoryDate;
     cctvHistoryHour = widget.cctvHistoryHour;
     cctvHistoryMinute = widget.cctvHistoryMinute;
+    cctvHistorySecond = widget.cctvHistorySecond;
+  }
+  DateTime? _composeTimestamp(String? dateStr, String? hour, String? minute, String? second) {
+    final date = DateTime.tryParse(dateStr ?? '');
+    if (date == null) return null;
+    return DateTime(
+      date.year,
+      date.month,
+      date.day,
+      int.tryParse(hour ?? '00') ?? 0,
+      int.tryParse(minute ?? '00') ?? 0,
+      int.tryParse(second ?? '00') ?? 0,
+    );
   }
 
+  // void _submitIotHistory() async {
+  //   final timestamp = _composeTimestamp(iotHistoryDate, iotHistoryHour, iotHistoryMinute, iotHistorySecond);
+  //   if (timestamp == null) return;
+  //   final success = await EventController.submitIotHistory(
+  //     timestamp: timestamp,
+  //     productId: iotHistoryProductIDController.text.trim(),
+  //     location: iotHistoryLocationController.text.trim(),
+  //     event: iotHistoryEventController.text.trim(),
+  //     log: iotHistoryLogController.text.trim(),
+  //   );
+  //   if (success) {
+  //     showDialog(
+  //       context: context,
+  //       builder: (_) => const DialogForm(mainText: 'IOT 이벤트가 등록되었습니다.', btnText: '확인'),
+  //     );
+  //   }
+  // }
+
+  // void _submitCctvHistory() async {
+  //   final timestamp = _composeTimestamp(cctvHistoryDate, cctvHistoryHour, cctvHistoryMinute, cctvHistorySecond);
+  //   if (timestamp == null) return;
+  //   final success = await EventController.submitCctvHistory(
+  //     timestamp: timestamp,
+  //     productId: cctvHistoryProductIDController.text.trim(),
+  //     location: cctvHistoryLocationController.text.trim(),
+  //     event: cctvHistoryEventController.text.trim(),
+  //     log: cctvHistoryLogController.text.trim(),
+  //   );
+  //   if (success) {
+  //     showDialog(
+  //       context: context,
+  //       builder: (_) => const DialogForm(mainText: 'CCTV 이벤트가 등록되었습니다.', btnText: '확인'),
+  //     );
+  //   }
+  // }
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -215,8 +272,10 @@ class _EventInputSectionState extends State<EventInputSection> {
                     TimePickerRow(
                       selectedHour: iotHistoryHour,
                       selectedMinute: iotHistoryMinute,
+                      selectedSecond: iotHistorySecond,
                       onHourChanged: (val) => setState(() => iotHistoryHour = val),
                       onMinuteChanged: (val) => setState(() => iotHistoryMinute = val),
+                      onSecondChanged: (val) => setState(() => iotHistorySecond = val),
                     ),
                   ],
 
@@ -312,8 +371,10 @@ class _EventInputSectionState extends State<EventInputSection> {
                     TimePickerRow(
                       selectedHour: cctvHistoryHour,
                       selectedMinute: cctvHistoryMinute,
+                      selectedSecond: cctvHistorySecond,
                       onHourChanged: (val) => setState(() => cctvHistoryHour = val),
                       onMinuteChanged: (val) => setState(() => cctvHistoryMinute = val),
+                      onSecondChanged: (val) => setState(() => cctvHistorySecond = val),
                     ),
                   ],
 

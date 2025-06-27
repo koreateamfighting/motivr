@@ -86,7 +86,7 @@ class UserController {
         final refreshToken = data['refreshToken'];
         final role = data['role'];
         final name = data['name'];
-
+        print('🎯 로그인 성공: role=$role');
         // ✅ 사용자 정보 저장
         currentUser = UserModel(
           userID: userID,

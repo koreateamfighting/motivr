@@ -15,7 +15,6 @@ import 'package:iot_dashboard/component/admin/labeled_dropdown_field.dart';
 class InputSpecialSensorSection extends StatefulWidget {
   final TextEditingController? inclinometerIdController;
     final String? inclinometerDate;
-  final TextEditingController? inclinometerMeasuredDepthsController;
   final Map<double, TextEditingController>? inclinometerDepthValues;
 
   final TextEditingController? piezometerIdController;
@@ -46,7 +45,7 @@ class InputSpecialSensorSection extends StatefulWidget {
     Key? key,
     this.inclinometerIdController,
     this.inclinometerDate,
-    this.inclinometerMeasuredDepthsController,
+
     this.inclinometerDepthValues,
     this.piezometerIdController,
 
@@ -124,8 +123,7 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
         widget.inclinometerIdController ?? TextEditingController();
  _selectedInclinometerLocation = '추진구';
     inclinometerDate = widget.inclinometerDate;
-    inclinometerMeasuredDepthsController =
-        widget.inclinometerMeasuredDepthsController ?? TextEditingController();
+
     inclinometerDepthValues = widget.inclinometerDepthValues ?? {};
 
     piezometerIdController =
@@ -208,8 +206,8 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
       type: '지중경사계',
       installationLocation: _selectedInclinometerLocation,
       measurementDate: _selectedInclinometerDate,
-      measurementDepth:
-      double.tryParse(inclinometerMeasuredDepthsController.text),
+      measurementDepth: '15m',
+      measurementInterval: '0.5m',
       depthMinus0_0: double.tryParse(inclinometerDepthValues[-0.0]?.text ?? ''),
       depthMinus0_5: double.tryParse(inclinometerDepthValues[-0.5]?.text ?? ''),
       depthMinus1_0: double.tryParse(inclinometerDepthValues[-1.0]?.text ?? ''),
@@ -246,6 +244,15 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
     final success = await SpecialSensorController.upsertSensorData(data);
 
     if (success) {
+      setState(() {
+        inclinometerIdController.clear();
+        _selectedInclinometerLocation = '추진구';
+        _selectedInclinometerDate = null;
+        for (final controller in inclinometerDepthValues.values) {
+          controller.clear();
+        }
+      });
+
       showDialog(
         context: context,
         builder: (context) => DialogForm(
@@ -280,6 +287,18 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
     final success = await SpecialSensorController.upsertSensorData(data);
 
     if (success) {
+
+      setState(() {
+        piezometerIdController.clear();
+        _selectedPiezometerLocation = '추진구';
+        _selectedPiezometerDate = null;
+        piezometerDryDaysController.clear();
+        piezometerCurrentWaterLevelController.clear();
+        piezometerGroundLevelController.clear();
+        piezometerChangeAmountController.clear();
+        piezometerCumulativeChangeController.clear();
+      });
+
       showDialog(
         context: context,
         builder: (context) => DialogForm(
@@ -312,6 +331,15 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
     final success = await SpecialSensorController.upsertSensorData(data);
 
     if (success) {
+      setState(() {
+        strainGaugeIdController.clear();
+        _selectedStrainGaugeLocation = '추진구';
+        _selectedStrainGaugeDate = null;
+        strainGaugeReadingController.clear();
+        strainGaugeStressController.clear();
+        strainGaugeDepthController.clear();
+      });
+
       showDialog(
         context: context,
         builder: (_) => DialogForm(
@@ -348,6 +376,19 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
     final success = await SpecialSensorController.upsertSensorData(data);
 
     if (success) {
+
+      setState(() {
+        settlementGaugeIdController.clear();
+        _selectedSettlementGaugeLocation = '추진구';
+        _selectedSettlementGaugeDate = null;
+        settlementGaugeDryDaysController.clear();
+        settlementGaugeAbsoluteValues1.clear();
+        settlementGaugeAbsoluteValues2.clear();
+        settlementGaugeAbsoluteValues3.clear();
+        settlementGaugeSubsidenceValues1.clear();
+        settlementGaugeSubsidenceValues2.clear();
+        settlementGaugeSubsidenceValues3.clear();
+      });
       showDialog(
         context: context,
         builder: (_) => DialogForm(
@@ -435,7 +476,7 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
           ),
           Container(
             width: 2880.w,
-            height: 4697.h,
+            height: 4787.h,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(5.r),
               color: const Color(0xff414c67),
@@ -478,25 +519,116 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                   initialDate: DateTime.tryParse(inclinometerDate ?? ''),
                   onDateSelected: (date) {
                     setState(() {
+
                       _selectedInclinometerDate = date;
+
                     });
                   },
                 ),
            CustomDivider(),
-                SizedBox(
-                  width: 2880.w,
-                  height: 85.h,
-                  child: labeledTextField(
-                    title: '측정 심도 :',
-                    hint: '',
-                    width: 420,
-                    height: 60,
-                    textBoxwidth: 400,
-                    textBoxHeight: 50,
-                    controller: inclinometerMeasuredDepthsController,
-                  ),
+           //      SizedBox(
+           //        width: 2880.w,
+           //        height: 85.h,
+           //        child: labeledTextField(
+           //          title: '측정 심도 :',
+           //          hint: '',
+           //          width: 420,
+           //          height: 60,
+           //          textBoxwidth: 400,
+           //          textBoxHeight: 50,
+           //          controller: inclinometerMeasuredDepthsController,
+           //        ),
+           //      ),
+
+           //      CustomDivider(),
+           //      SizedBox(
+           //        width: 2880.w,
+           //        height: 85.h,
+           //        child: labeledTextField(
+           //          title: '측정 간격 :',
+           //          hint: '',
+           //          width: 420,
+           //          height: 60,
+           //          textBoxwidth: 400,
+           //          textBoxHeight: 50,
+           //          controller: inclinometerMeasuredDepthsController,
+           //        ),
+           //      ),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 41.w,
+                    ),
+                    Container(
+                      width: 192.87.w,
+                      height: 50.h,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '측정 심도',
+                        style: TextStyle(
+                          fontFamily: 'PretendardGOV',
+                          fontSize: 36.sp,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 250.h),
+                    Container(
+                      width: 192.87.w,
+                      height: 50.h,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '15m',
+                        style: TextStyle(
+                          fontFamily: 'PretendardGOV',
+                          fontSize: 36.sp,
+                          fontWeight: FontWeight.w300,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+
+                  ],
                 ),
-           CustomDivider(),
+                 CustomDivider(),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 41.w,
+                    ),
+                    Container(
+                      width: 192.87.w,
+                      height: 50.h,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '측정 간격',
+                        style: TextStyle(
+                          fontFamily: 'PretendardGOV',
+                          fontSize: 36.sp,
+                          fontWeight: FontWeight.w300,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 250.h),
+                    Container(
+                      width: 192.87.w,
+                      height: 50.h,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '0.5m',
+                        style: TextStyle(
+                          fontFamily: 'PretendardGOV',
+                          fontSize: 36.sp,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+
+                  ],
+                ),           CustomDivider(),
 // 깊이 입력 헤더
                 Padding(
                   padding: EdgeInsets.only(left: 41.w, bottom: 12.h, top: 12.h),
@@ -777,6 +909,7 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                   onDateSelected: (date) {
                     setState(() {
                       _selectedStrainGaugeDate = date;
+                     /* print('측정날짜는 ? : ${_selectedStrainGaugeDate}');*/
                     });
                   },
                 ),
@@ -884,7 +1017,7 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                   label: '측정 날짜  :',
                   initialDate: DateTime.tryParse(settlementGaugeDate ?? ''),
                   onDateSelected: (date) {
-                    // 여기에 상태 저장 또는 처리 로직
+                    _selectedSettlementGaugeDate = date;
                   },
                 ),
                 SizedBox(

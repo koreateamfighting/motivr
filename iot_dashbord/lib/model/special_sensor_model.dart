@@ -1,10 +1,12 @@
+import 'package:intl/intl.dart';
+
 class SpecialSensorData {
   String installationID;
   String type;
   String? installationLocation;
   DateTime? measurementDate;
-  double? measurementDepth;
-  double? measurementInterval;
+  String? measurementDepth;
+  String? measurementInterval;
 
   double? depthMinus0_0;
   double? depthMinus0_5;
@@ -121,8 +123,10 @@ class SpecialSensorData {
       measurementDate: json['MeasurementDate'] != null
           ? DateTime.parse(json['MeasurementDate'])
           : null,
-      measurementDepth: (json['MeasurementDepth'] as num?)?.toDouble(),
-      measurementInterval: (json['MeasurementInterval'] as num?)?.toDouble(),
+
+      measurementDepth: json['measurementDepth'],
+
+      measurementInterval: json['measurementInterval'],
 
       depthMinus0_0: (json['DepthMinus0_0'] as num?)?.toDouble(),
       depthMinus0_5: (json['DepthMinus0_5'] as num?)?.toDouble(),
@@ -182,7 +186,9 @@ class SpecialSensorData {
       'InstallationID': installationID,
       'Type': type,
       'InstallationLocation': installationLocation,
-      'MeasurementDate': measurementDate?.toIso8601String(),
+      'MeasurementDate': measurementDate != null
+          ? DateFormat('yyyy-MM-dd').format(measurementDate!)
+          : null,
       'MeasurementDepth': measurementDepth,
       'MeasurementInterval': measurementInterval,
 

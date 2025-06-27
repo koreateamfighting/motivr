@@ -13,6 +13,7 @@ Widget labeledTextField(
       TextEditingController? controller,
     bool enabled = true, Function(String)? onChanged, }) {
   ScreenUtil.ensureScreenSize();
+  final isDisabled = !enabled;
   return Container(
     child: Row(
       children: [
@@ -43,7 +44,11 @@ Widget labeledTextField(
               enabled: enabled,
               controller: controller,
               onChanged: onChanged,
-              style: TextStyle(fontSize: 36.sp,color: Colors.black),
+              style: TextStyle(
+                fontSize: 36.sp,
+                color: isDisabled ? Colors.grey.shade600 : Colors.black,
+                fontFamily: 'PretendardGOV',
+              ),
               decoration: InputDecoration(
                 hintText: hint ?? '',
                 hintStyle: TextStyle(
@@ -55,9 +60,11 @@ Widget labeledTextField(
                 fillColor: Colors.white,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
-                  borderSide: BorderSide(color: Colors.white),
+                  borderSide: BorderSide(
+                    color: isDisabled ? Colors.grey.shade400 : Colors.white,
+                  ),
                 ),
-                focusedBorder: AppColors.focusedBorder(2.w),
+                focusedBorder: enabled ? AppColors.focusedBorder(2.w) : null,
                 // ✅ 여기에 적용
                 contentPadding:
                 EdgeInsets.symmetric(horizontal: 8.w, vertical: 12.h),

@@ -15,7 +15,6 @@ import 'package:iot_dashboard/component/common/dialog_form.dart';
 class TitleLogoSection extends StatefulWidget {
   final TextEditingController titleController;
   final void Function(html.File?) onLogoSelected;
-
   const TitleLogoSection({
     Key? key,
     required this.titleController,

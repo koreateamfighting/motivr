@@ -30,6 +30,7 @@ class AuthService {
   }
 
   static bool isAdmin() {
+    print("너는 admin이야");
     return html.window.localStorage['role'] == 'admin';
   }
 

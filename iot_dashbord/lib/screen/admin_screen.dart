@@ -16,6 +16,7 @@ import 'package:iot_dashboard/component/admin/input_cctv_section.dart';
 import 'package:iot_dashboard/component/admin/input_event_section.dart';
 import 'package:iot_dashboard/component/admin/input_special_sensor_section.dart';
 import 'package:iot_dashboard/component/admin/input_auth_section.dart';
+import 'package:iot_dashboard/component/common/dialog_form.dart';
 import 'package:provider/provider.dart';
 
 class AdminScreen extends StatefulWidget {
@@ -39,6 +40,7 @@ class _AdminScreenState extends State<AdminScreen> {
   String? alarmDate;
   String? alarmHour;
   String? alarmMinute;
+  String? alarmSecond;
   TextEditingController? _alarmTypeController;
   TextEditingController? _alarmMessageController;
 
@@ -157,31 +159,23 @@ class _AdminScreenState extends State<AdminScreen> {
   @override
   Widget build(BuildContext context) {
     // ✅ 관리자 권한 없으면 접근 차단
-    if (!AuthService.isAdmin() || !AuthService.isRoot()) {
-      // 마이크로태스크로 실행 → UI가 빌드된 후에 다이얼로그 띄우기
+    if (!AuthService.isAdmin() && !AuthService.isRoot()) {
       Future.microtask(() {
         showDialog(
           context: context,
-          builder: (context) => AlertDialog(
-            title: Text('접근 거부'),
-            content: Text('관리자 계정만 들어갈 수 있습니다.'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  // 🚪 관리자 아니면 대시보드로 강제 이동
-                  Navigator.of(context).pushReplacementNamed('/DashBoard');
-                },
-                child: Text('확인'),
-              ),
-            ],
+          barrierDismissible: false, // 바깥 터치로 닫히지 않도록
+          builder: (_) => const DialogForm(
+            mainText: '관리자 계정만 접근할 수 있습니다.',
+            btnText: '확인',
           ),
-        );
+        ).then((_) {
+          Navigator.of(context).pushReplacementNamed('/DashBoard');
+        });
       });
 
-      // 일단 빈 컨테이너 반환 → 다이얼로그 후 이동
       return const Scaffold(body: SizedBox());
     }
+
 
     return ChangeNotifierProvider(
         create: (_) => UserRoleState()..fetchRoles(),
@@ -357,6 +351,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                 alarmDate: alarmDate,
                                 alarmHour: alarmHour,
                                 alarmMinute: alarmMinute,
+                                alarmSecond: alarmSecond,
                                 alarmMessageController: _alarmMessageController,
                               ),
                               NoticeInputSection(
@@ -415,6 +410,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                 iotHistoryDate: iotHistoryDate,
                                 iotHistoryHour: iotHistoryHour,
                                 iotHistoryMinute: iotHistoryMinute,
+                                // iotHistorySecond: iotHistorySecond,
                                 iotHistoryLogController:
                                     iotHistoryLogController,
                                 cctvHistoryProductIDController:
@@ -437,8 +433,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                 inclinometerIdController:
                                     inclinometerIdController,
                                 inclinometerDate: inclinometerDate,
-                                inclinometerMeasuredDepthsController:
-                                    inclinometerMeasuredDepthsController,
+
                                 inclinometerDepthValues:
                                     inclinometerDepthValues,
 

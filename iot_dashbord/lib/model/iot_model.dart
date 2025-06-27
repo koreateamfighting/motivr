@@ -3,7 +3,7 @@ class IotItem {
   final String type;
   final String location;
   final String status;
-  final String battery;
+  final String battery;        // → BatteryVoltage
   final String lastUpdated;
   final String X_MM;
   final String Y_MM;
@@ -11,7 +11,7 @@ class IotItem {
   final String X_Deg;
   final String Y_Deg;
   final String Z_Deg;
-  final String batteryInfo;
+  final String batteryInfo;    // → BatteryLevel
   final String download;
 
   IotItem({
@@ -27,11 +27,11 @@ class IotItem {
     required this.X_Deg,
     required this.Y_Deg,
     required this.Z_Deg,
-
     required this.batteryInfo,
     required this.download,
   });
 
+  /// ✅ 클라이언트 ↔ Flutter 내부용 JSON 변환
   factory IotItem.fromJson(Map<String, dynamic> json) {
     return IotItem(
       id: json['id'],
@@ -51,4 +51,23 @@ class IotItem {
     );
   }
 
+  /// ✅ 서버 전송용 JSON 변환 (필드명 매핑)
+  Map<String, dynamic> toJson() {
+    return {
+      'RID': id,
+      'SensorType': type,
+      'EventType': status,
+      'Location': location,
+      'BatteryVoltage': double.tryParse(battery) ?? 0.0,
+      'BatteryLevel': double.tryParse(batteryInfo) ?? 0.0,
+      'X_Deg': double.tryParse(X_Deg) ?? 0.0,
+      'Y_Deg': double.tryParse(Y_Deg) ?? 0.0,
+      'Z_Deg': double.tryParse(Z_Deg) ?? 0.0,
+      'X_MM': double.tryParse(X_MM) ?? 0.0,
+      'Y_MM': double.tryParse(Y_MM) ?? 0.0,
+      'Z_MM': double.tryParse(Z_MM) ?? 0.0,
+      'Latitude': 0.0,     // 필요 시 별도 필드로 추가
+      'Longitude': 0.0,    // 필요 시 별도 필드로 추가
+    };
+  }
 }

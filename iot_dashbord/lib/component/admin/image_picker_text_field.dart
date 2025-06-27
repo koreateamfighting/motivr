@@ -59,6 +59,7 @@ class _ImagePickerTextFieldState extends State<ImagePickerTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final isDisabled = !widget.enabled;
     return GestureDetector(
       onTap: _pickImage,
       child: Row(
@@ -86,10 +87,10 @@ class _ImagePickerTextFieldState extends State<ImagePickerTextField> {
           Container(
             width: widget.width.w,
             height: widget.height.h,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8.r),
-            ),
+              decoration: BoxDecoration(
+                color: isDisabled ? const Color(0xffe0e0e0) : Colors.white,
+                borderRadius: BorderRadius.circular(8.r),
+              ),
             padding:  EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             alignment: Alignment.centerLeft,
             child: Row(
@@ -101,7 +102,10 @@ class _ImagePickerTextFieldState extends State<ImagePickerTextField> {
                     fontSize: 32.sp,
                     fontWeight: FontWeight.w300,
                     fontFamily: 'PretendardGOV',
-                    color: fileName == null ? Colors.grey : Colors.black,
+                    color: isDisabled
+                        ? Colors.grey.shade600
+                        : (fileName == null ? Colors.grey : Colors.black),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 Spacer(),

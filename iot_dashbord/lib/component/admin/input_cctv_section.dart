@@ -19,7 +19,7 @@ class CCTVInputSection extends StatefulWidget {
   final String? lastReceiveDate;
   final String? lastReceiveHour;
   final String? lastReceiveMinute;
-
+  final String? lastReceiveSecond;
 
   const CCTVInputSection({
     Key? key,
@@ -29,7 +29,9 @@ class CCTVInputSection extends StatefulWidget {
     this.lastReceiveDate,
     this.lastReceiveHour,
     this.lastReceiveMinute,
+    this.lastReceiveSecond,
   }) : super(key: key);
+
 
   @override
   State<CCTVInputSection> createState() => _CCTVInputSectionState();
@@ -47,6 +49,7 @@ class _CCTVInputSectionState extends State<CCTVInputSection> {
   late String? lastReceiveDate;
   late String? lastReceiveHour;
   late String? lastReceiveMinute;
+  late String? lastReceiveSecond;
 
   @override
   void initState() {
@@ -61,13 +64,10 @@ class _CCTVInputSectionState extends State<CCTVInputSection> {
         widget.imageAnalysisController ?? TextEditingController();
     cctvAddressController =
         widget.cctvAddressController ?? TextEditingController();
-    lastReceiveDate =
-        widget.lastReceiveDate ;
-    lastReceiveHour =
-        widget.lastReceiveHour ;
-    lastReceiveMinute =
-        widget.lastReceiveMinute ;
-
+    lastReceiveDate = widget.lastReceiveDate;
+    lastReceiveHour = widget.lastReceiveHour ?? '00';
+    lastReceiveMinute = widget.lastReceiveMinute ?? '00';
+    lastReceiveSecond = widget.lastReceiveSecond ?? '00';
 
   }
   DateTime? combineToDateTime(String? date, String? hour, String? minute) {
@@ -374,8 +374,10 @@ class _CCTVInputSectionState extends State<CCTVInputSection> {
                         label: '수신 시간 :',
                         selectedHour: lastReceiveHour,
                         selectedMinute: lastReceiveMinute,
+                        selectedSecond: lastReceiveSecond,
                         onHourChanged: (val) => setState(() => lastReceiveHour = val),
                         onMinuteChanged: (val) => setState(() => lastReceiveMinute = val),
+                        onSecondChanged: (val) => setState(() => lastReceiveSecond = val),
                       ),
                     ),
                   ],

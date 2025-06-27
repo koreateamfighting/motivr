@@ -15,6 +15,7 @@ class EventAlarmSection extends StatefulWidget {
   final String? alarmDate;
   final String? alarmHour;
   final String? alarmMinute;
+  final String? alarmSecond;
   final TextEditingController? alarmMessageController;
 
   const EventAlarmSection(
@@ -22,6 +23,7 @@ class EventAlarmSection extends StatefulWidget {
       this.alarmDate,
       this.alarmHour,
       this.alarmMinute,
+      this.alarmSecond,
       this.alarmMessageController})
       : super(key: key);
 
@@ -36,6 +38,7 @@ class _EventAlarmSectionState extends State<EventAlarmSection> {
   late TextEditingController _alarmTypeController;
   late String? alarmHour;
   late String? alarmMinute;
+  late String? alarmSecond;
   DateTime? _selectedDate;
   String? _selectedAlarmType = '정보'; // ✅ 기본값
 
@@ -49,6 +52,7 @@ class _EventAlarmSectionState extends State<EventAlarmSection> {
     // ⚠️ 이 두 줄이 꼭 필요합니다!
     alarmHour = widget.alarmHour ?? '00';
     alarmMinute = widget.alarmMinute ?? '00';
+    alarmSecond = widget.alarmSecond ?? '00';
   }
   bool get isFormValid {
     return _selectedDate != null &&
@@ -128,8 +132,10 @@ class _EventAlarmSectionState extends State<EventAlarmSection> {
                     label: '시간 :',
                     selectedHour: alarmHour,
                     selectedMinute: alarmMinute,
+                    selectedSecond: alarmSecond,
                     onHourChanged: (val) => setState(() => alarmHour = val),
                     onMinuteChanged: (val) => setState(() => alarmMinute = val),
+                      onSecondChanged: (val) => setState(() => alarmSecond = val)
                   ),
                 ),
                 CustomDivider(),
@@ -173,15 +179,17 @@ class _EventAlarmSectionState extends State<EventAlarmSection> {
               isFormValid ? const Color(0xffe98800) : Colors.grey,
               onTap: isFormValid
                   ? () async {
-                      final timestamp = DateTime(
-                        _selectedDate!.year,
-                        _selectedDate!.month,
-                        _selectedDate!.day,
-                        int.tryParse(alarmHour!) ?? 0,
-                        int.tryParse(alarmMinute!) ?? 0,
-                      );
+                final timestamp = DateTime(
+                  _selectedDate!.year,
+                  _selectedDate!.month,
+                  _selectedDate!.day,
+                  int.tryParse(alarmHour!) ?? 0,
+                  int.tryParse(alarmMinute!) ?? 0,
+                  int.tryParse(alarmSecond!) ?? 0, // ✅ 초 반영
+                );
 
-                      final success = await AlarmController.addAlarm(
+
+                final success = await AlarmController.addAlarm(
                         timestamp: timestamp,
                         level: _selectedAlarmType!,
                         message: _messageController.text.trim(),

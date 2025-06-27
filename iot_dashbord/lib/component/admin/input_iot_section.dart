@@ -7,6 +7,12 @@ import 'package:iot_dashboard/component/admin/labeled_textfield_section.dart';
 import 'package:iot_dashboard/component/admin/action_button.dart';
 import 'package:iot_dashboard/component/admin/section_title.dart';
 import 'package:iot_dashboard/component/admin/custom_divider.dart';
+import 'package:iot_dashboard/controller/iot_controller.dart';
+import 'package:provider/provider.dart';
+import 'package:iot_dashboard/model/iot_model.dart';
+
+
+
 class IotInputSection extends StatefulWidget {
   final TextEditingController? iotProductIDController;
   final TextEditingController? iotLocationController;
@@ -43,7 +49,7 @@ class IotInputSection extends StatefulWidget {
 
 class _IotInputSectionState extends State<IotInputSection> {
   bool isExpanded = false; // ✅ 펼침 여부 상태
-
+  bool _isFormValid = false;
   late TextEditingController iotProductIDController;
   late TextEditingController iotLocationController;
   late TextEditingController iotStatusController;
@@ -77,7 +83,50 @@ class _IotInputSectionState extends State<IotInputSection> {
     z_DegController = widget.z_DegController ?? TextEditingController();
     batteryInfoController =
         widget.batteryInfoController ?? TextEditingController();
+    iotProductIDController.addListener(_validateForm);
+
   }
+
+  void _validateForm() {
+    setState(() {
+      _isFormValid = iotProductIDController.text.trim().isNotEmpty;
+    });
+  }
+  @override
+  void dispose() {
+    // 컨트롤러 리스너 해제
+    iotProductIDController.removeListener(_validateForm);
+    super.dispose();
+  }
+  Future<void> _handleSubmit() async {
+    final controller = Provider.of<IotController>(context, listen: false);
+
+    final item = IotItem(
+      id: iotProductIDController.text.trim(),
+      type: '변위',
+      location: iotLocationController.text.trim(),
+      status: iotStatusController.text.trim(),
+      battery: batteryStatusController.text.trim(),
+      lastUpdated: lastReceiveController.text.trim(),
+      X_MM: x_MMController.text.trim(),
+      Y_MM: y_MMController.text.trim(),
+      Z_MM: z_MMController.text.trim(),
+      X_Deg: x_DegController.text.trim(),
+      Y_Deg: y_DegController.text.trim(),
+      Z_Deg: z_DegController.text.trim(),
+      batteryInfo: batteryInfoController.text.trim(),
+      download: '수동입력',
+    );
+
+    final success = await controller.submitIotItem(item);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(success ? '✅ 센서 데이터 전송 성공' : '❌ 전송 실패. 다시 시도하세요'),
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -178,141 +227,7 @@ class _IotInputSectionState extends State<IotInputSection> {
                   ),
                 ),
            CustomDivider(),
-                SizedBox(
-                  width: 2880.w,
-                  height: 85.h,
-                  child: labeledTextField(
-                    title: '배터리 :',
-                    hint: '',
-                    width: 420,
-                    height: 60,
-                    textBoxwidth: 400,
-                    textBoxHeight: 50,
-                    controller: batteryStatusController,
-                  ),
-                ),
-           CustomDivider(),
-                SizedBox(
-                  width: 2880.w,
-                  height: 85.h,
-                  child: labeledTextField(
-                    title: '마지막 수신 :',
-                    hint: '',
-                    width: 420,
-                    height: 60,
-                    textBoxwidth: 400,
-                    textBoxHeight: 50,
-                    controller: lastReceiveController,
-                  ),
-                ),
-           CustomDivider(),
-                SizedBox(
-                    width: 2880.w,
-                    height: 85.h,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        SizedBox(width: 40.w,),
-                        Container(
-                          width: 400.w,
-                          height: 50.h,
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'X,Y,Z (mm) :',
-                            style: TextStyle(
-                              fontFamily: 'PretendardGOV',
-                              fontSize: 36.sp,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 12.h),
 
-                        Container(
-                            width: 420.w,
-                            height: 60.h,
-                            child: TextField(
-                              controller: x_MMController,
-                              style: TextStyle(color: Colors.black),
-                              decoration: InputDecoration(
-                                hintText: '',
-                                hintStyle: TextStyle(
-                                    color: Color(0xff9eaea2),
-                                    fontSize: 36.sp,
-                                    fontWeight: FontWeight.w300,
-                                    fontFamily: 'PretendardGOV'),
-                                filled: true,
-                                fillColor: Colors.white,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8.r),
-                                  borderSide: BorderSide(color: Colors.white),
-                                ),
-                                focusedBorder: AppColors.focusedBorder(2.w),
-                                // ✅ 여기에 적용
-                                contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 8.w, vertical: 12.h),
-                              ),
-                            )),
-                        SizedBox(
-                          width: 200.w,
-                        ),
-                        Container(
-                            width: 420.w,
-                            height: 60.h,
-                            child: TextField(
-                              controller: y_MMController,
-                              style: TextStyle(color: Colors.black),
-                              decoration: InputDecoration(
-                                hintText: '',
-                                hintStyle: TextStyle(
-                                    color: Color(0xff9eaea2),
-                                    fontSize: 36.sp,
-                                    fontWeight: FontWeight.w300,
-                                    fontFamily: 'PretendardGOV'),
-                                filled: true,
-                                fillColor: Colors.white,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8.r),
-                                  borderSide: BorderSide(color: Colors.white),
-                                ),
-                                focusedBorder: AppColors.focusedBorder(2.w),
-                                // ✅ 여기에 적용
-                                contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 8.w, vertical: 12.h),
-                              ),
-                            )),
-                        SizedBox(
-                          width: 200.w,
-                        ),
-                        Container(
-                            width: 420.w,
-                            height: 60.h,
-                            child: TextField(
-                              controller: z_MMController,
-                              style: TextStyle(color: Colors.black),
-                              decoration: InputDecoration(
-                                hintText: '',
-                                hintStyle: TextStyle(
-                                    color: Color(0xff9eaea2),
-                                    fontSize: 36.sp,
-                                    fontWeight: FontWeight.w300,
-                                    fontFamily: 'PretendardGOV'),
-                                filled: true,
-                                fillColor: Colors.white,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8.r),
-                                  borderSide: BorderSide(color: Colors.white),
-                                ),
-                                focusedBorder: AppColors.focusedBorder(2.w),
-                                // ✅ 여기에 적용
-                                contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 8.w, vertical: 12.h),
-                              ),
-                            ))
-                      ],
-                    )),
-           CustomDivider(),
                 SizedBox(
                     width: 2880.w,
                     height: 85.h,
@@ -420,7 +335,127 @@ class _IotInputSectionState extends State<IotInputSection> {
                       ],
                     )),
            CustomDivider(),
-                SizedBox(height: 8.h,),
+                SizedBox(
+                    width: 2880.w,
+                    height: 85.h,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        SizedBox(width: 40.w,),
+                        Container(
+                          width: 400.w,
+                          height: 50.h,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'X,Y,Z (mm) :',
+                            style: TextStyle(
+                              fontFamily: 'PretendardGOV',
+                              fontSize: 36.sp,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 12.h),
+
+                        Container(
+                            width: 420.w,
+                            height: 60.h,
+                            child: TextField(
+                              controller: x_MMController,
+                              style: TextStyle(color: Colors.black),
+                              decoration: InputDecoration(
+                                hintText: '',
+                                hintStyle: TextStyle(
+                                    color: Color(0xff9eaea2),
+                                    fontSize: 36.sp,
+                                    fontWeight: FontWeight.w300,
+                                    fontFamily: 'PretendardGOV'),
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8.r),
+                                  borderSide: BorderSide(color: Colors.white),
+                                ),
+                                focusedBorder: AppColors.focusedBorder(2.w),
+                                // ✅ 여기에 적용
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 8.w, vertical: 12.h),
+                              ),
+                            )),
+                        SizedBox(
+                          width: 200.w,
+                        ),
+                        Container(
+                            width: 420.w,
+                            height: 60.h,
+                            child: TextField(
+                              controller: y_MMController,
+                              style: TextStyle(color: Colors.black),
+                              decoration: InputDecoration(
+                                hintText: '',
+                                hintStyle: TextStyle(
+                                    color: Color(0xff9eaea2),
+                                    fontSize: 36.sp,
+                                    fontWeight: FontWeight.w300,
+                                    fontFamily: 'PretendardGOV'),
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8.r),
+                                  borderSide: BorderSide(color: Colors.white),
+                                ),
+                                focusedBorder: AppColors.focusedBorder(2.w),
+                                // ✅ 여기에 적용
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 8.w, vertical: 12.h),
+                              ),
+                            )),
+                        SizedBox(
+                          width: 200.w,
+                        ),
+                        Container(
+                            width: 420.w,
+                            height: 60.h,
+                            child: TextField(
+                              controller: z_MMController,
+                              style: TextStyle(color: Colors.black),
+                              decoration: InputDecoration(
+                                hintText: '',
+                                hintStyle: TextStyle(
+                                    color: Color(0xff9eaea2),
+                                    fontSize: 36.sp,
+                                    fontWeight: FontWeight.w300,
+                                    fontFamily: 'PretendardGOV'),
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8.r),
+                                  borderSide: BorderSide(color: Colors.white),
+                                ),
+                                focusedBorder: AppColors.focusedBorder(2.w),
+                                // ✅ 여기에 적용
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 8.w, vertical: 12.h),
+                              ),
+                            ))
+                      ],
+                    )),
+                CustomDivider(),
+                SizedBox(
+                  width: 2880.w,
+                  height: 85.h,
+                  child: labeledTextField(
+                    title: '배터리 전압:',
+                    hint: '',
+                    width: 420,
+                    height: 60,
+                    textBoxwidth: 400,
+                    textBoxHeight: 50,
+                    controller: batteryStatusController,
+                  ),
+                ),
+                CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -431,10 +466,26 @@ class _IotInputSectionState extends State<IotInputSection> {
                     height: 60,
                     textBoxwidth: 400,
                     textBoxHeight: 50,
-                    controller: batteryStatusController,
+                    controller: batteryInfoController,
                   ),
                 ),
-                
+                CustomDivider(),
+           CustomDivider(),
+                SizedBox(height: 8.h,),
+
+                SizedBox(
+                  width: 2880.w,
+                  height: 85.h,
+                  child: labeledTextField(
+                    title: '마지막 수신 :',
+                    hint: '',
+                    width: 420,
+                    height: 60,
+                    textBoxwidth: 400,
+                    textBoxHeight: 50,
+                    controller: lastReceiveController,
+                  ),
+                ),
               ],
             ),
           ),
@@ -445,7 +496,16 @@ class _IotInputSectionState extends State<IotInputSection> {
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
 
-            ActionButton('추가', Color(0xffe98800)),
+            ActionButton(
+              '추가',
+              _isFormValid ? const Color(0xffe98800) : Colors.grey, // ✅ 색상 전환
+              onTap: _isFormValid
+                  ? () {
+                _handleSubmit();
+
+              }
+                  : null, // ✅ 비활성 상태에서는 null
+            ),
             SizedBox(width: 400.w),
           ],
         ),

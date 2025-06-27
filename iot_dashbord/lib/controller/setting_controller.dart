@@ -5,13 +5,21 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:iot_dashboard/model/setting_model.dart'; // 위에서 만든 모델
 import 'dart:convert';
+import 'package:iot_dashboard/utils/setting_service.dart';
 
 class SettingController {
   static Future<SettingUploadResult> uploadTitleAndLogo(String title, html.File? logoFile) async {
     try {
       final uri = Uri.parse('https://hanlimtwin.kr:3030/api/update-settings');
-      final request = http.MultipartRequest('POST', uri)
-        ..fields['title'] = title;
+      final request = http.MultipartRequest('POST', uri);
+
+      // 기존 title 유지
+      final trimmedTitle = title.trim();
+      if (trimmedTitle.isEmpty && SettingService.setting?.title != null) {
+        request.fields['title'] = SettingService.setting!.title!;
+      } else {
+        request.fields['title'] = trimmedTitle;
+      }
 
       if (logoFile != null) {
         final reader = html.FileReader();
@@ -43,6 +51,7 @@ class SettingController {
       return SettingUploadResult(success: false, message: '오류: $e');
     }
   }
+
 
 
   static Future<SiteSetting?> fetchLatestSetting() async {
