@@ -41,14 +41,17 @@ class NoticeController {
   }
 
   /// ✅ 공지 추가
-  static Future<bool> addNotice(String content) async {
+  static Future<bool> addNotice(String content, String createdAt) async {
     final url = Uri.parse('$_baseUrl/notices');
 
     try {
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'content': content}),
+        body: jsonEncode({
+          'content': content,
+          'createdAt': createdAt, // ⬅️ 시간 추가
+        }),
       );
 
       return response.statusCode == 200;

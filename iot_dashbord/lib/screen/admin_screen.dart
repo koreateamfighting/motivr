@@ -13,7 +13,7 @@ import 'dart:html' as html;
 import 'dart:async'; // Completer를 위한 import
 import 'package:iot_dashboard/component/admin/input_notice_section.dart';
 import 'package:iot_dashboard/component/admin/input_cctv_section.dart';
-import 'package:iot_dashboard/component/admin/input_event_section.dart';
+import 'package:iot_dashboard/component/admin/input_event_history_section.dart';
 import 'package:iot_dashboard/component/admin/input_special_sensor_section.dart';
 import 'package:iot_dashboard/component/admin/input_auth_section.dart';
 import 'package:iot_dashboard/component/common/dialog_form.dart';

@@ -11,7 +11,8 @@ Widget labeledTextField(
       required double textBoxwidth,
       required double textBoxHeight,
       TextEditingController? controller,
-    bool enabled = true,  bool isNumeric = false, Function(String)? onChanged, }) {
+    bool enabled = true,  bool isNumeric = false, Function(String)? onChanged,  int? minLines,        // ✅ 추가
+int? maxLines,        }) {
   ScreenUtil.ensureScreenSize();
   final isDisabled = !enabled;
   return Container(
@@ -44,9 +45,11 @@ Widget labeledTextField(
               enabled: enabled,
               controller: controller,
               onChanged: onChanged,
+              maxLines: maxLines,
+              minLines: minLines,
               keyboardType: isNumeric
                   ? const TextInputType.numberWithOptions(decimal: true)
-                  : TextInputType.text,
+                  : TextInputType.multiline, // ✅ multiline 설정
               inputFormatters: isNumeric
                   ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))]
                   : null,

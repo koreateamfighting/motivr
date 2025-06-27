@@ -3,8 +3,10 @@ const sql = require('mssql');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
-
 const dbConfig = require('../dbConfig');
+
+
+
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 
@@ -57,8 +59,11 @@ router.post('/register', async (req, res) => {
     company,
     department,
     position,
-    role
+    role, // 유지!
+    responsibilities
   } = req.body;
+  
+  const userRole = role || 'disabled'; // 클라이언트가 안 보내면 'disabled'로 처리
 
   if (!userID || !password ||!email) {
     return res.status(400).json({ error: '아이디와 비밀번호는 필수입니다.' });
@@ -82,17 +87,23 @@ router.post('/register', async (req, res) => {
     console.log('✅ 해싱 완료');
 
     await pool.request()
-      .input('UserID', sql.NVarChar, userID)
-      .input('PasswordHash', sql.NVarChar, hashedPassword)
-      .input('Name', sql.NVarChar, name)
-      .input('PhoneNumber', sql.NVarChar, phoneNumber)
-      .input('Email', sql.NVarChar, email)
-      .input('Company', sql.NVarChar, company)
-      .input('Department', sql.NVarChar, department)
-      .input('Position', sql.NVarChar, position)
-      .input('Role', sql.NVarChar, role)
-      .query(`INSERT INTO Users (UserID, PasswordHash, Name, PhoneNumber, Email, Company, Department, Position, Role)
-              VALUES (@UserID, @PasswordHash, @Name, @PhoneNumber, @Email, @Company, @Department, @Position, @Role)`);
+    .input('UserID', sql.NVarChar, userID)
+    .input('PasswordHash', sql.NVarChar, hashedPassword)
+    .input('Name', sql.NVarChar, name)
+    .input('PhoneNumber', sql.NVarChar, phoneNumber)
+    .input('Email', sql.NVarChar, email)
+    .input('Company', sql.NVarChar, company)
+    .input('Department', sql.NVarChar, department)
+    .input('Position', sql.NVarChar, position)
+    .input('Role', sql.NVarChar, userRole) // 👈 이 부분에서 기본값 반영
+    .input('Responsibilities', sql.NVarChar, responsibilities)
+    .query(`
+      INSERT INTO Users 
+      (UserID, PasswordHash, Name, PhoneNumber, Email, Company, Department, Position, Role, Responsibilities)
+      VALUES 
+      (@UserID, @PasswordHash, @Name, @PhoneNumber, @Email, @Company, @Department, @Position, @Role, @Responsibilities)
+    `);
+  
 
     console.log('📦 회원가입 DB INSERT 성공');
     res.status(201).json({ message: '회원가입 완료' });
@@ -273,6 +284,85 @@ router.post('/change-password', async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: '서버 오류' });
+  }
+});
+
+// 사용자 목록 조회 (조건부 role 필터링)
+router.get('/users/by-role', async (req, res) => {
+  const { includeRoles = '', excludeRoles = '' } = req.query;
+
+  try {
+    const pool = await sql.connect(dbConfig);
+
+    const includeList = includeRoles.split(',').filter(r => r.trim());
+    const excludeList = excludeRoles.split(',').filter(r => r.trim());
+
+    let query = 'SELECT UserID, Role FROM Users WHERE 1=1 AND Role != \'admin\'';
+
+    if (includeList.length > 0) {
+      const inParams = includeList.map((_, i) => `@include${i}`).join(',');
+      query += ` AND Role IN (${inParams})`;
+    }
+    if (excludeList.length > 0) {
+      const exParams = excludeList.map((_, i) => `@exclude${i}`).join(',');
+      query += ` AND Role NOT IN (${exParams})`;
+    }
+
+    const request = pool.request();
+    includeList.forEach((role, i) => request.input(`include${i}`, sql.NVarChar, role));
+    excludeList.forEach((role, i) => request.input(`exclude${i}`, sql.NVarChar, role));
+
+    const result = await request.query(query);
+    res.json(result.recordset);
+  } catch (err) {
+    console.error('❌ 사용자 조회 오류:', err);
+    res.status(500).json({ error: '서버 오류' });
+  }
+}); // ✅ 올바르게 닫음
+
+// ✅ 사용자 권한 변경 API
+router.post('/users/update-role', async (req, res) => {
+  const { userIDs, newRole } = req.body;
+
+  if (!Array.isArray(userIDs) || !newRole) {
+    return res.status(400).json({ error: 'userIDs 배열과 newRole은 필수입니다.' });
+  }
+
+  try {
+    const pool = await sql.connect(dbConfig);
+    const transaction = new sql.Transaction(pool);
+    await transaction.begin();
+
+    for (const userID of userIDs) {
+      await transaction.request()
+        .input('UserID', sql.NVarChar, userID)
+        .input('NewRole', sql.NVarChar, newRole)
+        .query('UPDATE Users SET Role = @NewRole WHERE UserID = @UserID');
+    }
+
+    await transaction.commit();
+    res.status(200).json({ message: '역할 업데이트 완료' });
+  } catch (err) {
+    console.error('❌ 역할 변경 오류:', err);
+    res.status(500).json({ error: '서버 오류' });
+  }
+});
+
+router.get('/users/all', async (req, res) => {
+  try {
+    const pool = await sql.connect(dbConfig);
+    const result = await pool.request()
+      .query("SELECT UserID, Role FROM Users WHERE UserID != 'admin'"); // 🔒 admin 제외
+
+    const users = result.recordset.reduce((acc, row) => {
+      acc[row.UserID] = row.Role;
+      return acc;
+    }, {});
+
+    res.json(users); // 예: { test1: "enabled", test2: "disabled", ... }
+  } catch (err) {
+    console.error('❌ 전체 사용자 조회 오류:', err);
+    res.status(500).json({ error: '서버 오류' });
   }
 });
 

@@ -53,6 +53,36 @@ router.patch('/notices/:id', async (req, res) => {
   }
 });
 
+
+// 공지사항 추가
+router.post('/notices', async (req, res) => {
+  const { content, createdAt } = req.body;
+
+  if (!content || !createdAt) {
+    return res.status(400).json({ error: '공지 내용 또는 시간 누락' });
+  }
+
+  try {
+    await sql.connect(dbConfig);
+    const safeContent = content.replace(/'/g, "''");
+    const safeCreatedAt = createdAt.replace(/'/g, "''"); // 보안 처리
+
+    await sql.query(`
+      INSERT INTO notice (content, created_at)
+      VALUES (N'${safeContent}', '${safeCreatedAt}')
+    `);
+
+    res.status(200).json({ message: '✅ 공지사항이 성공적으로 등록되었습니다.' });
+  } catch (err) {
+    console.error('❌ 공지사항 등록 오류:', err);
+    res.status(500).json({ error: '공지사항 등록 중 오류가 발생했습니다.' });
+  } finally {
+    sql.close();
+  }
+});
+
+
+
 // ✅ 공지사항 일괄 수정
 router.post('/bulk-update-notices', async (req, res) => {
   const updates = req.body; // [{ id: 1, content: "..." }, {...}]

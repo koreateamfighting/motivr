@@ -39,7 +39,10 @@ app.use('/api', require('./routes/service'));
 app.use('/api', require('./routes/alarm'));  // 센서/기타
 app.use('/api', require('./routes/notice'));  // 센서/기타
 app.use('/api', require('./routes/worktask'));
-// ⬇️ 이 줄 추가
+app.use('/api', require('./routes/duty'));
+app.use('/api', require('./routes/fieldinfo'));
+app.use('/api', require('./routes/specialsensor'));
+app.use('/api', require('./routes/alarmhistory'));
 const settingRouter = require('./routes/settings');
 app.use('/api', settingRouter);
 

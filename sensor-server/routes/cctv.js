@@ -12,30 +12,80 @@ const router = express.Router();
 const ffmpegProcesses = {};
 const hlsFolder = 'C:\\Users\\Administrator\\sensor-server\\public\\hls'; // 삭제할 .ts 파일 경로
 
-const camConfigs = {
-  cam1: 'rtsp://admin:admin1234!@218.149.187.159:40551/unicast/c1/s0/live',
-  cam2: 'rtsp://admin:admin1234!@218.149.187.159:40551/unicast/c2/s0/live',
-};
-const camOnvifConfig = {
-  cam1: {
-    xaddr: 'http://218.149.187.159:40081/onvif/device_service',
-    user: 'admin',
-    pass: 'admin1234!'
-  },
-  cam2: {
-    xaddr: 'http://218.149.187.159:40082/onvif/device_service',
-    user: 'admin',
-    pass: 'admin1234!'
-  }
-};
+// const camConfigs = {
+//   cam1: 'rtsp://admin:admin1234!@218.149.187.159:40551/unicast/c1/s0/live',
+//   cam2: 'rtsp://admin:admin1234!@218.149.187.159:40551/unicast/c2/s0/live',
+// };
+// const camOnvifConfig = {
+//   cam1: {
+//     xaddr: 'http://218.149.187.159:40081/onvif/device_service',
+//     user: 'admin',
+//     pass: 'admin1234!'
+//   },
+//   cam2: {
+//     xaddr: 'http://218.149.187.159:40082/onvif/device_service',
+//     user: 'admin',
+//     pass: 'admin1234!'
+//   }
+// };
 
 
-function startHlsProcess(cam) {
-  if (!camConfigs[cam]) {
+// camID 규칙에 따라 RTSP, ONVIF 기본값 자동 생성 함수
+function generateCameraConfig(camID) {
+  const match = camID.toLowerCase().match(/^cam(\d+)$/);
+  if (!match) return null;
+
+  const camNumber = parseInt(match[1], 10);
+  const rtspBase = 'rtsp://admin:admin1234!@218.149.187.159:40551/unicast/';
+  const onvifBasePort = 40080;
+
+  return {
+    rtspUrl: `${rtspBase}c${camNumber}/s0/live`,
+    onvifXaddr: `http://218.149.187.159:${onvifBasePort + camNumber}/onvif/device_service`,
+    onvifUser: 'admin',
+    onvifPass: 'admin1234!',
+  };
+}
+
+
+
+async function getCamerasFromDb() {
+  const pool = await sql.connect(dbConfig);
+  const result = await pool.request().query(`
+    SELECT CamID, RtspUrl, OnvifXaddr, OnvifUser, OnvifPass
+    FROM CctvStatus
+    WHERE CamID IS NOT NULL
+  `);
+
+  // 결과를 객체로 가공 (CamID -> {rtsp, onvif 정보})
+  const cams = {};
+  result.recordset.forEach(row => {
+    cams[row.CamID] = {
+      rtsp: row.RtspUrl,
+      onvif: {
+        xaddr: row.OnvifXaddr,
+        user: row.OnvifUser,
+        pass: row.OnvifPass
+      }
+    };
+  });
+
+  
+
+  return cams;
+}
+
+
+async function startHlsProcess(cam) {
+  const cams = await getCamerasFromDb();
+  const camInfo = cams[cam];
+
+
+ 
+  if (!camInfo) {
     console.error(`❌ 유효하지 않은 카메라 ID: ${cam}`);
     return;
   }
-
   if (ffmpegProcesses[cam]) {
     console.log(`⚠️ ${cam} 이미 실행 중`);
     return;
@@ -47,7 +97,11 @@ function startHlsProcess(cam) {
   }
 
   const outputPath = path.join(outputDir, `${cam}.m3u8`);
-  const rtspUrl = camConfigs[cam];
+  const rtspUrl = camInfo.rtsp;
+  if (!rtspUrl) {
+    console.error(`❌ ${cam}의 RTSP URL이 설정되지 않았습니다.`);
+    return;
+  }
 
   console.log(`🎬 [${cam}] HLS 스트림 시작`);
   const ffmpeg = spawn('ffmpeg', [
@@ -79,7 +133,20 @@ function startHlsProcess(cam) {
   ffmpegProcesses[cam] = ffmpeg;
 }
 async function startMotionDetect(cam) {
-  const streamUrl = camConfigs[cam]; // ✅ RTSP URL을 전달
+  const cams = await getCamerasFromDb();
+  const camInfo = cams[cam];
+
+  if (!camInfo) {
+    console.error(`❌ 유효하지 않은 카메라 ID: ${cam}`);
+    return;
+  }
+
+  const streamUrl = camInfo.rtsp;
+
+  if (!streamUrl) {
+    console.error(`❌ ${cam}의 RTSP URL이 없습니다.`);
+    return;
+  }
 
   try {
     await axios.post('http://localhost:5001/start', {
@@ -92,13 +159,15 @@ async function startMotionDetect(cam) {
   }
 }
 
+
 // 👉 기존 API 유지
-router.get('/start-hls/:cam', (req, res) => {
+router.get('/start-hls/:cam', async (req, res) => {
   const cam = req.params.cam;
-  startHlsProcess(cam);
+  await startHlsProcess(cam);
   res.send(`✅ ${cam} HLS 스트림 시작 요청됨`);
-  startMotionDetect(cam);
+  await startMotionDetect(cam);
 });
+
 
 router.get('/stop-hls/:cam', (req, res) => {
   const cam = req.params.cam;
@@ -121,41 +190,106 @@ router.get('/stop-hls/all', (req, res) => {
 });
 
 router.post('/cctvs', async (req, res) => {
-  const {
+  let {
     camID,
     location,
     isConnected,
     eventState,
     imageAnalysis,
     streamUrl,
-    recordPath
+    recordPath,
+    rtspUrl,
+    onvifXaddr,
+    onvifUser,
+    onvifPass,
   } = req.body;
 
-  if (!camID || !streamUrl) {
-    return res.status(400).json({ error: 'camID와 streamUrl은 필수입니다.' });
+  if (!camID) {
+    return res.status(400).json({ error: 'camID는 필수입니다.' });
   }
+
+  
+  // 자동생성 로직: rtspUrl, onvifXaddr, onvifUser, onvifPass가 없으면 기본값 생성
+  if (!rtspUrl || !onvifXaddr || !onvifUser || !onvifPass) {
+    const generatedConfig = generateCameraConfig(camID);
+    if (generatedConfig) {
+      rtspUrl = rtspUrl || generatedConfig.rtspUrl;
+      onvifXaddr = onvifXaddr || generatedConfig.onvifXaddr;
+      onvifUser = onvifUser || generatedConfig.onvifUser;
+      onvifPass = onvifPass || generatedConfig.onvifPass;
+    }
+  }
+  
 
   try {
     const pool = await sql.connect(dbConfig);
-    await pool.request()
-      .input('CamID', sql.NVarChar, camID)
-      .input('Location', sql.NVarChar, location || null)
-      .input('IsConnected', sql.Bit, isConnected ?? 1)
-      .input('EventState', sql.NVarChar, eventState || '정상')
-      .input('ImageAnalysis', sql.Float, imageAnalysis ?? 0)
-      .input('StreamURL', sql.NVarChar, streamUrl)
-      .input('RecordPath', sql.NVarChar, recordPath || null)
-      .query(`
-        INSERT INTO CctvStatus (CamID, Location, IsConnected, EventState, ImageAnalysis, StreamURL, RecordPath)
-        VALUES (@CamID, @Location, @IsConnected, @EventState, @ImageAnalysis, @StreamURL, @RecordPath)
-      `);
 
-    res.status(201).json({ message: 'CCTV 등록 완료' });
+    // 1) 기존 CamID 존재 여부 확인
+    const checkResult = await pool.request()
+      .input('CamID', sql.NVarChar, camID)
+      .query('SELECT COUNT(*) AS cnt FROM CctvStatus WHERE CamID = @CamID');
+    const exists = checkResult.recordset[0].cnt > 0;
+
+    if (exists) {
+      // 2) 존재하면 UPDATE
+      await pool.request()
+        .input('CamID', sql.NVarChar, camID)
+        .input('Location', sql.NVarChar, location || null)
+        .input('IsConnected', sql.Bit, isConnected ?? 1)
+        .input('EventState', sql.NVarChar, eventState || '정상')
+        .input('ImageAnalysis', sql.Float, imageAnalysis ?? 0)
+        .input('StreamURL', sql.NVarChar, streamUrl || null)
+        .input('RecordPath', sql.NVarChar, recordPath || null)
+        .input('RtspUrl', sql.NVarChar, rtspUrl || null)
+        .input('OnvifXaddr', sql.NVarChar, onvifXaddr || null)
+        .input('OnvifUser', sql.NVarChar, onvifUser || null)
+        .input('OnvifPass', sql.NVarChar, onvifPass || null)
+        .query(`
+          UPDATE CctvStatus
+          SET Location = @Location,
+              IsConnected = @IsConnected,
+              EventState = @EventState,
+              ImageAnalysis = @ImageAnalysis,
+              StreamURL = @StreamURL,
+              RecordPath = @RecordPath,
+              RtspUrl = @RtspUrl,
+              OnvifXaddr = @OnvifXaddr,
+              OnvifUser = @OnvifUser,
+              OnvifPass = @OnvifPass
+          WHERE CamID = @CamID
+        `);
+
+      res.status(200).json({ message: 'CCTV 정보가 업데이트 되었습니다.' });
+    } else {
+      // 3) 없으면 INSERT
+      await pool.request()
+        .input('CamID', sql.NVarChar, camID)
+        .input('Location', sql.NVarChar, location || null)
+        .input('IsConnected', sql.Bit, isConnected ?? 1)
+        .input('EventState', sql.NVarChar, eventState || '정상')
+        .input('ImageAnalysis', sql.Float, imageAnalysis ?? 0)
+        .input('StreamURL', sql.NVarChar, streamUrl)
+        .input('RecordPath', sql.NVarChar, recordPath || null)
+        .input('RtspUrl', sql.NVarChar, rtspUrl || null)
+        .input('OnvifXaddr', sql.NVarChar, onvifXaddr || null)
+        .input('OnvifUser', sql.NVarChar, onvifUser || null)
+        .input('OnvifPass', sql.NVarChar, onvifPass || null)
+        .query(`
+          INSERT INTO CctvStatus
+          (CamID, Location, IsConnected, EventState, ImageAnalysis, StreamURL, RecordPath, RtspUrl, OnvifXaddr, OnvifUser, OnvifPass)
+          VALUES
+          (@CamID, @Location, @IsConnected, @EventState, @ImageAnalysis, @StreamURL, @RecordPath, @RtspUrl, @OnvifXaddr, @OnvifUser, @OnvifPass)
+        `);
+
+      res.status(201).json({ message: 'CCTV 등록 완료' });
+    }
+
   } catch (err) {
-    console.error('❌ CCTV 등록 실패:', err);
+    console.error('❌ CCTV 등록/수정 실패:', err);
     res.status(500).json({ error: '서버 오류' });
   }
 });
+
 
 router.get('/cctvs', async (req, res) => {
   try {
@@ -189,17 +323,18 @@ router.get('/probe-onvif', async (req, res) => {
 
 router.get('/fetch-onvif/:cam', async (req, res) => {
   const cam = req.params.cam;
-  const config = camOnvifConfig[cam];
+  const cams = await getCamerasFromDb();
+  const camInfo = cams[cam];
 
-  if (!config) {
-    return res.status(400).json({ error: `알 수 없는 카메라 ID: ${cam}` });
+  if (!camInfo || !camInfo.onvif || !camInfo.onvif.xaddr) {
+    return res.status(400).json({ error: `알 수 없는 카메라 ID 또는 ONVIF 설정이 없습니다: ${cam}` });
   }
 
   try {
     const device = new Onvif.OnvifDevice({
-      xaddr: config.xaddr,
-      user: config.user,
-      pass: config.pass
+      xaddr: camInfo.onvif.xaddr,
+      user: camInfo.onvif.user,
+      pass: camInfo.onvif.pass
     });
 
     await device.init();
@@ -219,6 +354,7 @@ router.get('/fetch-onvif/:cam', async (req, res) => {
     res.status(500).json({ error: `ONVIF 정보 조회 실패: ${cam}`, message: err.message });
   }
 });
+
 
 
 
@@ -269,11 +405,20 @@ schedule.scheduleJob('56 6 * * *', async () => {
   }
 
   // 3. pm2 재시작
-  exec('pm2 restart 1', (error, stdout, stderr) => {
-    if (error) {
-      console.error('❌ PM2 재시작 실패:', stderr);
-    } else {
-      console.log('✅ PM2 재시작 완료:', stdout);
+  exec('pm2 restart 2', (error2, stdout2, stderr2) => {
+    if (error2) {
+      console.error('❌ PM2 2번 재시작 실패:', stderr2);
+      return;
     }
+    console.log('✅ PM2 2번 재시작 완료:', stdout2);
+  
+    // 2번이 성공했을 때만 1번 재시작
+    exec('pm2 restart 1', (error1, stdout1, stderr1) => {
+      if (error1) {
+        console.error('❌ PM2 1번 재시작 실패:', stderr1);
+      } else {
+        console.log('✅ PM2 1번 재시작 완료:', stdout1);
+      }
+    });
   });
 });

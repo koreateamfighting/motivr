@@ -20,10 +20,20 @@ const upload = multer({ storage });
 // 설정 저장 라우트
 router.post('/update-settings', upload.single('logo'), async (req, res) => {
   const { title } = req.body;
-  const logoPath = req.file ? `/uploads/${req.file.filename}` : null;
+  let logoPath = req.file ? `/uploads/${req.file.filename}` : null;
 
   try {
     const pool = await sql.connect(dbConfig);
+
+    // 기존 설정 가져오기
+    const latest = await pool.request().query(`
+      SELECT TOP 1 LogoUrl FROM SiteSettings ORDER BY UpdatedAt DESC
+    `);
+
+    if (!logoPath && latest.recordset.length > 0) {
+      logoPath = latest.recordset[0].LogoUrl; // 기존 로고 유지
+    }
+
     await pool.request()
       .input('Title', sql.NVarChar, title)
       .input('LogoUrl', sql.NVarChar, logoPath)
@@ -39,13 +49,14 @@ router.post('/update-settings', upload.single('logo'), async (req, res) => {
   }
 });
 
+
 router.get('/get-settings', async (req, res) => {
     try {
       const pool = await sql.connect(dbConfig);
       const result = await pool.request().query(`
         SELECT TOP 1 Title, LogoUrl
         FROM SiteSettings
-        ORDER BY Id DESC
+        ORDER BY UpdatedAt DESC
       `);
   
       if (result.recordset.length === 0) {
