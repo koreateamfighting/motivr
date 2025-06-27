@@ -18,6 +18,7 @@ import 'package:iot_dashboard/component/admin/input_special_sensor_section.dart'
 import 'package:iot_dashboard/component/admin/input_auth_section.dart';
 import 'package:iot_dashboard/component/common/dialog_form.dart';
 import 'package:provider/provider.dart';
+import 'package:iot_dashboard/controller/iot_controller.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -61,16 +62,19 @@ class _AdminScreenState extends State<AdminScreen> {
 
 //iot 정보 입력 변수
   final iotProductIDController = TextEditingController();
-  final iotLocationController = TextEditingController();
-  final iotStatusController = TextEditingController();
-  final batteryStatusController = TextEditingController();
-  final lastReceiveController = TextEditingController();
-  final x_MMController = TextEditingController();
-  final y_MMController = TextEditingController();
-  final z_MMController = TextEditingController();
+  final latitudeController = TextEditingController();
+  final longitudeController = TextEditingController();
   final x_DegController = TextEditingController();
   final y_DegController = TextEditingController();
   final z_DegController = TextEditingController();
+  final x_MMController = TextEditingController();
+  final y_MMController = TextEditingController();
+  final z_MMController = TextEditingController();
+  String? createdAtDate;
+  String? createdAtHour;
+  String? createdAtMinute;
+  String? createdAtSecond;
+  final batteryVoltageController = TextEditingController();
   final batteryInfoController = TextEditingController();
 
 //cctv 정보 입력 변수
@@ -177,8 +181,11 @@ class _AdminScreenState extends State<AdminScreen> {
     }
 
 
-    return ChangeNotifierProvider(
-        create: (_) => UserRoleState()..fetchRoles(),
+    return MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => UserRoleState()..fetchRoles()),
+          ChangeNotifierProvider(create: (_) => IotController()), // ✅ 추가
+        ],
         child: ScreenUtilInit(
             designSize: const Size(3812, 2144),
             minTextAdapt: true,
@@ -375,19 +382,23 @@ class _AdminScreenState extends State<AdminScreen> {
                                 latitudeController: _latitudeController,
                                 longtitudeController: _longtitudeController,
                               ),
+
+
                               IotInputSection(
                                 iotProductIDController: iotProductIDController,
-                                iotLocationController: iotLocationController,
-                                iotStatusController: iotStatusController,
-                                batteryStatusController:
-                                    batteryStatusController,
-                                lastReceiveController: lastReceiveController,
+                                latitudeController: latitudeController,
+                                longitudeController: longitudeController,
                                 x_MMController: x_MMController,
                                 y_MMController: y_MMController,
                                 z_MMController: z_MMController,
                                 x_DegController: x_DegController,
                                 y_DegController: y_DegController,
                                 z_DegController: z_DegController,
+                                createdAtDate: createdAtDate,
+                                createdAtHour: createdAtHour,
+                                createdAtMinute: createdAtMinute,
+                                createdAtSecond: createdAtSecond,
+                                batteryVoltageController : batteryVoltageController,
                                 batteryInfoController: batteryInfoController,
                               ),
                               CCTVInputSection(

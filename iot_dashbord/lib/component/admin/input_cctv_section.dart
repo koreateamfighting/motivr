@@ -12,6 +12,11 @@ import 'package:iot_dashboard/controller/cctv_controller.dart';
 import 'package:iot_dashboard/component/admin/labeled_dropdown_field.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+
+
+
+
 class CCTVInputSection extends StatefulWidget {
   final TextEditingController? cctvProductIDController;
   final TextEditingController? imageAnalysisController;

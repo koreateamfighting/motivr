@@ -16,42 +16,53 @@ class IotController extends ChangeNotifier {
     const String jsonString = '''[
       {
         "id": "001",
-        "type": "변위",
-        "location": "Zone A-3",
-        "status": "경고",        
-        "lastUpdated": "2025-01-20 14:30",
-        "X(mm)": 0.12,
-        "Y(mm)": -0.03,
-        "Z(mm)": 0.04,
+        "SensorType": "변위",
+        "EventType": "경고",
+        "Latitude": "37.12345",
+        "Longitude": "127.12345",
+        "BatteryVoltage": 3.7,
+        "BatteryLevel": 82.0,
+        "X_MM": 0.12,
+        "Y_MM": -0.03,
+        "Z_MM": 0.04,
         "X_Deg": 0,
         "Y_Deg": 45,
         "Z_Deg": 45,
-            'BatteryVoltage': double.tryParse(battery) ?? 0.0,
-    'BatteryLevel': double.tryParse(batteryInfo) ?? 0.0,
-        "download": "다운로드"
+        "download": "다운로드",
+        "CreateAt": "2025-01-20T14:30:00"
       }
-    ]'''; // ✂️ 테스트용 JSON 1개만 남김. 실제 사용 시 파일/서버에서 불러오기 권장
+    ]''';
+
+    debugPrint('📦 샘플 IoT 데이터 로드 시작');
 
     final List<dynamic> decoded = jsonDecode(jsonString);
-    _items.clear(); // 기존 데이터 초기화
+    _items.clear();
     _items.addAll(decoded.map((e) => IotItem.fromJson(e)));
     notifyListeners();
+
+    debugPrint('✅ 샘플 데이터 로드 완료 (${_items.length}건)');
   }
 
   // ✅ 센서 데이터 수동 제출
   Future<bool> submitIotItem(IotItem item) async {
+    final uri = Uri.parse('$_baseUrl/sensor');
+    final headers = {'Content-Type': 'application/json'};
+    final body = jsonEncode(item.toJson());
+
+    debugPrint('📤 센서 데이터 전송 시작 → $uri');
+    debugPrint('📦 전송 데이터:\n$body');
+
     try {
-      final response = await http.post(
-        Uri.parse('$_baseUrl/sensor'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(item.toJson()),
-      );
+      final response = await http.post(uri, headers: headers, body: body);
+
+      debugPrint('📥 서버 응답 상태코드: ${response.statusCode}');
+      debugPrint('📥 서버 응답 내용: ${response.body}');
 
       if (response.statusCode == 200) {
         debugPrint('✅ 전송 성공: ${item.id}');
         return true;
       } else {
-        debugPrint('❌ 전송 실패: ${response.statusCode} ${response.body}');
+        debugPrint('❌ 전송 실패: ${response.statusCode}');
         return false;
       }
     } catch (e) {
@@ -60,17 +71,23 @@ class IotController extends ChangeNotifier {
     }
   }
 
-  // 🆕 (선택) 최근 센서 데이터 불러오기
+  // 🆕 최근 센서 데이터 불러오기
   Future<void> fetchRecentSensorData({int days = 1}) async {
+    final uri = Uri.parse('$_baseUrl/recent-sensor-data?days=$days');
+    debugPrint('📡 최근 센서 데이터 조회 시작: $uri');
+
     try {
-      final response =
-          await http.get(Uri.parse('$_baseUrl/recent-sensor-data?days=$days'));
+      final response = await http.get(uri);
+
+      debugPrint('📥 응답 상태코드: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body)['data'];
         _items.clear();
         _items.addAll(data.map((e) => IotItem.fromJson(e)));
         notifyListeners();
+
+        debugPrint('✅ ${data.length}건의 센서 데이터 불러옴');
       } else {
         debugPrint('❌ 조회 실패: ${response.statusCode}');
       }

@@ -1,26 +1,27 @@
 class IotItem {
   final String id;
-  final String type;
-  final String location;
-  final String status;
-  final String battery;        // → BatteryVoltage
-  final String lastUpdated;
+  final String sensortype;
+  final String eventtype;
+  final String latitude;
+  final String longitude;
+  final String battery;
   final String X_MM;
   final String Y_MM;
   final String Z_MM;
   final String X_Deg;
   final String Y_Deg;
   final String Z_Deg;
-  final String batteryInfo;    // → BatteryLevel
+  final String batteryInfo;
   final String download;
+  final String createAt; // 🆕 서버 시간 기반
 
   IotItem({
     required this.id,
-    required this.type,
-    required this.location,
-    required this.status,
+    required this.sensortype,
+    required this.eventtype,
+    required this.latitude,
+    required this.longitude,
     required this.battery,
-    required this.lastUpdated,
     required this.X_MM,
     required this.Y_MM,
     required this.Z_MM,
@@ -29,35 +30,49 @@ class IotItem {
     required this.Z_Deg,
     required this.batteryInfo,
     required this.download,
+    required this.createAt, // 🆕
   });
 
-  /// ✅ 클라이언트 ↔ Flutter 내부용 JSON 변환
   factory IotItem.fromJson(Map<String, dynamic> json) {
     return IotItem(
       id: json['id'],
-      type: json['type'],
-      location: json['location'],
-      status: json['status'],
-      battery: json['battery'],
-      lastUpdated: json['lastUpdated'],
-      X_MM: json['X(mm)'].toString(),
-      Y_MM: json['Y(mm)'].toString(),
-      Z_MM: json['Z(mm)'].toString(),
+      sensortype: json['SensorType'],
+      eventtype: json['EventType'],
+      latitude: json['Latitude'], // ✅ 대소문자 일치
+      longitude: json['Longitude'], // 🔧 수정 필요
+      battery: json['BatteryVoltage'].toString(), // 🔧 명확하게 매핑
+      X_MM: json['X_MM'].toString(),
+      Y_MM: json['Y_MM'].toString(),
+      Z_MM: json['Z_MM'].toString(),
       X_Deg: json['X_Deg'].toString(),
       Y_Deg: json['Y_Deg'].toString(),
       Z_Deg: json['Z_Deg'].toString(),
-      batteryInfo: json['batteryInfo'],
-      download: json['download'],
+      batteryInfo: json['BatteryLevel'].toString(), // 🔧 명확하게 매핑
+      download: json['download'] ?? '',
+      createAt: json['CreateAt'] ?? '',
     );
   }
 
-  /// ✅ 서버 전송용 JSON 변환 (필드명 매핑)
   Map<String, dynamic> toJson() {
-    return {
+    String eventtypeCode;
+    switch (eventtype) {
+      case '주기데이터':
+        eventtypeCode = '2';
+        break;
+      case 'Alert':
+        eventtypeCode = '4';
+        break;
+      case 'GPS':
+        eventtypeCode = '5';
+        break;
+      default:
+        eventtypeCode = '0';
+    }
+
+    final Map<String, dynamic> json = {
       'RID': id,
-      'SensorType': type,
-      'EventType': status,
-      'Location': location,
+      'SensorType': sensortype,
+      'EventType': eventtypeCode,
       'BatteryVoltage': double.tryParse(battery) ?? 0.0,
       'BatteryLevel': double.tryParse(batteryInfo) ?? 0.0,
       'X_Deg': double.tryParse(X_Deg) ?? 0.0,
@@ -66,8 +81,16 @@ class IotItem {
       'X_MM': double.tryParse(X_MM) ?? 0.0,
       'Y_MM': double.tryParse(Y_MM) ?? 0.0,
       'Z_MM': double.tryParse(Z_MM) ?? 0.0,
-      'Latitude': 0.0,     // 필요 시 별도 필드로 추가
-      'Longitude': 0.0,    // 필요 시 별도 필드로 추가
+      'Latitude': double.tryParse(latitude) ?? 0.0,
+      'Longitude': double.tryParse(longitude) ?? 0.0,
     };
+
+    // ✅ 수동 시간 입력이 있을 경우만 포함
+    if (createAt.isNotEmpty) {
+      json['CreateAt'] = createAt;
+    }
+
+    return json;
   }
+
 }

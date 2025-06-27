@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iot_dashboard/theme/colors.dart';
-
+import 'package:flutter/services.dart';
 
 Widget labeledTextField(
     {final String? title,
@@ -11,7 +11,7 @@ Widget labeledTextField(
       required double textBoxwidth,
       required double textBoxHeight,
       TextEditingController? controller,
-    bool enabled = true, Function(String)? onChanged, }) {
+    bool enabled = true,  bool isNumeric = false, Function(String)? onChanged, }) {
   ScreenUtil.ensureScreenSize();
   final isDisabled = !enabled;
   return Container(
@@ -44,6 +44,12 @@ Widget labeledTextField(
               enabled: enabled,
               controller: controller,
               onChanged: onChanged,
+              keyboardType: isNumeric
+                  ? const TextInputType.numberWithOptions(decimal: true)
+                  : TextInputType.text,
+              inputFormatters: isNumeric
+                  ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))]
+                  : null,
               style: TextStyle(
                 fontSize: 36.sp,
                 color: isDisabled ? Colors.grey.shade600 : Colors.black,

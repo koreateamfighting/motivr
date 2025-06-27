@@ -8,17 +8,17 @@ class IotDataSource extends DataGridSource {
   final BuildContext context;
   final bool isDegree; // ⬅︎ 추가
   List<DataGridRow> _iotRows = [];
-
+//경도와 createat , eventtype , sensor type ,점검해야함 지금 임시로 바꿈
   IotDataSource(this.context, List<IotItem> items,this.isDegree) {
     _iotRows = items.map<DataGridRow>((item) {
       return DataGridRow(cells: [
         DataGridCell<String>(columnName: 'id', value: item.id),
-        DataGridCell<String>(columnName: 'type', value: item.type),
-        DataGridCell<String>(columnName: 'location', value: item.location),
-        DataGridCell<String>(columnName: 'status', value: item.status),
+        DataGridCell<String>(columnName: 'type', value: item.sensortype),
+        DataGridCell<String>(columnName: 'location', value: item.longitude),
+        DataGridCell<String>(columnName: 'status', value: item.eventtype),
         DataGridCell<String>(columnName: 'battery', value: item.battery),
         DataGridCell<String>(
-            columnName: 'lastUpdated', value: item.lastUpdated),
+            columnName: 'lastUpdated', value: item.createAt),
         DataGridCell<String>(columnName: 'x', value: isDegree ? item.X_Deg : item.X_MM),
         DataGridCell<String>(columnName: 'y', value: isDegree ? item.Y_Deg : item.Y_MM),
         DataGridCell<String>(columnName: 'z', value: isDegree ? item.Z_Deg : item.Z_MM),

@@ -10,36 +10,45 @@ import 'package:iot_dashboard/component/admin/custom_divider.dart';
 import 'package:iot_dashboard/controller/iot_controller.dart';
 import 'package:provider/provider.dart';
 import 'package:iot_dashboard/model/iot_model.dart';
-
-
+import 'dart:convert';
+import 'package:iot_dashboard/component/admin/time_picker_row.dart';
+import 'package:iot_dashboard/component/admin/labeled_dropdown_field.dart';
+import 'package:flutter/services.dart';
+import 'package:iot_dashboard/component/common/dialog_form.dart';
 
 class IotInputSection extends StatefulWidget {
   final TextEditingController? iotProductIDController;
-  final TextEditingController? iotLocationController;
-  final TextEditingController? iotStatusController;
-  final TextEditingController? batteryStatusController;
-  final TextEditingController? lastReceiveController;
-  final TextEditingController? x_MMController;
-  final TextEditingController? y_MMController;
-  final TextEditingController? z_MMController;
+  final TextEditingController? latitudeController;
+  final TextEditingController? longitudeController;
   final TextEditingController? x_DegController;
   final TextEditingController? y_DegController;
   final TextEditingController? z_DegController;
+  final TextEditingController? x_MMController;
+  final TextEditingController? y_MMController;
+  final TextEditingController? z_MMController;
+  final String? createdAtDate;
+  final String? createdAtHour;
+  final String? createdAtMinute;
+  final String? createdAtSecond;
+  final TextEditingController? batteryVoltageController;
   final TextEditingController? batteryInfoController;
 
   const IotInputSection({
     Key? key,
     this.iotProductIDController,
-    this.iotLocationController,
-    this.iotStatusController,
-    this.batteryStatusController,
-    this.lastReceiveController,
+    this.longitudeController,
+    this.latitudeController,
     this.x_MMController,
     this.y_MMController,
     this.z_MMController,
     this.x_DegController,
     this.y_DegController,
     this.z_DegController,
+    this.createdAtDate,
+    this.createdAtHour,
+    this.createdAtMinute,
+    this.createdAtSecond,
+    this.batteryVoltageController,
     this.batteryInfoController,
   }) : super(key: key);
 
@@ -51,40 +60,58 @@ class _IotInputSectionState extends State<IotInputSection> {
   bool isExpanded = false; // ✅ 펼침 여부 상태
   bool _isFormValid = false;
   late TextEditingController iotProductIDController;
-  late TextEditingController iotLocationController;
-  late TextEditingController iotStatusController;
-  late TextEditingController batteryStatusController;
-  late TextEditingController lastReceiveController;
+  late TextEditingController longitudeController;
+  late TextEditingController latitudeController;
   late TextEditingController x_MMController;
   late TextEditingController y_MMController;
   late TextEditingController z_MMController;
   late TextEditingController x_DegController;
   late TextEditingController y_DegController;
   late TextEditingController z_DegController;
+  late String? createdAtHour;
+  late String? createdAtMinute;
+  late String? createdAtSecond;
+  late String? createdAtDate;
+  late TextEditingController batteryVoltageController;
   late TextEditingController batteryInfoController;
+  String _selectedEventType = '주기데이터';
+  String iotSenSorType = '변위';
+
+
+
+
 
   @override
   void initState() {
     super.initState();
 
-    iotProductIDController = widget.iotProductIDController ?? TextEditingController();
-    iotLocationController =
-        widget.iotLocationController ?? TextEditingController();
-    iotStatusController = widget.iotStatusController ?? TextEditingController();
-    batteryStatusController =
-        widget.batteryStatusController ?? TextEditingController();
-    lastReceiveController =
-        widget.lastReceiveController ?? TextEditingController();
+    iotProductIDController =
+        widget.iotProductIDController ?? TextEditingController();
+    latitudeController = widget.latitudeController ?? TextEditingController();
+    longitudeController = widget.longitudeController ??
+        TextEditingController();
     x_MMController = widget.x_MMController ?? TextEditingController();
     y_MMController = widget.y_MMController ?? TextEditingController();
     z_MMController = widget.z_MMController ?? TextEditingController();
     x_DegController = widget.x_DegController ?? TextEditingController();
     y_DegController = widget.y_DegController ?? TextEditingController();
     z_DegController = widget.z_DegController ?? TextEditingController();
+    batteryVoltageController =
+        widget.batteryVoltageController ?? TextEditingController();
     batteryInfoController =
         widget.batteryInfoController ?? TextEditingController();
     iotProductIDController.addListener(_validateForm);
 
+    createdAtDate = widget.createdAtDate;
+    createdAtHour = widget.createdAtHour ?? '00';
+    createdAtMinute = widget.createdAtMinute ?? '00';
+    createdAtSecond = widget.createdAtSecond ?? '00';
+
+  }
+
+  String _pad(String? value) {
+    if (value == null || value.isEmpty) return '00';
+    return value.padLeft(2, '0');
   }
 
   void _validateForm() {
@@ -92,22 +119,24 @@ class _IotInputSectionState extends State<IotInputSection> {
       _isFormValid = iotProductIDController.text.trim().isNotEmpty;
     });
   }
+
   @override
   void dispose() {
     // 컨트롤러 리스너 해제
     iotProductIDController.removeListener(_validateForm);
     super.dispose();
   }
+
   Future<void> _handleSubmit() async {
     final controller = Provider.of<IotController>(context, listen: false);
 
     final item = IotItem(
       id: iotProductIDController.text.trim(),
-      type: '변위',
-      location: iotLocationController.text.trim(),
-      status: iotStatusController.text.trim(),
-      battery: batteryStatusController.text.trim(),
-      lastUpdated: lastReceiveController.text.trim(),
+      sensortype: '변위',
+      eventtype: _selectedEventType,
+      latitude: latitudeController.text.trim(),
+      longitude: longitudeController.text.trim(),
+      battery: batteryVoltageController.text.trim(),
       X_MM: x_MMController.text.trim(),
       Y_MM: y_MMController.text.trim(),
       Z_MM: z_MMController.text.trim(),
@@ -115,16 +144,67 @@ class _IotInputSectionState extends State<IotInputSection> {
       Y_Deg: y_DegController.text.trim(),
       Z_Deg: z_DegController.text.trim(),
       batteryInfo: batteryInfoController.text.trim(),
-      download: '수동입력',
+      download: '다운로드 파일 준비',
+      createAt: (createdAtDate != null && createdAtDate!.isNotEmpty)
+          ? DateTime.parse('${createdAtDate!}T${_pad(createdAtHour)}:${_pad(createdAtMinute)}:${_pad(createdAtSecond)}')
+          .toLocal()
+          .toIso8601String()
+          : '',
+
+
+
+
     );
 
     final success = await controller.submitIotItem(item);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(success ? '✅ 센서 데이터 전송 성공' : '❌ 전송 실패. 다시 시도하세요'),
-      ),
-    );
+
+    if (success) {
+
+      iotProductIDController.clear();
+      latitudeController.clear();
+      longitudeController.clear();
+      x_MMController.clear();
+      y_MMController.clear();
+      z_MMController.clear();
+      x_DegController.clear();
+      y_DegController.clear();
+      z_DegController.clear();
+      batteryVoltageController.clear();
+      batteryInfoController.clear();
+
+      // ✅ 날짜/시간 초기화
+      setState(() {
+        createdAtDate = null;
+        createdAtHour = '00';
+        createdAtMinute = '00';
+        createdAtSecond = '00';
+
+        // ✅ 드롭다운 초기화
+        _selectedEventType = '주기데이터';
+
+        // ✅ 유효성 검사 재실행 (버튼 비활성화 위해)
+        _isFormValid = false;
+      });
+      showDialog(
+        context: context,
+        builder: (context) => DialogForm(
+          mainText: '센서 데이터가 저장되었습니다..',
+          btnText: '닫기',
+        ),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => DialogForm(
+          mainText: '저장 중 오류가 발생했습니다.\n서버 상태를 확인하세요.',
+          btnText: '닫기',
+          fontSize: 20,
+        ),
+      );
+    }
+
+
   }
 
 
@@ -144,7 +224,7 @@ class _IotInputSectionState extends State<IotInputSection> {
             children: [
               SizedBox(width: 41.w),
               Text(
-                'IoT 정보 입력(준비중)',
+                'IoT 정보 입력',
                 style: TextStyle(
                   fontFamily: 'PretendardGOV',
                   fontSize: 36.sp,
@@ -163,8 +243,8 @@ class _IotInputSectionState extends State<IotInputSection> {
                   isExpanded
                       ? 'assets/icons/arrow_down.png'
                       : 'assets/icons/arrow_right2.png',
-                  width: isExpanded?40.w:50.w,
-                  height: isExpanded?20.h:30.h,
+                  width: isExpanded ? 40.w : 50.w,
+                  height: isExpanded ? 20.h : 30.h,
                 ),
               ),
               SizedBox(width: 55.w),
@@ -185,56 +265,105 @@ class _IotInputSectionState extends State<IotInputSection> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(
-                  width: 2880.w,
-                  height: 85.h,
-                  child: labeledTextField(
-                    title: '제품 식별자(ID) :',
-                    hint: '',
-                    width: 420,
-                    height: 60,
-                    textBoxwidth: 400,
-                    textBoxHeight: 50,
-                    controller: iotProductIDController,
-                  ),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 1035.w,
+                      height: 85.h,
+                      child: labeledTextField(
+                        title: '제품 식별자(ID) :',
+                        hint: '',
+                        width: 420,
+                        height: 60,
+                        textBoxwidth: 400,
+                        textBoxHeight: 50,
+                        controller: iotProductIDController,
+                      ),
+                    ),
+                    Container(
+                      width: 300.w,
+                      height: 50.h,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '센서타입 :',
+                        style: TextStyle(
+                          fontFamily: 'PretendardGOV',
+                          fontSize: 36.sp,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 192.87.w,
+                      height: 50.h,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '변위',
+                        style: TextStyle(
+                          fontFamily: 'PretendardGOV',
+                          fontSize: 36.sp,
+                          fontWeight: FontWeight.w300,
+                          color: Colors.white,
+                        ),
+                      ),
+                    )
+                  ],
                 ),
-           CustomDivider(),
+                CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
-                  child: labeledTextField(
-                    title: '설치 위치(추진구/도달구) :',
-                    hint: '',
-                    width: 420,
-                    height: 60,
-                    textBoxwidth: 400,
-                    textBoxHeight: 50,
-                    controller: iotLocationController,
-                  ),
-                ),
-           CustomDivider(),
-                SizedBox(
-                  width: 2880.w,
-                  height: 85.h,
-                  child: labeledTextField(
+                  child: LabeledDropdownField(
                     title: '상태 :',
-                    hint: '',
-                    width: 420,
-                    height: 60,
-                    textBoxwidth: 400,
-                    textBoxHeight: 50,
-                    controller: iotStatusController,
+                    items: ['주기데이터', 'Alert','GPS'],
+                    selectedValue: _selectedEventType,
+                    onChanged: (val) => setState(() => _selectedEventType = val!),
                   ),
                 ),
-           CustomDivider(),
-
+                CustomDivider(),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 1000.w,
+                      height: 85.h,
+                      child: labeledTextField(
+                        title: '위도 :',
+                        hint: '',
+                        width: 420,
+                        height: 60,
+                        textBoxwidth: 400,
+                        textBoxHeight: 50,
+                        controller: latitudeController,
+                          isNumeric: true
+                      ),
+                    ),
+                    SizedBox(
+                      width: 1000.w,
+                      height: 85.h,
+                      child: labeledTextField(
+                        title: '경도 :',
+                        hint: '',
+                        width: 420,
+                        height: 60,
+                        textBoxwidth: 270,
+                        textBoxHeight: 50,
+                        controller: longitudeController,
+                          isNumeric: true
+                      ),
+                    ),
+                  ],
+                ),
+                CustomDivider(),
                 SizedBox(
                     width: 2880.w,
                     height: 85.h,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        SizedBox(width: 40.w,),
+                        SizedBox(
+                          width: 40.w,
+                        ),
                         Container(
                           width: 400.w,
                           height: 50.h,
@@ -250,13 +379,14 @@ class _IotInputSectionState extends State<IotInputSection> {
                           ),
                         ),
                         SizedBox(width: 12.h),
-
                         Container(
                             width: 420.w,
                             height: 60.h,
                             child: TextField(
                               controller: x_DegController,
-                              style: TextStyle(color: Colors.black),
+                              style: TextStyle(color: Colors.black,fontSize: 36.sp),
+                              keyboardType: TextInputType.numberWithOptions(decimal: true),
+                              inputFormatters:[FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
                               decoration: InputDecoration(
                                 hintText: '',
                                 hintStyle: TextStyle(
@@ -266,6 +396,7 @@ class _IotInputSectionState extends State<IotInputSection> {
                                     fontFamily: 'PretendardGOV'),
                                 filled: true,
                                 fillColor: Colors.white,
+
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8.r),
                                   borderSide: BorderSide(color: Colors.white),
@@ -284,7 +415,9 @@ class _IotInputSectionState extends State<IotInputSection> {
                             height: 60.h,
                             child: TextField(
                               controller: y_DegController,
-                              style: TextStyle(color: Colors.black),
+                              style: TextStyle(color: Colors.black,fontSize: 36.sp),
+                              keyboardType: TextInputType.numberWithOptions(decimal: true),
+                              inputFormatters:[FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
                               decoration: InputDecoration(
                                 hintText: '',
                                 hintStyle: TextStyle(
@@ -312,7 +445,9 @@ class _IotInputSectionState extends State<IotInputSection> {
                             height: 60.h,
                             child: TextField(
                               controller: z_DegController,
-                              style: TextStyle(color: Colors.black),
+                              style: TextStyle(color: Colors.black,fontSize: 36.sp),
+                              keyboardType: TextInputType.numberWithOptions(decimal: true),
+                              inputFormatters:[FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
                               decoration: InputDecoration(
                                 hintText: '',
                                 hintStyle: TextStyle(
@@ -334,14 +469,16 @@ class _IotInputSectionState extends State<IotInputSection> {
                             ))
                       ],
                     )),
-           CustomDivider(),
+                CustomDivider(),
                 SizedBox(
                     width: 2880.w,
                     height: 85.h,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        SizedBox(width: 40.w,),
+                        SizedBox(
+                          width: 40.w,
+                        ),
                         Container(
                           width: 400.w,
                           height: 50.h,
@@ -353,17 +490,19 @@ class _IotInputSectionState extends State<IotInputSection> {
                               fontSize: 36.sp,
                               fontWeight: FontWeight.w400,
                               color: Colors.white,
+
                             ),
                           ),
                         ),
                         SizedBox(width: 12.h),
-
                         Container(
                             width: 420.w,
                             height: 60.h,
                             child: TextField(
                               controller: x_MMController,
-                              style: TextStyle(color: Colors.black),
+                              style: TextStyle(color: Colors.black,fontSize: 36.sp),
+                              keyboardType: TextInputType.numberWithOptions(decimal: true),
+                              inputFormatters:[FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
                               decoration: InputDecoration(
                                 hintText: '',
                                 hintStyle: TextStyle(
@@ -391,7 +530,9 @@ class _IotInputSectionState extends State<IotInputSection> {
                             height: 60.h,
                             child: TextField(
                               controller: y_MMController,
-                              style: TextStyle(color: Colors.black),
+                              style: TextStyle(color: Colors.black,fontSize: 36.sp),
+                              keyboardType: TextInputType.numberWithOptions(decimal: true),
+                              inputFormatters:[FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
                               decoration: InputDecoration(
                                 hintText: '',
                                 hintStyle: TextStyle(
@@ -419,7 +560,9 @@ class _IotInputSectionState extends State<IotInputSection> {
                             height: 60.h,
                             child: TextField(
                               controller: z_MMController,
-                              style: TextStyle(color: Colors.black),
+                              style: TextStyle(color: Colors.black,fontSize: 36.sp),
+                              keyboardType: TextInputType.numberWithOptions(decimal: true),
+                              inputFormatters:[FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
                               decoration: InputDecoration(
                                 hintText: '',
                                 hintStyle: TextStyle(
@@ -452,7 +595,8 @@ class _IotInputSectionState extends State<IotInputSection> {
                     height: 60,
                     textBoxwidth: 400,
                     textBoxHeight: 50,
-                    controller: batteryStatusController,
+                    controller: batteryVoltageController,
+                    isNumeric: true
                   ),
                 ),
                 CustomDivider(),
@@ -467,43 +611,61 @@ class _IotInputSectionState extends State<IotInputSection> {
                     textBoxwidth: 400,
                     textBoxHeight: 50,
                     controller: batteryInfoController,
+                      isNumeric: true
                   ),
                 ),
                 CustomDivider(),
-           CustomDivider(),
-                SizedBox(height: 8.h,),
-
+                CustomDivider(),
                 SizedBox(
-                  width: 2880.w,
-                  height: 85.h,
-                  child: labeledTextField(
-                    title: '마지막 수신 :',
-                    hint: '',
-                    width: 420,
-                    height: 60,
-                    textBoxwidth: 400,
-                    textBoxHeight: 50,
-                    controller: lastReceiveController,
-                  ),
+                  height: 8.h,
                 ),
+                Row(
+                  children: [
+                    DatePickerField(
+                      label: '수신 날짜 :',
+                      initialDate: DateTime.tryParse( createdAtDate?? ''),
+                      onDateSelected: (date) {
+                        setState(() {
+                          createdAtDate = date.toIso8601String().substring(0, 10);
+                        });
+                      },
+                    ),
+                    SizedBox(width: 136.15.w,),
+                    Column(
+                      children: [
+                        SizedBox(height: 8.h,),
+                        Container(
+                          alignment: Alignment.center,
+                          child: TimePickerRow(
+                            label: '수신 시간 :',
+                            selectedHour: createdAtHour,
+                            selectedMinute: createdAtMinute,
+                            selectedSecond: createdAtSecond,
+                            onHourChanged: (val) => setState(() => createdAtHour = val),
+                            onMinuteChanged: (val) => setState(() => createdAtMinute = val),
+                            onSecondChanged: (val) => setState(() => createdAtSecond = val),
+                          ),
+                        ),
+                      ],
+                    )
+
+                  ],
+                )
               ],
             ),
           ),
-
         ],
         SizedBox(height: 5.h),
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-
             ActionButton(
               '추가',
               _isFormValid ? const Color(0xffe98800) : Colors.grey, // ✅ 색상 전환
               onTap: _isFormValid
                   ? () {
-                _handleSubmit();
-
-              }
+                      _handleSubmit();
+                    }
                   : null, // ✅ 비활성 상태에서는 null
             ),
             SizedBox(width: 400.w),
