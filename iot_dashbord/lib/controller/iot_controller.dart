@@ -7,6 +7,11 @@ class IotController extends ChangeNotifier {
   final List<IotItem> _items = [];
 
   List<IotItem> get items => _items;
+// 🔍 ID 기준으로 필터된 리스트 반환
+  List<IotItem> filterItems(String query) {
+    final q = query.toLowerCase().trim();
+    return _items.where((item) => item.id.toLowerCase().contains(q)).toList();
+  }
 
   // 🔧 BASE URL 분리
   static const String _baseUrl = 'https://hanlimtwin.kr:3030/api';
@@ -60,6 +65,40 @@ class IotController extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('❌ 예외 발생: $e');
+      return false;
+    }
+  }
+
+
+  // ✅ 수정 (PUT)
+  Future<bool> updateIotItem(IotItem item) async {
+    final uri = Uri.parse('$_baseUrl/sensor');
+    final headers = {'Content-Type': 'application/json'};
+    final body = jsonEncode(item.toJson());
+
+    try {
+      final response = await http.put(uri, headers: headers, body: body);
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('❌ 수정 실패: $e');
+      return false;
+    }
+  }
+
+  // ✅ 삭제 (POST /sensor/delete)
+  Future<bool> deleteIotItem(String rid, String createAt) async {
+    final uri = Uri.parse('$_baseUrl/sensor/delete');
+    final headers = {'Content-Type': 'application/json'};
+    final body = jsonEncode({
+      'RID': rid,
+      'CreateAt': createAt,
+    });
+
+    try {
+      final response = await http.post(uri, headers: headers, body: body);
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('❌ 삭제 실패: $e');
       return false;
     }
   }

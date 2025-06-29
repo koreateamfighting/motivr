@@ -8,31 +8,41 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class IotDataSource extends DataGridSource {
   final BuildContext context;
   final bool isDegree; // ⬅︎ 추가
+  final bool isEditing;
+  final Set<String> deletedKeys;
   List<DataGridRow> _iotRows = [];
 //경도와 createat , eventtype , sensor type ,점검해야함 지금 임시로 바꿈
-  IotDataSource(this.context, List<IotItem> items,this.isDegree) {
+  IotDataSource(this.context, List<IotItem> items, this.isDegree, this.isEditing, this.deletedKeys) {
     _iotRows = items.map<DataGridRow>((item) {
-      return DataGridRow(cells: [
+      final cells = <DataGridCell>[
         DataGridCell<String>(columnName: 'id', value: item.id),
         DataGridCell<String>(columnName: 'type', value: item.sensortype),
-        DataGridCell<String>(
-          columnName: 'location',
-          value: '${item.longitude} / ${item.latitude}',
-        ),
-
+        DataGridCell<String>(columnName: 'location', value: '${item.longitude} / ${item.latitude}'),
         DataGridCell<String>(columnName: 'status', value: item.eventtype),
         DataGridCell<String>(columnName: 'battery', value: item.battery),
-        DataGridCell<String>(
-            columnName: 'lastUpdated', value: item.createAt),
+        DataGridCell<String>(columnName: 'lastUpdated', value: item.createAt),
         DataGridCell<String>(columnName: 'x', value: isDegree ? item.X_Deg : item.X_MM),
         DataGridCell<String>(columnName: 'y', value: isDegree ? item.Y_Deg : item.Y_MM),
         DataGridCell<String>(columnName: 'z', value: isDegree ? item.Z_Deg : item.Z_MM),
-        DataGridCell<String>(
-            columnName: 'batteryInfo', value: item.batteryInfo),
-        DataGridCell<String>(columnName: 'download', value: item.download),
-      ]);
+        DataGridCell<String>(columnName: 'batteryInfo', value: item.batteryInfo),
+      ];
+
+      if (isEditing) {
+        cells.add(DataGridCell<String>(
+          columnName: 'deleteKey',
+          value: '${item.id}+${item.createAt}',
+        ));
+      } else {
+        cells.add(DataGridCell<String>(
+          columnName: 'download',
+          value: item.download,
+        ));
+      }
+
+      return DataGridRow(cells: cells);
     }).toList();
   }
+
 
   @override
   List<DataGridRow> get rows => _iotRows;
@@ -148,7 +158,24 @@ class IotDataSource extends DataGridSource {
                 ],
               ),
             );
-          } else {
+          }else if (cell.columnName == 'deleteKey') {
+            return Container(
+              height: 63.h,
+              alignment: Alignment.center,
+              child: InkWell(
+                onTap: () {
+                  deletedKeys.add(cell.value.toString());
+                  // 꼭 setState(() {})를 detail_iot_view 쪽에서 감싸줘야 삭제 반영됨
+                },
+                child: Image.asset(
+                  'assets/icons/color_close.png',
+                  width: 32.w,
+                  height: 32.h,
+                ),
+              ),
+            );
+          }
+          else {
             // isDegree == true일 땐 비워둠
             return Container(
               height: 63.h,

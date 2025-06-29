@@ -35,6 +35,44 @@ class IotItem {
     required this.createAt,
   });
 
+  IotItem copyWith({
+    String? id,
+    String? sensortype,
+    String? eventtype,
+    String? latitude,
+    String? longitude,
+    String? battery,
+    String? X_MM,
+    String? Y_MM,
+    String? Z_MM,
+    String? X_Deg,
+    String? Y_Deg,
+    String? Z_Deg,
+    String? batteryInfo,
+    String? download,
+    String? createAt,
+  }) {
+    return IotItem(
+      id: id ?? this.id,
+      sensortype: sensortype ?? this.sensortype,
+      eventtype: eventtype ?? this.eventtype,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      battery: battery ?? this.battery,
+      X_MM: X_MM ?? this.X_MM,
+      Y_MM: Y_MM ?? this.Y_MM,
+      Z_MM: Z_MM ?? this.Z_MM,
+      X_Deg: X_Deg ?? this.X_Deg,
+      Y_Deg: Y_Deg ?? this.Y_Deg,
+      Z_Deg: Z_Deg ?? this.Z_Deg,
+      batteryInfo: batteryInfo ?? this.batteryInfo,
+      download: download ?? this.download,
+      createAt: createAt ?? this.createAt,
+    );
+  }
+
+
+
   factory IotItem.fromJson(Map<String, dynamic> json) {
     // 🔧 RID 포맷 보정 (S1_1 → S1_001)
     String rawId = json['RID']?.toString() ?? '';
