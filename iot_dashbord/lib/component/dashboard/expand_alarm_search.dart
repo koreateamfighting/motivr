@@ -8,8 +8,11 @@ import 'package:iot_dashboard/model/alarm_model.dart';
 import 'package:iot_dashboard/utils/format_timestamp.dart';
 import 'package:iot_dashboard/utils/iframe_visibility.dart';
 import 'package:iot_dashboard/theme/colors.dart';
+import 'package:iot_dashboard/component/common/dialog_form.dart';
 class ExpandAlarmSearch extends StatefulWidget {
-  const ExpandAlarmSearch({super.key});
+
+  final VoidCallback? onDataUploaded;
+  const ExpandAlarmSearch({super.key,this.onDataUploaded});
 
   @override
   State<ExpandAlarmSearch> createState() => _ExpandAlarmSearchState();
@@ -25,6 +28,16 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
   TextEditingController _searchController = TextEditingController();
   String currentSortField = '';
   bool isAscending = true;
+  final List<String> levelOptions = ['정보', '주의', '경고', '점검'];
+
+
+  bool isEditing = false;
+  Map<int, Alarm> editedAlarms = {};
+  Map<int, TextEditingController> messageControllers = {};
+  Map<int, String> levelValues = {}; // 🔹 각 alarm id별 선택된 level 저장용
+  Set<int> deletedAlarmIds = {};
+
+
 
   @override
   void initState() {
@@ -41,12 +54,47 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
     });
   }
 
-  @override
-  void dispose() {
-    _focusNode.dispose();
-    showIframes(); // ✅ 다이얼로그 닫히고 나서 실행됨
-    super.dispose();
+
+  Future<void> _loadAlarms() async {
+    final data = await AlarmController.fetchAlarms();
+    setState(() {
+      allAlarms = data;
+      filteredAlarms = data;
+    });
   }
+
+
+  void _toggleEditMode() {
+    setState(() {
+      isEditing = !isEditing;
+      if (isEditing) {
+        editedAlarms.clear();
+        deletedAlarmIds.clear();
+        messageControllers.clear();
+        levelValues.clear(); // 🔹 추가
+
+        for (final alarm in allAlarms) {
+          messageControllers[alarm.id] = TextEditingController(text: alarm.message);
+          levelValues[alarm.id] = alarm.level; // 🔹 현재 level 저장
+        }
+      }
+    });
+  }
+
+
+  bool get isNothingChanged {
+    if (deletedAlarmIds.isNotEmpty) return false;
+    for (final entry in editedAlarms.entries) {
+      final original = allAlarms.firstWhere((a) => a.id == entry.key);
+      final edited = entry.value;
+
+      if (original.message != edited.message || original.level != edited.level) {
+        return false;
+      }
+    }
+    return true;
+  }
+
 
   void _sortBy(String field) {
     setState(() {
@@ -56,7 +104,6 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
         currentSortField = field;
         isAscending = true;
       }
-
       filteredAlarms.sort((a, b) {
         int result;
         switch (field) {
@@ -77,7 +124,6 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
     });
   }
 
-
   List<Alarm> getCurrentPageItems() {
     final start = currentPage * itemsPerPage;
     final end = (start + itemsPerPage).clamp(0, filteredAlarms.length);
@@ -87,12 +133,56 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
   void _filterAlarms() {
     final query = _searchController.text.trim().toLowerCase();
     setState(() {
-      currentPage = 0; // 검색 시 첫 페이지로 초기화
-      filteredAlarms = allAlarms
-          .where((alarm) => alarm.message.toLowerCase().contains(query))
-          .toList();
+      currentPage = 0;
+      filteredAlarms = allAlarms.where((alarm) => alarm.message.toLowerCase().contains(query)).toList();
     });
   }
+
+  Future<void> _saveChanges() async {
+    List<Alarm> modified = [];
+
+    for (final alarm in getCurrentPageItems()) {
+      final newMessage = messageControllers[alarm.id]?.text ?? alarm.message;
+      final newLevel = levelValues[alarm.id] ?? alarm.level;
+
+      if (alarm.message != newMessage || alarm.level != newLevel) {
+        modified.add(alarm.copyWith(message: newMessage, level: newLevel));
+      }
+    }
+
+    if (deletedAlarmIds.isNotEmpty) {
+      await AlarmController.deleteAlarms(deletedAlarmIds.toList());
+    }
+
+    if (modified.isNotEmpty) {
+      await AlarmController.updateAlarms(modified);
+    }
+
+    await _loadAlarms();
+
+    setState(() {
+      currentPage = 0;
+      isEditing = false;
+      editedAlarms.clear();
+      deletedAlarmIds.clear();
+    });
+
+    if (widget.onDataUploaded != null) {
+      widget.onDataUploaded!();
+    }
+  }
+
+
+  @override
+  void dispose() {
+    for (var controller in messageControllers.values) {
+      controller.dispose();
+    }
+    _focusNode.dispose();
+    showIframes();
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -237,9 +327,113 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
                                         // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                                       ),
                                       child: InkWell(
-                                          onTap: () {},
+                                          onTap: isEditing && isNothingChanged
+                                              ? null
+                                              : () async {
+                                            final currentItems =
+                                            getCurrentPageItems();
+                                            List<Alarm> modified = [];
+                                            if (isEditing) {
+                                              for (final notice
+                                              in currentItems) {
+                                                final edited =
+                                                editedAlarms[
+                                                notice.id];
+                                                if (edited != null) {
+                                                  modified.add(edited);
+                                                }
+                                              }
+
+                                              try {
+                                                // ✅ 1. 삭제 먼저 처리
+                                                if (deletedAlarmIds
+                                                    .isNotEmpty) {
+                                                  await AlarmController
+                                                      .deleteAlarms(
+                                                      deletedAlarmIds
+                                                          .toList());
+                                                }
+
+                                                // ✅ 2. 수정 처리
+                                                if (modified.isNotEmpty) {
+                                                  final success =
+                                                  await AlarmController
+                                                      .updateAlarms(
+                                                      modified);
+                                                  if (success) {
+                                                    final updatedAlarms =
+                                                    await AlarmController
+                                                      .fetchAlarms();
+                                                    setState(() {
+                                                      allAlarms =
+                                                          updatedAlarms;
+                                                      filteredAlarms=
+                                                          updatedAlarms;
+                                                      currentPage = 0;
+                                                    });
+                                                    await _saveChanges(); // ✅ 저장/삭제 처리 포함
+                                                    // ✅ 콜백 실행
+                                                    if (widget.onDataUploaded != null) {
+                                                      widget.onDataUploaded!();
+                                                    }
+                                                    showDialog(
+                                                      context: context,
+                                                      builder: (_) =>
+                                                      const DialogForm(
+                                                        mainText:
+                                                        '수정 및 삭제가 완료되었습니다.',
+                                                        btnText: '확인',
+                                                        fontSize: 16,
+                                                      ),
+                                                    );
+                                                  }
+                                                } else if (deletedAlarmIds
+                                                    .isNotEmpty) {
+                                                  // 수정 없이 삭제만 했을 때도 목록 갱신
+                                                  final updatedAlarms =
+                                                  await AlarmController.fetchAlarms();
+                                                  setState(() {
+                                                    allAlarms =
+                                                        updatedAlarms;
+                                                    filteredAlarms =
+                                                        updatedAlarms;
+                                                    currentPage = 0;
+                                                  });
+                                                  if (widget
+                                                      .onDataUploaded !=
+                                                      null) {
+                                                    widget
+                                                        .onDataUploaded!();
+                                                  }
+
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (_) =>
+                                                    const DialogForm(
+                                                      mainText:
+                                                      '삭제가 완료되었습니다.',
+                                                      btnText: '확인',
+                                                      fontSize: 16,
+                                                    ),
+                                                  );
+                                                }
+                                              } catch (e) {
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (_) =>
+                                                      DialogForm(
+                                                        mainText:
+                                                        '저장 중 오류 발생: $e',
+                                                        btnText: '닫기',
+                                                      ),
+                                                );
+                                              }
+                                            }
+
+                                            _toggleEditMode();
+                                          },
                                           child: Text(
-                                            '편집',
+                                            isEditing ? '완료' : '편집',
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                               fontFamily: 'PretendardGOV',
@@ -422,88 +616,175 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
                                   Expanded(
                                     child: filteredAlarms.isEmpty
                                         ? Center(
-                                            child: Text(
-                                              '검색 결과가 없습니다.',
-                                              style: TextStyle(
-                                                fontFamily: 'PretendardGOV',
-                                                fontSize: 36.sp,
-                                                fontWeight: FontWeight.w500,
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                          )
+                                      child: Text(
+                                        '검색 결과가 없습니다.',
+                                        style: TextStyle(
+                                          fontFamily: 'PretendardGOV',
+                                          fontSize: 36.sp,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    )
                                         : ListView.separated(
-                                            itemCount:
-                                                getCurrentPageItems().length,
-                                            itemBuilder: (context, index) {
-                                              final alarm =
-                                                  getCurrentPageItems()[index];
-                                              return Container(
-                                                height: 100.h,
-                                                // padding: EdgeInsets.symmetric(horizontal: 0.w),
-                                                alignment: Alignment.centerLeft,
-                                                child: Row(
-                                                  children: [
-                                                    SizedBox(
-                                                      width: 97.w,
-                                                    ),
-                                                    SizedBox(
-                                                      width: 359.w,
-                                                      child: Text(
-                                                          formatTimestamp(
-                                                              alarm.timestamp),
-                                                          style: TextStyle(
-                                                              fontFamily:
-                                                                  'PretendardGOV',
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontSize: 36.sp,
-                                                              color: Colors
-                                                                  .white)),
-                                                    ),
-                                                    SizedBox(
-                                                      width: 255.w,
-                                                    ),
-                                                    SizedBox(
-                                                      width: 125.w,
-                                                      child: Text(alarm.level,
-                                                          style: TextStyle(
-                                                              fontFamily:
-                                                                  'PretendardGOV',
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontSize: 36.sp,
-                                                              color: Colors
-                                                                  .white)),
-                                                    ),
-                                                    SizedBox(
-                                                      width: 255.w,
-                                                    ),
-                                                    Expanded(
-                                                      child: Text(alarm.message,
-                                                          style: TextStyle(
-                                                              fontFamily:
-                                                                  'PretendardGOV',
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontSize: 36.sp,
-                                                              color: Colors
-                                                                  .white)),
-                                                    ),
-                                                  ],
+                                      itemCount: getCurrentPageItems().length,
+                                      itemBuilder: (context, index) {
+                                        final alarm = getCurrentPageItems()[index];
+                                        final messageController = messageControllers.putIfAbsent(
+                                          alarm.id,
+                                              () => TextEditingController(text: alarm.message),
+                                        );
+
+                                        return Container(
+                                          height: 100.h,
+                                          alignment: Alignment.centerLeft,
+                                          child: Row(
+                                            children: [
+                                              SizedBox(width: 97.w),
+
+                                              // 🔹 Timestamp
+                                              SizedBox(
+                                                width: 359.w,
+                                                child: Text(
+                                                  formatTimestamp(alarm.timestamp),
+                                                  style: TextStyle(
+                                                    fontFamily: 'PretendardGOV',
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 36.sp,
+                                                    color: Colors.white,
+                                                  ),
                                                 ),
-                                              );
-                                            },
-                                            separatorBuilder:
-                                                (context, index) => Container(
-                                              height: 2.h,
-                                              color: Colors.white,
-                                            ),
+                                              ),
+
+                                              SizedBox(width: isEditing ? 150.w : 255.w),
+
+                                              // 🔹 Level (Dropdown or Text)
+                                              SizedBox(
+                                                width: isEditing? 400.w:125.w,
+                                                child: isEditing
+                                                    ? Row(
+                                                  children: [
+                                                    SizedBox(width: 80.w,),
+                                                    Container(
+                                                      width: 250.w,
+                                                        color: Colors.white,
+                                                        child: DropdownButton<String>(
+                                                          value: levelValues[alarm.id],
+                                                          dropdownColor: Colors.white,
+                                                          icon: Icon(Icons.arrow_drop_down, color: Colors.black),
+                                                          style: TextStyle(
+                                                            fontSize: 32.sp,
+                                                            color: Colors.black,
+                                                            fontFamily: 'PretendardGOV',
+                                                          ),
+                                                          items: levelOptions.map((level) => DropdownMenuItem(
+                                                            value: level,
+                                                            child: Text(level),
+                                                          )).toList(),
+                                                          onChanged: (newLevel) {
+                                                            if (newLevel == null) return;
+                                                            setState(() {
+                                                              levelValues[alarm.id] = newLevel;
+
+                                                              final prev = editedAlarms[alarm.id] ?? alarm;
+                                                              editedAlarms[alarm.id] = prev.copyWith(
+                                                                level: newLevel,
+                                                                message: messageControllers[alarm.id]?.text ?? prev.message, // 병합
+                                                              );
+                                                            });
+                                                          },
+
+
+                                                        )
+                                                    )
+
+                                                  ],
+                                                )
+                                                    : Text(
+                                                  alarm.level,
+                                                  style: TextStyle(
+                                                    fontFamily: 'PretendardGOV',
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 36.sp,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+
+                                              SizedBox(width: isEditing?0.w: 255.w),
+
+                                              // 🔹 Message (TextField or Text)
+                                              Expanded(
+                                                child: isEditing
+                                                    ?  Container(
+                                                  width: 1200.w,
+                                                  color: Colors.white,
+                                                  child: TextField(
+                                                    controller: messageController,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        final prev = editedAlarms[alarm.id] ?? alarm;
+                                                        editedAlarms[alarm.id] = prev.copyWith(
+                                                          message: value,
+                                                          level: levelValues[alarm.id] ?? prev.level, // 병합
+                                                        );
+                                                      });
+                                                    },
+
+
+                                                    style: TextStyle(
+                                                      fontFamily: 'PretendardGOV',
+                                                      fontWeight: FontWeight.w500,
+                                                      fontSize: 36.sp,
+                                                      color: Colors.black,
+                                                    ),
+                                                    decoration: InputDecoration(
+                                                      border: InputBorder.none,
+                                                      contentPadding: EdgeInsets.symmetric(horizontal: 10.w),
+                                                    ),
+                                                  ),
+                                                )
+
+                                                    : Text(
+                                                  alarm.message,
+                                                  style: TextStyle(
+                                                    fontFamily: 'PretendardGOV',
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 36.sp,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+
+                                              // 🔹 Delete button
+                                              if (isEditing)
+                                                Container(
+                                                  width: 70.w,
+                                                  height: 70.h,
+                                                  child: InkWell(
+                                                    onTap: () {
+                                                      setState(() {
+                                                        deletedAlarmIds.add(alarm.id);
+                                                        allAlarms.removeWhere((a) => a.id == alarm.id);
+                                                        filteredAlarms.removeWhere((a) => a.id == alarm.id);
+                                                      });
+                                                    },
+                                                    child: Image.asset(
+                                                      'assets/icons/color_close.png',
+                                                    ),
+                                                  ),
+                                                ),
+                                            ],
                                           ),
-                                  ),
+                                        );
+                                      },
+                                      separatorBuilder: (context, index) => Container(
+                                        height: 2.h,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  )
+,
                                   Container(
                                     height: 2.h,
                                     color: Colors.white,
@@ -511,6 +792,14 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
                                 ],
                               ),
                             ),
+
+
+
+
+
+
+
+
                             Container(
                               height: 100.h,
                               child: Row(

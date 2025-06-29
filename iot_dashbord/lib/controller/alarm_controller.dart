@@ -59,4 +59,46 @@ class AlarmController {
 
     return response.statusCode == 200;
   }
+
+  static Future<bool> updateAlarms(List<Alarm> alarms) async {
+    final url = Uri.parse('$_baseUrl/alarms');
+
+    final body = jsonEncode(
+      alarms.map((alarm) => {
+        'id': alarm.id, // ✅ id 추가
+        'timestamp': alarm.timestamp,
+        'level': alarm.level,
+        'message': alarm.message,
+      }).toList(),
+    );
+
+    final response = await http.put(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
+
+    print('PUT status: ${response.statusCode}');
+    print('PUT body: ${response.body}');
+
+    return response.statusCode == 200;
+  }
+
+  static Future<bool> deleteAlarms(List<int> ids) async {
+    final url = Uri.parse('$_baseUrl/alarms/delete');
+
+    final body = jsonEncode({'ids': ids}); // 👈 key도 'ids'로
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
+
+    return response.statusCode == 200;
+  }
+
+
+
+
 }

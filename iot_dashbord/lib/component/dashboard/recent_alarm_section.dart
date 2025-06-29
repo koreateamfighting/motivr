@@ -6,6 +6,8 @@ import 'package:intl/intl.dart';
 import 'package:iot_dashboard/component/dashboard/expand_alarm_search.dart';
 import 'package:iot_dashboard/utils/iframe_visibility.dart';
 import 'package:iot_dashboard/utils/format_timestamp.dart';
+import 'package:iot_dashboard/model/alarm_model.dart';
+
 
 class AlarmListView extends StatefulWidget {
   const AlarmListView({super.key});
@@ -15,12 +17,19 @@ class AlarmListView extends StatefulWidget {
 }
 
 class _AlarmListViewState extends State<AlarmListView> {
-  late Future<List<Alarm>> _alarmsFuture;
+  List<Alarm> alarms = [];
 
   @override
   void initState() {
     super.initState();
-    _alarmsFuture = AlarmController.fetchAlarms();
+    _fetchAlarmsData();
+  }
+
+  void _fetchAlarmsData() async{
+    final data = await AlarmController.fetchAlarms();
+    setState(() {
+      alarms = data;
+    });
   }
 
 
@@ -110,7 +119,9 @@ class _AlarmListViewState extends State<AlarmListView> {
                                 child: SizedBox(
                                   width: 2750.w,
                                   height: 1803.h,
-                                  child: ExpandAlarmSearch(),
+                                  child: ExpandAlarmSearch(
+                                    onDataUploaded: _fetchAlarmsData,
+                                  ),
                                 ),
                               ),
                             ),
@@ -195,7 +206,7 @@ class _AlarmListViewState extends State<AlarmListView> {
             ),
           ),
           FutureBuilder<List<Alarm>>(
-            future: _alarmsFuture,
+            future: AlarmController.fetchAlarms(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Expanded(

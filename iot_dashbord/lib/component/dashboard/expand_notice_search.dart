@@ -527,45 +527,7 @@ class _ExpandNoticeSearchState extends State<ExpandNoticeSearch> {
                                           ],
                                         )),
                                   ),
-                                  // SizedBox(
-                                  //   width: 16.w,
-                                  // ),
-                                  // Container(
-                                  //   width: 70.w,
-                                  //   height: 70.h,
-                                  //   child:
-                                  //   InkWell(
-                                  //     onTap: () {
-                                  //       if (isEditing) {
-                                  //         // ✅ 편집 모드일 때만 삭제 작동
-                                  //         setState(
-                                  //                 () {
-                                  //               deletedNoticeIds
-                                  //                   .add(notice.id);
-                                  //               editedNotices
-                                  //                   .remove(notice.id);
-                                  //
-                                  //               // 1. 삭제
-                                  //               allNotices.removeWhere((notice) =>
-                                  //               notice.id ==
-                                  //                   notice.id);
-                                  //               filteredNotices = allNotices
-                                  //                   .where((notice) => notice.content.toLowerCase().contains(_searchController.text.toLowerCase()) && matchDateRange(notice))
-                                  //                   .toList();
-                                  //
-                                  //               // 2. 페이지 범위 초과 시 페이지 이동
-                                  //               if (currentPage * itemsPerPage >= filteredNotices.length &&
-                                  //                   currentPage > 0) {
-                                  //                 currentPage--;
-                                  //               }
-                                  //             });
-                                  //       }
-                                  //     },
-                                  //     child: Image
-                                  //         .asset(
-                                  //         'assets/icons/color_close.png'),
-                                  //   ),
-                                  // ),
+
                                 ],
                               ),
                             ),
@@ -638,7 +600,8 @@ class _ExpandNoticeSearchState extends State<ExpandNoticeSearch> {
                                                           : 255.w,
                                                     ),
                                                     isEditing
-                                                        ? Row(
+                                                        ?
+                                                    Row(
                                                             children: [
                                                               Container(
                                                                   width: 1200.w,
