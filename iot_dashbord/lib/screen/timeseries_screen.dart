@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iot_dashboard/component/common/base_layout.dart';
+import 'package:iot_dashboard/component/common/dialog_form.dart';
 import 'package:iot_dashboard/component/timeseries/time_period_select.dart';
 import 'package:iot_dashboard/theme/colors.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -95,7 +96,15 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        setState(() => selectedTab = 1);
+                        // setState(() => selectedTab = 1); // CCTV 준비중
+                        showDialog(
+                          context: context,
+                          builder: (_) => const DialogForm(
+                            mainText: 'CCTV 시계열 데이터 부분은 점검중입니다.',
+                            btnText: '확인',
+                          ),
+                        );
+
                       },
                       child: buildTab(
                           label: 'CCTV',

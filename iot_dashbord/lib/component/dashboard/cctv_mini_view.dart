@@ -136,7 +136,8 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                   // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                 ),
                 child:Stack(
-                  children: [
+                  children: [// Stack 내부의 마지막 자식으로 추가
+
                     Positioned.fill(
                       child: Container(
                         height: 240.h,
@@ -242,6 +243,22 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                         )
                       ],
                     ),
+                    Positioned.fill(
+                      child: Container(
+                        color: Colors.black.withOpacity(0.8), // 회색 배경, 불투명도 30%
+                        alignment: Alignment.center,
+                        child: Text(
+                          '점검중입니다',
+                          style: TextStyle(
+                            fontSize: 30.sp,
+                            fontFamily: 'PretendardGOV',
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xff3185ce),
+                          ),
+                        ),
+                      ),
+                    ),
+
                   ],
                 )
 
@@ -307,6 +324,7 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                 ),
                 child: Stack(
                   children: [
+
                     Positioned.fill(
                       child: Container(
                         height: 240.h,
@@ -412,6 +430,22 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                         )
                       ],
                     ),
+                    Positioned.fill(
+                      child: Container(
+                        color: Colors.black.withOpacity(0.8), // 회색 배경, 불투명도 30%
+                        alignment: Alignment.center,
+                        child: Text(
+                          '점검중입니다',
+                          style: TextStyle(
+                            fontSize: 30.sp,
+                            fontFamily: 'PretendardGOV',
+                            fontWeight: FontWeight.w700,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ),
+                    ),
+
                   ],
                 ),
 

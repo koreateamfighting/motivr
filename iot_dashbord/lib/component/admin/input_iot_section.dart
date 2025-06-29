@@ -16,6 +16,7 @@ import 'package:iot_dashboard/component/admin/labeled_dropdown_field.dart';
 import 'package:flutter/services.dart';
 import 'package:iot_dashboard/component/common/dialog_form.dart';
 
+
 class IotInputSection extends StatefulWidget {
   final TextEditingController? iotProductIDController;
   final TextEditingController? latitudeController;
@@ -96,6 +97,12 @@ class _IotInputSectionState extends State<IotInputSection> {
     x_DegController = widget.x_DegController ?? TextEditingController();
     y_DegController = widget.y_DegController ?? TextEditingController();
     z_DegController = widget.z_DegController ?? TextEditingController();
+
+    x_DegController.addListener(_checkAngleThreshold);
+    y_DegController.addListener(_checkAngleThreshold);
+    z_DegController.addListener(_checkAngleThreshold);
+
+
     batteryVoltageController =
         widget.batteryVoltageController ?? TextEditingController();
     batteryInfoController =
@@ -124,7 +131,34 @@ class _IotInputSectionState extends State<IotInputSection> {
   void dispose() {
     // 컨트롤러 리스너 해제
     iotProductIDController.removeListener(_validateForm);
+    x_DegController.removeListener(_checkAngleThreshold);
+    y_DegController.removeListener(_checkAngleThreshold);
+    z_DegController.removeListener(_checkAngleThreshold);
+
     super.dispose();
+  }
+  void _checkAngleThreshold() {
+    double parseValue(String text) {
+      return double.tryParse(text.trim()) ?? 0.0;
+    }
+
+    final x = parseValue(x_DegController.text);
+    final y = parseValue(y_DegController.text);
+    final z = parseValue(z_DegController.text);
+
+    if ((x > 2 || y > 2 || z > 2) && _selectedEventType != 'Alert') {
+      setState(() {
+        _selectedEventType = 'Alert';
+      });
+
+      showDialog(
+        context: context,
+        builder: (_) => const DialogForm(
+          mainText: 'X, Y, Z 각도 중 하나가 3을 초과하여 상태가 Alert로 설정되었습니다.',
+          btnText: '확인',
+        ),
+      );
+    }
   }
 
   Future<void> _handleSubmit() async {
