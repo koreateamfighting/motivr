@@ -9,23 +9,29 @@ class CctvController extends ChangeNotifier {
   List<CctvItem> get items => _items;
 
   // 기존 CCTV 리스트 조회
+// cctv_controller.dart
   Future<void> fetchCctvs() async {
+    print('📡 fetchCctvs 호출됨');
     try {
       final response = await http.get(
         Uri.parse('https://hanlimtwin.kr:4040/api/cctvs'),
       );
+      print('📥 응답 상태 코드: ${response.statusCode}');
+      print('📦 응답 바디: ${response.body}');
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
         _items = jsonData.map((json) => CctvItem.fromJson(json)).toList();
+        print('✅ CCTV 파싱 완료, 개수: ${_items.length}');
         notifyListeners();
       } else {
-        throw Exception('서버 오류: ${response.statusCode}');
+        print('❌ 서버 오류: ${response.statusCode}');
       }
     } catch (e) {
       print('❌ CCTV 불러오기 실패: $e');
     }
   }
+
 
   // CCTV 등록 또는 수정 API 호출
   Future<bool> upsertCctv({

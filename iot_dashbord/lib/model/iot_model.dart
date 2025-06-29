@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class IotItem {
   final String id;
   final String sensortype;
@@ -34,22 +36,42 @@ class IotItem {
   });
 
   factory IotItem.fromJson(Map<String, dynamic> json) {
+    // 🔧 RID 포맷 보정 (S1_1 → S1_001)
+    String rawId = json['RID']?.toString() ?? '';
+    String paddedId = rawId;
+    if (rawId.startsWith('S1_')) {
+      final suffix = rawId.substring(3);
+      if (int.tryParse(suffix) != null) {
+        paddedId = 'S1_${suffix.padLeft(3, '0')}';
+      }
+    }
+
+    // 🕒 CreateAt 포맷 보정
+    final rawTime = json['CreateAt']?.toString() ?? '';
+    String formattedTime = rawTime;
+    try {
+      final dt = DateTime.parse(rawTime).toLocal();
+      formattedTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(dt);
+    } catch (e) {
+      formattedTime = rawTime;
+    }
+
     return IotItem(
-      id: json['id'],
-      sensortype: json['SensorType'],
-      eventtype: json['EventType'],
-      latitude: json['Latitude'], // ✅ 대소문자 일치
-      longitude: json['Longitude'], // 🔧 수정 필요
-      battery: json['BatteryVoltage'].toString(), // 🔧 명확하게 매핑
-      X_MM: json['X_MM'].toString(),
-      Y_MM: json['Y_MM'].toString(),
-      Z_MM: json['Z_MM'].toString(),
-      X_Deg: json['X_Deg'].toString(),
-      Y_Deg: json['Y_Deg'].toString(),
-      Z_Deg: json['Z_Deg'].toString(),
-      batteryInfo: json['BatteryLevel'].toString(), // 🔧 명확하게 매핑
-      download: json['download'] ?? '',
-      createAt: json['CreateAt'] ?? '',
+      id: paddedId,
+      sensortype: json['SensorType']?.toString() ?? '',
+      eventtype: json['EventType']?.toString() ?? '',
+      latitude: json['Latitude']?.toString() ?? '',
+      longitude: json['Longitude']?.toString() ?? '',
+      battery: json['BatteryVoltage']?.toString() ?? '',
+      X_MM: json['X_MM']?.toString() ?? '',
+      Y_MM: json['Y_MM']?.toString() ?? '',
+      Z_MM: json['Z_MM']?.toString() ?? '',
+      X_Deg: json['X_Deg']?.toString() ?? '',
+      Y_Deg: json['Y_Deg']?.toString() ?? '',
+      Z_Deg: json['Z_Deg']?.toString() ?? '',
+      batteryInfo: json['BatteryLevel']?.toString() ?? '',
+      download: '',
+      createAt: formattedTime,
     );
   }
 
@@ -85,12 +107,11 @@ class IotItem {
       'Longitude': double.tryParse(longitude) ?? 0.0,
     };
 
-    // ✅ 수동 시간 입력이 있을 경우만 포함
+    // ✅ 시간 문자열이 있을 경우만 포함
     if (createAt.isNotEmpty) {
       json['CreateAt'] = createAt;
     }
 
     return json;
   }
-
 }

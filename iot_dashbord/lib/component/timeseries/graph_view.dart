@@ -12,7 +12,7 @@ class GraphView extends StatefulWidget {
 }
 
 class _GraphViewState extends State<GraphView> {
-  String selectedInterval = '10분';
+  String selectedInterval = '30분';
   final List<String> sensorIds = [
     'S1_001',
     'S1_002',
@@ -113,39 +113,39 @@ class _GraphViewState extends State<GraphView> {
                 SizedBox(
                   width: 22.w,
                 ),
-                InkWell(
-                    onTap: () {
-                      setState(() {
-                        selectedIntervals[sensorId] = '10분';
-                      });
-                    },
-                    child: Container(
-                      width: 101.w,
-                      height: 60.h,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(
-                          color: Color(0xff3182ce),
-                          width: 1.w,
-                        ),
-                        borderRadius:
-                            BorderRadius.circular(5.r), // 선택사항: 둥근 테두리
-                      ),
-                      child: Text(
-                        '10분',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'PretendardGOV',
-                          fontWeight: FontWeight.w400,
-                          fontSize: 24.sp,
-                          color: Color(0xff3182ce),
-                        ),
-                      ),
-                    )),
-                SizedBox(
-                  width: 10.w,
-                ),
+                // InkWell(
+                //     onTap: () {
+                //       setState(() {
+                //         selectedIntervals[sensorId] = '10분';
+                //       });
+                //     },
+                //     child: Container(
+                //       width: 101.w,
+                //       height: 60.h,
+                //       alignment: Alignment.center,
+                //       decoration: BoxDecoration(
+                //         color: Colors.white,
+                //         border: Border.all(
+                //           color: Color(0xff3182ce),
+                //           width: 1.w,
+                //         ),
+                //         borderRadius:
+                //             BorderRadius.circular(5.r), // 선택사항: 둥근 테두리
+                //       ),
+                //       child: Text(
+                //         '10분',
+                //         textAlign: TextAlign.center,
+                //         style: TextStyle(
+                //           fontFamily: 'PretendardGOV',
+                //           fontWeight: FontWeight.w400,
+                //           fontSize: 24.sp,
+                //           color: Color(0xff3182ce),
+                //         ),
+                //       ),
+                //     )),
+                // SizedBox(
+                //   width: 10.w,
+                // ),
                 InkWell(
                     onTap: () async {
                       showLoadingDialog(context); // 👈 로딩 다이얼로그 표시

@@ -11,37 +11,30 @@ class IotController extends ChangeNotifier {
   // 🔧 BASE URL 분리
   static const String _baseUrl = 'https://hanlimtwin.kr:3030/api';
 
-  // ✅ 샘플 데이터 로딩
-  Future<void> fetchSampleIotItems() async {
-    const String jsonString = '''[
-      {
-        "id": "001",
-        "SensorType": "변위",
-        "EventType": "경고",
-        "Latitude": "37.12345",
-        "Longitude": "127.12345",
-        "BatteryVoltage": 3.7,
-        "BatteryLevel": 82.0,
-        "X_MM": 0.12,
-        "Y_MM": -0.03,
-        "Z_MM": 0.04,
-        "X_Deg": 0,
-        "Y_Deg": 45,
-        "Z_Deg": 45,
-        "download": "다운로드",
-        "CreateAt": "2025-01-20T14:30:00"
+  // ✅ 전체 센서 데이터 조회 (limit 기본 1000)
+  Future<void> fetchAllSensorData({int limit = 10000}) async {
+    final uri = Uri.parse('$_baseUrl/sensor-data?limit=$limit');
+    debugPrint('📡 전체 센서 데이터 조회 시작: $uri');
+
+    try {
+      final response = await http.get(uri);
+      debugPrint('📥 응답 상태코드: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body)['data'];
+        _items.clear();
+        _items.addAll(data.map((e) => IotItem.fromJson(e)));
+        notifyListeners();
+
+        debugPrint('✅ 전체 데이터 로드 완료 (${data.length}건)');
+      } else {
+        debugPrint('❌ 조회 실패: ${response.statusCode}');
       }
-    ]''';
-
-    debugPrint('📦 샘플 IoT 데이터 로드 시작');
-
-    final List<dynamic> decoded = jsonDecode(jsonString);
-    _items.clear();
-    _items.addAll(decoded.map((e) => IotItem.fromJson(e)));
-    notifyListeners();
-
-    debugPrint('✅ 샘플 데이터 로드 완료 (${_items.length}건)');
+    } catch (e) {
+      debugPrint('❌ 전체 조회 중 예외 발생: $e');
+    }
   }
+
 
   // ✅ 센서 데이터 수동 제출
   Future<bool> submitIotItem(IotItem item) async {

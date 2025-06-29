@@ -31,7 +31,7 @@ class _DetailIotViewState extends State<DetailIotView> {
   //   return data.map((e) => IotItem.fromJson(e)).toList();
   // }
 
-  void initstate() {
+  void initState() {
     super.initState();
   }
 
@@ -315,7 +315,7 @@ class _DetailIotViewState extends State<DetailIotView> {
                       child: ChangeNotifierProvider(
                         create: (_) =>
                         IotController()
-                          ..fetchSampleIotItems(),
+                          ..fetchAllSensorData(),
                         child: Consumer<IotController>(
                           builder: (context, controller, _) {
                             final items = controller.items;
