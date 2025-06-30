@@ -29,6 +29,7 @@ class TimeSeriesScreen extends StatefulWidget {
 }
 
 class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
+  String selectedRid = '';
   String selectedInterval = '10분';
   int selectedTab = 0; // 0 = IoT, 1 = CCTV
   TimeRange _currentRange = TimeRange(
@@ -175,11 +176,23 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            AlarmHistory(),
+                            AlarmHistory(
+                              selectedRid: selectedRid,
+                              allItems: context.watch<IotController>().items,
+                            ),
+
                             SizedBox(
                               width: 4.w,
                             ),
-                            GraphView(timeRange: _currentRange)
+                            GraphView(
+                              timeRange: _currentRange,
+                              onRidTap: (rid) {
+                                setState(() {
+                                  selectedRid = rid;
+                                });
+                              },
+                            ),
+
                           ],
                         )
                       ],

@@ -1,20 +1,52 @@
 import 'package:flutter/material.dart';
+import 'package:iot_dashboard/model/alarm_model.dart';
+import 'package:iot_dashboard/model/iot_model.dart';
+import 'package:iot_dashboard/controller/iot_controller.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AlarmHistory extends StatefulWidget {
-  const AlarmHistory({Key? key}) : super(key: key);
+  final String selectedRid;
+  final List<IotItem> allItems;
 
-  @override
+  const AlarmHistory(
+      {super.key, required this.selectedRid, required this.allItems});
+
   State<AlarmHistory> createState() => _AlarmHistoryState();
 }
 
 class _AlarmHistoryState extends State<AlarmHistory> {
   final ScrollController _scrollController = ScrollController();
+  List<IotItem> filteredItems = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _filterItems();
+  }
 
   @override
   void dispose() {
     _scrollController.dispose();
+
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant AlarmHistory oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedRid != oldWidget.selectedRid ||
+        widget.allItems != oldWidget.allItems) {
+      _filterItems();
+    }
+  }
+
+  void _filterItems() {
+    setState(() {
+      filteredItems = widget.allItems.where((item) {
+        return item.id == widget.selectedRid &&
+            (item.eventtype == '2' || item.eventtype == '4');
+      }).toList();
+    });
   }
 
   @override
@@ -46,19 +78,39 @@ class _AlarmHistoryState extends State<AlarmHistory> {
                 thumbVisibility: true,
                 radius: Radius.circular(5.r),
                 trackVisibility: false,
-                child: SingleChildScrollView(
-                  controller: _scrollController,
-                  child: Column(
-                    children: [
-                      // 헤더
-                      _buildHeader(),
-                      _buildSubHeader(),
-                      _buildColumnTitles(),
-
-                      // 예시 알람 데이터
-                      for (int i = 0; i < 20; i++) _buildRow(i),
-                    ],
-                  ),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      controller: _scrollController,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: constraints.maxHeight,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildHeader(),
+                            _buildSubHeader(),
+                            _buildColumnTitles(),
+                            if (filteredItems.isEmpty)
+                              Padding(
+                                padding: EdgeInsets.all(30.h),
+                                child: Text(
+                                  '센서 데이터 ID를 선택해주세요.',
+                                  style: TextStyle(
+                                    fontSize: 28.sp,
+                                    color: Colors.white70,
+                                    fontFamily: 'PretendardGOV',
+                                  ),
+                                ),
+                              )
+                            else
+                              ...filteredItems.map(_buildRow).toList(),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -121,7 +173,7 @@ class _AlarmHistoryState extends State<AlarmHistory> {
       ),
       child: Center(
         child: Text(
-          '[                      ]',
+          '[${widget.selectedRid ?? ''}]', // null일 경우 빈 문자열 처리
           style: TextStyle(
             fontSize: 36.sp,
             fontFamily: 'PretendardGOV',
@@ -183,13 +235,44 @@ class _AlarmHistoryState extends State<AlarmHistory> {
     );
   }
 
-  Widget _buildRow(int i) {
-    // 이벤트 타입과 스타일 결정
-    final String eventType = (i % 2 == 0) ? 'WARN' : 'CRIT';
-    final Color textColor = (eventType == 'WARN') ? Colors.yellow : Colors.red;
-    final String iconPath = (eventType == 'WARN')
-        ? 'assets/icons/alert_caution.png'
-        : 'assets/icons/alert_warning.png';
+  Widget _buildRow(IotItem item) {
+    final x = double.tryParse(item.X_Deg) ?? 0;
+    final y = double.tryParse(item.Y_Deg) ?? 0;
+    final z = double.tryParse(item.Z_Deg) ?? 0;
+
+    String eventType;
+    Color textColor;
+    Widget iconWidget;
+
+    if ([x, y, z].any((v) => v.abs() >= 5)) {
+      eventType = 'CRIT';
+      textColor = Colors.red;
+      iconWidget = Image.asset('assets/icons/alert_warning.png',
+          width: 60.w, height: 60.h);
+    } else if ([x, y, z].any((v) => v.abs() >= 3)) {
+      eventType = 'WARN';
+      textColor = Colors.yellow;
+      iconWidget = Image.asset('assets/icons/alert_caution.png',
+          width: 60.w, height: 60.h);
+    } else {
+      eventType = 'INFO';
+      textColor = Colors.green;
+
+      iconWidget = Container(
+        width: 60.w,
+        height: 60.h,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: Colors.green,
+          borderRadius: BorderRadius.circular(16.r), // 둥근 모서리
+
+        ),
+        child: Icon(
+          Icons.check,
+          color: Colors.white,
+        ),
+      );
+    }
 
     return Container(
       width: double.infinity,
@@ -205,7 +288,7 @@ class _AlarmHistoryState extends State<AlarmHistory> {
           Container(
             width: 260.w,
             child: Text(
-              '2025-06-05 14:2${i % 10}',
+              item.createAt,
               style: TextStyle(
                 fontSize: 30.sp,
                 color: Colors.white,
@@ -214,11 +297,7 @@ class _AlarmHistoryState extends State<AlarmHistory> {
             ),
           ),
           SizedBox(width: 145.w),
-          Container(
-            width: 60.w,
-            height: 60.h,
-            child: Image.asset(iconPath),
-          ),
+          iconWidget,
           SizedBox(width: 20.w),
           Container(
             width: 200.w,
@@ -236,5 +315,4 @@ class _AlarmHistoryState extends State<AlarmHistory> {
       ),
     );
   }
-
 }

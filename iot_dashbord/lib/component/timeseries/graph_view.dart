@@ -11,8 +11,12 @@ import 'package:iot_dashboard/screen/timeseries_screen.dart';
 
 class GraphView extends StatefulWidget {
   final TimeRange timeRange;
-
-  const GraphView({super.key, required this.timeRange});
+  final void Function(String rid) onRidTap; // ✅ 추가
+  const GraphView({
+    super.key,
+    required this.timeRange,
+    required this.onRidTap,
+  });
 
   @override
   State<GraphView> createState() => _GraphViewState();
@@ -30,7 +34,9 @@ class _GraphViewState extends State<GraphView> {
   void initState() {
     super.initState();
 
-
+    if (groups.isNotEmpty && widget.onRidTap != null) {
+      widget.onRidTap!(groups.first.rid); // ✅ 첫 rid 알림
+    }
 
     Future.delayed(Duration.zero, () async {
       showLoadingDialog(context);
@@ -125,23 +131,29 @@ class _GraphViewState extends State<GraphView> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Container(
-                  width: 432.w,
-                  height: 80.h,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: Color(0xff3182ce),
-                    borderRadius: BorderRadius.circular(5.r),
+                InkWell(
+                  onTap: (){
+                    widget.onRidTap(group.rid); // ✅ 부모에게 RID 전달
+                  },
+                  child:         Container(
+                    width: 432.w,
+                    height: 80.h,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: Color(0xff3182ce),
+                      borderRadius: BorderRadius.circular(5.r),
+                    ),
+                    child:Text('[${group.rid}]',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'PretendardGOV',
+                          fontWeight: FontWeight.w700,
+                          fontSize: 40.sp,
+                          color: Colors.white,
+                        )),
                   ),
-                  child:Text('[${group.rid}]',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'PretendardGOV',
-                        fontWeight: FontWeight.w700,
-                        fontSize: 40.sp,
-                        color: Colors.white,
-                      )),
                 ),
+
                 SizedBox(
                   width: 22.w,
                 ),
@@ -222,7 +234,6 @@ class _GraphViewState extends State<GraphView> {
                 intervalType: DateTimeIntervalType.minutes,
                 interval: _getIntervalValue(xMin, xMax).toDouble(),
                  // ← 이 줄 수정!
-                // 10분 간격
                 dateFormat: DateFormat('HH:mm'),
                 labelRotation: 45,
                 labelIntersectAction: AxisLabelIntersectAction.none,
