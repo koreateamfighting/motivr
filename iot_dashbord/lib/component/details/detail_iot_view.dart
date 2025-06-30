@@ -429,97 +429,93 @@ class _DetailIotViewState extends State<DetailIotView> {
                       width: 2325.w,
                       height: 1639.h,
                       color: Colors.black,
-                      child: ChangeNotifierProvider(
-                        create: (_) =>
-                        IotController()
-                          ..fetchAllSensorData(),
-                        child: Consumer<IotController>(
-                          builder: (context, controller, _) {
-                            final items = controller.filterItems(_searchQuery);
+                      child:
+                      Consumer<IotController>(
+                        builder: (context, controller, _) {
+                          final items = controller.filterItems(_searchQuery);
 
-                            if (items.isEmpty) {
-                              return Center(
-                                child: Text(
-                                  '데이터 없음',
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 24.sp),
-                                ),
-                              );
-                            }
-
-                            final dataSource = IotDataSource(context, items, isDegree, isEditing, deletedKeys);
-
-                            return ScrollbarTheme(
-                              data: ScrollbarThemeData(
-                                thumbColor: MaterialStateProperty.all(
-                                    Color(0xff004aff)),
-                                // trackColor: MaterialStateProperty.all(Colors.transparent),
-                                radius: Radius.circular(10.r),
-                                thickness: MaterialStateProperty.all(10.w),
-                              ),
-                              child: Scrollbar(
-                                thumbVisibility: true,
-                                controller: _verticalController,
-                                child: SfDataGrid(
-                                  source: dataSource,
-                                  allowSorting: false,
-                                  verticalScrollController: _verticalController,
-                                  columnWidthMode: ColumnWidthMode.none,
-                                  gridLinesVisibility: GridLinesVisibility.both,
-                                  headerGridLinesVisibility: GridLinesVisibility
-                                      .both,
-                                  columns: [
-                                    GridColumn(columnName: 'id',
-                                        width: 120.w,
-                                        label: buildHeader('ID')),
-                                    GridColumn(columnName: 'type',
-                                        width: 120.w,
-                                        label: buildHeader('유형')),
-                                    GridColumn(columnName: 'location',
-                                        width: 219.w,
-                                        label: buildHeader('설치 위치')),
-                                    GridColumn(columnName: 'status',
-                                        width: 160.w,
-                                        label: buildHeader('상태')),
-                                    GridColumn(columnName: 'battery',
-                                        width: 160.w,
-                                        label: buildHeader('배터리')),
-                                    GridColumn(columnName: 'lastUpdated',
-                                        width: 320.w,
-                                        label: buildHeader('마지막 수신')),
-                                    GridColumn(
-                                      columnName: 'X_MM',
-                                      width: 180.w,
-                                      label: buildHeader(isDegree ? 'X(°)' : 'X(mm)'),
-                                    ),
-                                    GridColumn(
-                                      columnName: 'Y_MM',
-                                      width: 180.w,
-                                      label: buildHeader(isDegree ? 'Y(°)' : 'Y(mm)'),
-                                    ),
-                                    GridColumn(
-                                      columnName: 'Z_MM',
-                                      width: 180.w,
-                                      label: buildHeader(isDegree ? 'Z(°)' : 'Z(mm)'),
-                                    ),
-
-                                    GridColumn(columnName: 'batteryInfo',
-                                        width: 220.w,
-                                        label: buildHeader('배터리 정보')),
-    isEditing? GridColumn(
-    columnName: 'delete',
-    width: 100.w,
-    label: buildHeader('삭제'),
-    ):
-                                    GridColumn(columnName: 'download',
-                                        width: 442.w,
-                                        label: buildHeader('데이터 다운로드')),
-                                  ],
-                                ),
+                          if (items.isEmpty) {
+                            return Center(
+                              child: Text(
+                                '데이터 없음',
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 24.sp),
                               ),
                             );
-                          },
-                        ),
+                          }
+
+                          final dataSource = IotDataSource(context, items, isDegree, isEditing, deletedKeys);
+
+                          return ScrollbarTheme(
+                            data: ScrollbarThemeData(
+                              thumbColor: MaterialStateProperty.all(
+                                  Color(0xff004aff)),
+                              // trackColor: MaterialStateProperty.all(Colors.transparent),
+                              radius: Radius.circular(10.r),
+                              thickness: MaterialStateProperty.all(10.w),
+                            ),
+                            child: Scrollbar(
+                              thumbVisibility: true,
+                              controller: _verticalController,
+                              child: SfDataGrid(
+                                source: dataSource,
+                                allowSorting: false,
+                                verticalScrollController: _verticalController,
+                                columnWidthMode: ColumnWidthMode.none,
+                                gridLinesVisibility: GridLinesVisibility.both,
+                                headerGridLinesVisibility: GridLinesVisibility
+                                    .both,
+                                columns: [
+                                  GridColumn(columnName: 'id',
+                                      width: 120.w,
+                                      label: buildHeader('ID')),
+                                  GridColumn(columnName: 'type',
+                                      width: 120.w,
+                                      label: buildHeader('유형')),
+                                  GridColumn(columnName: 'location',
+                                      width: 219.w,
+                                      label: buildHeader('설치 위치')),
+                                  GridColumn(columnName: 'status',
+                                      width: 160.w,
+                                      label: buildHeader('상태')),
+                                  GridColumn(columnName: 'battery',
+                                      width: 160.w,
+                                      label: buildHeader('배터리')),
+                                  GridColumn(columnName: 'lastUpdated',
+                                      width: 320.w,
+                                      label: buildHeader('마지막 수신')),
+                                  GridColumn(
+                                    columnName: 'X_MM',
+                                    width: 180.w,
+                                    label: buildHeader(isDegree ? 'X(°)' : 'X(mm)'),
+                                  ),
+                                  GridColumn(
+                                    columnName: 'Y_MM',
+                                    width: 180.w,
+                                    label: buildHeader(isDegree ? 'Y(°)' : 'Y(mm)'),
+                                  ),
+                                  GridColumn(
+                                    columnName: 'Z_MM',
+                                    width: 180.w,
+                                    label: buildHeader(isDegree ? 'Z(°)' : 'Z(mm)'),
+                                  ),
+
+                                  GridColumn(columnName: 'batteryInfo',
+                                      width: 220.w,
+                                      label: buildHeader('배터리 정보')),
+                                  isEditing? GridColumn(
+                                    columnName: 'delete',
+                                    width: 100.w,
+                                    label: buildHeader('삭제'),
+                                  ):
+                                  GridColumn(columnName: 'download',
+                                      width: 442.w,
+                                      label: buildHeader('데이터 다운로드')),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
                       ),
                   )
 

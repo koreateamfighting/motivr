@@ -13,6 +13,7 @@ import 'package:iot_dashboard/component/dashboard/weather_info.dart';
 import 'package:iot_dashboard/component/dashboard/recent_alarm_section.dart';
 import 'package:iot_dashboard/component/dashboard/work_task_and_notice.dart';
 import 'package:iot_dashboard/controller/cctv_controller.dart';
+import 'package:iot_dashboard/controller/iot_controller.dart';
 import 'dart:async';
 import 'dart:html' as html;
 import 'package:provider/provider.dart';
@@ -47,7 +48,7 @@ class _DashBoardState extends State<DashBoard> {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => CctvController())],
+      providers: [ChangeNotifierProvider(create: (_) => CctvController()),  ChangeNotifierProvider(create: (_) => IotController())], // ✅ 추가],
       child: ScreenUtilInit(
         designSize: const Size(3812, 2144),
         minTextAdapt: true,

@@ -5,7 +5,7 @@ import 'package:iot_dashboard/model/iot_model.dart';
 
 class IotController extends ChangeNotifier {
   final List<IotItem> _items = [];
-
+  int normal = 0, caution = 0, danger = 0, inspection = 0, total = 0;
   List<IotItem> get items => _items;
 // 🔍 ID 기준으로 필터된 리스트 반환
   List<IotItem> filterItems(String query) {
@@ -102,6 +102,61 @@ class IotController extends ChangeNotifier {
       return false;
     }
   }
+  //rid의 개수 파악
+  Future<int?> fetchRidCount() async {
+    final uri = Uri.parse('$_baseUrl/rid-count');
+    debugPrint('📡 RID 개수 조회 시작: $uri');
+
+    try {
+      final response = await http.get(uri);
+      debugPrint('📥 응답 상태코드: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        debugPrint('✅ RID 개수: ${data['count']}');
+        return data['count'];
+      } else {
+        debugPrint('❌ 조회 실패: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      debugPrint('❌ RID 개수 조회 중 예외 발생: $e');
+      return null;
+    }
+  }
+
+  Future<void> fetchSensorStatusSummary() async {
+    final uri = Uri.parse('$_baseUrl/sensor-status-summary');
+    try {
+      final response = await http.get(uri);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        // 디버깅을 위한 로그 출력
+        debugPrint('Response Data: $data');
+
+        normal = data['normal'] ?? 0;
+        caution = data['caution'] ?? 0;
+        danger = data['danger'] ?? 0;
+        inspection = data['needInspection'] ?? 0; // 점검 필요는 서버에서 계산되어 있음
+        total = data['total'] ?? 0;
+
+        // 각 상태 값들을 출력
+        debugPrint('Normal: $normal');
+        debugPrint('Caution: $caution');
+        debugPrint('Danger: $danger');
+        debugPrint('Inspection: $inspection');
+        debugPrint('Total: $total');
+
+        // 상태가 갱신될 때마다 notifyListeners 호출
+        notifyListeners();
+      } else {
+        debugPrint('❌ 센서 상태 요약 실패: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('❌ 예외 발생: $e');
+    }
+  }
 
   // 🆕 최근 센서 데이터 불러오기
   Future<void> fetchRecentSensorData({int days = 1}) async {
@@ -127,4 +182,17 @@ class IotController extends ChangeNotifier {
       debugPrint('❌ 조회 중 예외 발생: $e');
     }
   }
+
+  // 상태 변수들에 접근할 getter
+  int get getNormal => normal;
+  int get getCaution => caution;
+  int get getDanger => danger;
+  int get getInspection => inspection;
+  int get getTotal => total;
 }
+
+
+
+
+
+

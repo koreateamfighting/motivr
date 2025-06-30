@@ -2,157 +2,211 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iot_dashboard/theme/colors.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:provider/provider.dart';
+import 'package:iot_dashboard/controller/iot_controller.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:async';
 
-class IotControlStatus extends StatelessWidget {
+
+class IotControlStatus extends StatefulWidget {
   const IotControlStatus({super.key});
 
   @override
+  State<IotControlStatus> createState() => _IotControlStatusState();
+}
+
+class _IotControlStatusState extends State<IotControlStatus> {
+  int normal = 0, caution = 0, danger = 0, inspection = 0, total = 0;
+
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSensorStatus();
+    // 주기적으로 센서 상태 갱신
+    Timer.periodic(Duration(seconds: 30), (timer) {
+      _loadSensorStatus(); // 30초마다 상태 갱신
+    });
+  }
+
+  Future<void> _loadSensorStatus() async {
+    final controller = Provider.of<IotController>(context, listen: false);
+    await controller.fetchSensorStatusSummary(); // 초기 데이터 불러오기
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 613.w,
-      height: 641.h,
-      decoration: BoxDecoration(
-        color: Color(0xff111c44),
-        border: Border.all(
-          color: Colors.white,
-          width: 1.w,
-        ),
-        borderRadius: BorderRadius.circular(5.r),
-        // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
-      ),
-      child: Center(
-        child: Column(
-          children: [
-            Container(
-              height: 59.h,
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 24.w,
-                  ),
-                  Container(
-                    width: 30.w,
-                    height: 30.h,
-                    child: Image.asset('assets/icons/iot_control.png'),
-                  ),
-                  SizedBox(
-                    width: 12.w,
-                  ),
-                  Text(
-                    'IoT 작동 현황',
-                    style: TextStyle(
-                        fontFamily: 'PretendardGOV',
-                        fontWeight: FontWeight.w500,
-                        fontSize: 36.sp,
-                        color: Colors.white),
-                  )
-                ],
-              ),
-            ),
-            Container(
-              width: 1542.w,
-              height: 1.h,
+    return Consumer<IotController>(
+      builder: (context, controller, child) {
+        final normal = controller.getNormal;
+        final caution = controller.getCaution;
+        final danger = controller.getDanger;
+        final inspection = controller.getInspection;
+        final total = controller.getTotal;
+
+        return Container(
+          width: 613.w,
+          height: 641.h,
+          decoration: BoxDecoration(
+            color: Color(0xff111c44),
+            border: Border.all(
               color: Colors.white,
+              width: 1.w,
             ),
-            SizedBox(
-              height: 25.h,
-            ),
-            Row(
+            borderRadius: BorderRadius.circular(5.r),
+            // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
+          ),
+          child: Center(
+            child: Column(
               children: [
-                SizedBox(
-                  width: 64.w,
-                ),
-                // 전체 수치
                 Container(
-                  width: 141.26.w,
-                  height: 143.71.h,
-                  child: PieChart(
-                    PieChartData(
-                      centerSpaceRadius: 60.w,
-                      sectionsSpace: 0,
-                      startDegreeOffset: -90,
-                      sections: [
-                        PieChartSectionData(
-                          value: 19,
-                          color: const Color(0xFF2FA365), // 정상
-                          radius: 20.w,
-                          showTitle: false,
+                  height: 59.h,
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 24.w,
+                      ),
+                      Container(
+                        width: 30.w,
+                        height: 30.h,
+                        child: Image.asset('assets/icons/iot_control.png'),
+                      ),
+                      SizedBox(
+                        width: 12.w,
+                      ),
+                      Text(
+                        'IoT 작동 현황',
+                        style: TextStyle(
+                            fontFamily: 'PretendardGOV',
+                            fontWeight: FontWeight.w500,
+                            fontSize: 36.sp,
+                            color: Colors.white),
+                      )
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 1542.w,
+                  height: 1.h,
+                  color: Colors.white,
+                ),
+                SizedBox(
+                  height: 25.h,
+                ),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 64.w,
+                    ),
+                    // 전체 수치
+                    Container(
+                      width: 141.26.w,
+                      height: 143.71.h,
+                      child: PieChart(
+                        PieChartData(
+                          centerSpaceRadius: 60.w,
+                          sectionsSpace: 0,
+                          startDegreeOffset: -90,
+                          sections: [
+                            PieChartSectionData(
+                              value: normal.toDouble(),
+                              color: const Color(0xFF2FA365), // 정상
+                              radius: 20.w,
+                              showTitle: false,
+                            ),
+                            PieChartSectionData(
+                              value: caution.toDouble(),
+                              color: const Color(0xFFFBD50F), // 주의
+                              radius: 20.w,
+                              showTitle: false,
+                            ),
+                            PieChartSectionData(
+                              value: danger.toDouble(),
+                              color: const Color(0xFFFF6060), // 경고
+                              radius: 20.w,
+                              showTitle: false,
+                            ),
+                            PieChartSectionData(
+                              value: inspection.toDouble(),
+                              color: const Color(0xFF83C2F1), // 점검 필요
+                              radius: 20.w,
+                              showTitle: false,
+                            ),
+                          ],
                         ),
-                        PieChartSectionData(
-                          value: 2,
-                          color: const Color(0xFFFBD50F), // 주의
-                          radius: 20.w,
-                          showTitle: false,
+                      ),
+                    ),
+                    SizedBox(
+                      width: 160.w,
+                    ),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '$total',
+                          style: TextStyle(
+                            fontFamily: 'PretendardGOV',
+                            fontWeight: FontWeight.w800,
+                            fontSize: 64.sp,
+                            color: Colors.white,
+                          ),
                         ),
-                        PieChartSectionData(
-                          value: 2,
-                          color: const Color(0xFFFF6060), // 경고
-                          radius: 20.w,
-                          showTitle: false,
-                        ),
-                        PieChartSectionData(
-                          value: 1,
-                          color: const Color(0xFF83C2F1), // 점검 필요
-                          radius: 20.w,
-                          showTitle: false,
+                        Text(
+                          '전체',
+                          style: TextStyle(
+                            fontFamily: 'PretendardGOV',
+                            fontWeight: FontWeight.w500,
+                            fontSize: 32.sp,
+                            color: Colors.white,
+                          ),
                         ),
                       ],
                     ),
-                  ),
+                  ],
                 ),
                 SizedBox(
-                  width: 160.w,
+                  height: 32.h,
                 ),
                 Column(
-                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '24',
-                      style: TextStyle(
-                        fontFamily: 'PretendardGOV',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 64.sp,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Text(
-                      '전체',
-                      style: TextStyle(
-                        fontFamily: 'PretendardGOV',
-                        fontWeight: FontWeight.w500,
-                        fontSize: 32.sp,
-                        color: Colors.white,
-                      ),
-                    ),
+                    _statusRow(
+                        '정상',
+                        normal.toInt(),
+                        total.toInt(),
+                        const Color(0xFF2FA365),
+                        'assets/icons/status_normal_icon.png'),
+                    _statusRow(
+                        '주의',
+                        caution.toInt(),
+                        total.toInt(),
+                        const Color(0xFFFBD50F),
+                        'assets/icons/status_caution_icon.png'),
+                    _statusRow(
+                        '경고',
+                        danger.toInt(),
+                        total.toInt(),
+                        const Color(0xFFFF6060),
+                        'assets/icons/status_warning_icon.png'),
+                    _statusRow(
+                        '점검 필요',
+                        inspection.toInt(),
+                        total.toInt(),
+                        const Color(0xFF83C2F1),
+                        'assets/icons/status_inspection_icon.png'),
                   ],
                 ),
               ],
             ),
-            SizedBox(
-              height: 32.h,
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _statusRow('정상', 19, const Color(0xFF2FA365),
-                    'assets/icons/status_normal_icon.png'),
-                _statusRow('주의', 2, const Color(0xFFFBD50F),
-                    'assets/icons/status_caution_icon.png'),
-                _statusRow('경고', 2, const Color(0xFFFF6060),
-                    'assets/icons/status_warning_icon.png'),
-                _statusRow('점검 필요', 1, const Color(0xFF83C2F1),
-                    'assets/icons/status_inspection_icon.png'),
-              ],
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
 
-Widget _statusRow(String label, int count, Color color, String iconName) {
+Widget _statusRow(
+    String label, int count, int total, Color color, String iconName) {
   return Padding(
     padding: EdgeInsets.only(bottom: 24.h),
     child: Row(
@@ -230,7 +284,7 @@ Widget _statusRow(String label, int count, Color color, String iconName) {
                         color: Colors.white,
                       )),
                   Text(
-                    '${(count / 24 * 100).toStringAsFixed(1)} %',
+                    '${(total > 0 ? (count / total * 100) : 0).toStringAsFixed(1)} %',
                     style: TextStyle(
                       fontFamily: 'PretendardGOV',
                       fontWeight: FontWeight.w500,
@@ -249,7 +303,7 @@ Widget _statusRow(String label, int count, Color color, String iconName) {
                 ),
                 alignment: Alignment.centerLeft,
                 child: Container(
-                  width: (count / 24) * 300.w,
+                  width: total > 0 ? (count / total) * 300.w : 0,
                   // height: 60.h,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
