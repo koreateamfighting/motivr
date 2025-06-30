@@ -10,6 +10,7 @@ import 'package:iot_dashboard/controller//iot_controller.dart';
 import 'package:iot_dashboard/component/details/propulsion_port_view.dart';
 import 'package:iot_dashboard/component/details/reach_port_view.dart';
 import 'package:iot_dashboard/component/details/iot_data_source.dart';
+import 'package:iot_dashboard/component/common/dialog_form.dart';
 
 class DetailIotView extends StatefulWidget {
   const DetailIotView({super.key});
@@ -21,7 +22,7 @@ class DetailIotView extends StatefulWidget {
 class _DetailIotViewState extends State<DetailIotView> {
   int selectedTab = 0; //0 : 추진구 , 1 : 도달구
   final ScrollController _verticalController = ScrollController();
-  bool isDegree = false;
+  bool isDegree = true;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
  bool isEditing = false;
@@ -37,15 +38,22 @@ class _DetailIotViewState extends State<DetailIotView> {
   //   return data.map((e) => IfromJson(e)).toList();
   // }
 
+  @override
   void initState() {
     super.initState();
   }
 
+
   @override
   void dispose() {
     _verticalController.dispose();
+    _searchController.dispose(); // 추가
+    for (final controller in fieldControllers.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
+
   void _toggleEditMode(List<IotItem> items) {
     setState(() {
       isEditing = !isEditing;
@@ -76,6 +84,8 @@ class _DetailIotViewState extends State<DetailIotView> {
     });
   }
   void _onFieldChanged(String id, String createAt, String field, String value) {
+    if (value.trim().isEmpty) return; // ❗ 빈값 입력은 무시
+
     final key = '${id}_$createAt';
     final original = context.read<IotController>().items.firstWhere(
           (e) => e.id == id && e.createAt == createAt,
@@ -98,14 +108,39 @@ class _DetailIotViewState extends State<DetailIotView> {
       eventtype: field == 'eventtype' ? value : prev.eventtype,
     );
   }
+
   Future<void> _saveChanges() async {
     final controller = context.read<IotController>();
 
+    bool hasError = false;
+    final errorMessages = <String>[];
+
     // 1. 수정된 항목 전송
     for (final item in editedItems.values) {
-      final success = await controller.updateIotItem(item);
+      final baseKey = '${item.id}_${item.createAt}';
+
+      final updatedItem = item.copyWith(
+        latitude: fieldControllers['${baseKey}_latitude']?.text.trim() ?? item.latitude,
+        longitude: fieldControllers['${baseKey}_longitude']?.text.trim() ?? item.longitude,
+        battery: fieldControllers['${baseKey}_battery']?.text.trim() ?? item.battery,
+        batteryInfo: fieldControllers['${baseKey}_batteryInfo']?.text.trim() ?? item.batteryInfo,
+        X_MM: fieldControllers['${baseKey}_x_mm']?.text.trim() ?? item.X_MM,
+        Y_MM: fieldControllers['${baseKey}_y_mm']?.text.trim() ?? item.Y_MM,
+        Z_MM: fieldControllers['${baseKey}_z_mm']?.text.trim() ?? item.Z_MM,
+        X_Deg: fieldControllers['${baseKey}_x_deg']?.text.trim() ?? item.X_Deg,
+        Y_Deg: fieldControllers['${baseKey}_y_deg']?.text.trim() ?? item.Y_Deg,
+        Z_Deg: fieldControllers['${baseKey}_z_deg']?.text.trim() ?? item.Z_Deg,
+      );
+
+      debugPrint('🎯 저장될 x_deg = ${fieldControllers["${baseKey}_x_deg"]?.text}');
+      debugPrint('🎯 저장될 y_deg = ${fieldControllers["${baseKey}_y_deg"]?.text}');
+      debugPrint('🎯 저장될 z_deg = ${fieldControllers["${baseKey}_z_deg"]?.text}');
+
+
+      final success = await controller.updateIotItem(updatedItem);
       if (!success) {
-        debugPrint('❌ 수정 실패: ${item.id}, ${item.createAt}');
+        hasError = true;
+        errorMessages.add('❌ 수정 실패: ${item.id}, ${item.createAt}');
       }
     }
 
@@ -117,7 +152,8 @@ class _DetailIotViewState extends State<DetailIotView> {
         final createAt = parts[1];
         final success = await controller.deleteIotItem(rid, createAt);
         if (!success) {
-          debugPrint('❌ 삭제 실패: $rid, $createAt');
+          hasError = true;
+          errorMessages.add('❌ 삭제 실패: $rid, $createAt');
         }
       }
     }
@@ -133,7 +169,22 @@ class _DetailIotViewState extends State<DetailIotView> {
       fieldControllers.clear();
       eventTypeValues.clear();
     });
+
+    // 5. 결과 알림
+    final dialogText = hasError
+        ? errorMessages.join('\n')
+        : '수정 및 삭제가 완료되었습니다.';
+
+    await showDialog(
+      context: context,
+      builder: (context) => DialogForm(
+        mainText: dialogText,
+        btnText: '확인',
+        fontSize: 28.sp,
+      ),
+    );
   }
+
 
 
 
@@ -270,31 +321,41 @@ class _DetailIotViewState extends State<DetailIotView> {
                         SizedBox(
                           width: 29.w,
                         ),
-                        InkWell(
-                            onTap: () {},
-                            child: Container(
-                              width: 141.w,
-                              height: 60.h,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: Color(0xff3182ce),
-                                borderRadius: BorderRadius.circular(5.r),
-                              ),
-                              child: Text(
-                                '검색',
-                                style: TextStyle(
-                                  fontFamily: 'PretendardGOV',
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 36.sp,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            )),
+                    InkWell(
+                      onTap: isEditing
+                          ? null // 🔒 편집 중엔 검색 비활성화
+                          : () {
+                        setState(() {
+                          _searchQuery = _searchController.text.toLowerCase().trim();
+                        });
+                      },
+                      child: Container(
+                        width: 141.w,
+                        height: 60.h,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: isEditing ? Colors.grey : const Color(0xff3182ce), // 🎨 조건부 색상
+                          borderRadius: BorderRadius.circular(5.r),
+                        ),
+                        child: Text(
+                          '검색',
+                          style: TextStyle(
+                            fontFamily: 'PretendardGOV',
+                            fontWeight: FontWeight.w700,
+                            fontSize: 36.sp,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+
                         SizedBox(
                           width: 102.w,
                         ),
                         InkWell(
-                            onTap: () {
+                            onTap: isEditing
+                                ? null // 🔒 편집 중일 땐 클릭 막기
+                                : () {
                               setState(() {
                                 isDegree = !isDegree;
                               });
@@ -304,7 +365,7 @@ class _DetailIotViewState extends State<DetailIotView> {
                               height: 60.h,
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
-                                color: Color(0xff3182ce),
+                                color: isEditing ? Colors.grey : const Color(0xff3182ce), // 🎨 색상 조건부 처리
                                 borderRadius: BorderRadius.circular(5.r),
                               ),
                               child: Text(
@@ -432,7 +493,11 @@ class _DetailIotViewState extends State<DetailIotView> {
                       child:
                       Consumer<IotController>(
                         builder: (context, controller, _) {
-                          final items = controller.filterItems(_searchQuery);
+                          final items = controller
+                              .filterItems(_searchQuery)
+                              .where((e) => !deletedKeys.contains('${e.id}+${e.createAt}'))
+                              .toList();
+
 
                           if (items.isEmpty) {
                             return Center(
@@ -444,7 +509,19 @@ class _DetailIotViewState extends State<DetailIotView> {
                             );
                           }
 
-                          final dataSource = IotDataSource(context, items, isDegree, isEditing, deletedKeys);
+                          final dataSource = IotDataSource(
+                            context,
+                            items,
+                            isDegree,
+                            isEditing,
+                            deletedKeys,
+                            fieldControllers,
+                            eventTypeValues,
+                            onFieldChanged: _onFieldChanged,
+                            onDelete: (String key) {
+                              setState(() => deletedKeys.add(key));
+                            },
+                          );
 
                           return ScrollbarTheme(
                             data: ScrollbarThemeData(

@@ -420,7 +420,7 @@ class _IotInputSectionState extends State<IotInputSection> {
                               controller: x_DegController,
                               style: TextStyle(color: Colors.black,fontSize: 36.sp),
                               keyboardType: TextInputType.numberWithOptions(decimal: true),
-                              inputFormatters:[FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
+                              inputFormatters:[FilteringTextInputFormatter.allow(RegExp(r'^-?\d*\.?\d*'))],
                               decoration: InputDecoration(
                                 hintText: '',
                                 hintStyle: TextStyle(
@@ -451,7 +451,7 @@ class _IotInputSectionState extends State<IotInputSection> {
                               controller: y_DegController,
                               style: TextStyle(color: Colors.black,fontSize: 36.sp),
                               keyboardType: TextInputType.numberWithOptions(decimal: true),
-                              inputFormatters:[FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
+                              inputFormatters:[FilteringTextInputFormatter.allow(RegExp(r'^-?\d*\.?\d*'))],
                               decoration: InputDecoration(
                                 hintText: '',
                                 hintStyle: TextStyle(
@@ -481,7 +481,7 @@ class _IotInputSectionState extends State<IotInputSection> {
                               controller: z_DegController,
                               style: TextStyle(color: Colors.black,fontSize: 36.sp),
                               keyboardType: TextInputType.numberWithOptions(decimal: true),
-                              inputFormatters:[FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
+                              inputFormatters:[FilteringTextInputFormatter.allow(RegExp(r'^-?\d*\.?\d*'))],
                               decoration: InputDecoration(
                                 hintText: '',
                                 hintStyle: TextStyle(
@@ -536,7 +536,7 @@ class _IotInputSectionState extends State<IotInputSection> {
                               controller: x_MMController,
                               style: TextStyle(color: Colors.black,fontSize: 36.sp),
                               keyboardType: TextInputType.numberWithOptions(decimal: true),
-                              inputFormatters:[FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
+                              inputFormatters:[FilteringTextInputFormatter.allow(RegExp(r'^-?\d*\.?\d*'))],
                               decoration: InputDecoration(
                                 hintText: '',
                                 hintStyle: TextStyle(
@@ -566,7 +566,7 @@ class _IotInputSectionState extends State<IotInputSection> {
                               controller: y_MMController,
                               style: TextStyle(color: Colors.black,fontSize: 36.sp),
                               keyboardType: TextInputType.numberWithOptions(decimal: true),
-                              inputFormatters:[FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
+                              inputFormatters:[FilteringTextInputFormatter.allow(RegExp(r'^-?\d*\.?\d*'))],
                               decoration: InputDecoration(
                                 hintText: '',
                                 hintStyle: TextStyle(
@@ -596,7 +596,7 @@ class _IotInputSectionState extends State<IotInputSection> {
                               controller: z_MMController,
                               style: TextStyle(color: Colors.black,fontSize: 36.sp),
                               keyboardType: TextInputType.numberWithOptions(decimal: true),
-                              inputFormatters:[FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
+                              inputFormatters:[FilteringTextInputFormatter.allow(RegExp(r'^-?\d*\.?\d*'))],
                               decoration: InputDecoration(
                                 hintText: '',
                                 hintStyle: TextStyle(

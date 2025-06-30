@@ -13,6 +13,49 @@ class IotController extends ChangeNotifier {
   final List<IotItem> _items = [];
   int normal = 0, caution = 0, danger = 0, inspection = 0, total = 0;
   List<IotItem> get items => _items;
+
+  final Map<String, IotItem> editedItems = {};
+
+  void onFieldChanged(String id, String createAt, String field, String value) {
+    final key = '${id}_$createAt';
+    final existing = _items.firstWhere(
+          (item) => item.id == id && item.createAt == createAt,
+      orElse: () => IotItem(
+        id: id,
+        sensortype: '',
+        eventtype: '',
+        latitude: '',
+        longitude: '',
+        battery: '',
+        X_MM: '',
+        Y_MM: '',
+        Z_MM: '',
+        X_Deg: '',
+        Y_Deg: '',
+        Z_Deg: '',
+        batteryInfo: '',
+        download: '',
+        createAt: createAt,
+      ),
+    );
+
+    final updated = existing.copyWith(
+      X_Deg: field == 'x_deg' ? value : existing.X_Deg,
+      Y_Deg: field == 'y_deg' ? value : existing.Y_Deg,
+      Z_Deg: field == 'z_deg' ? value : existing.Z_Deg,
+      X_MM: field == 'x_mm' ? value : existing.X_MM,
+      Y_MM: field == 'y_mm' ? value : existing.Y_MM,
+      Z_MM: field == 'z_mm' ? value : existing.Z_MM,
+      battery: field == 'battery' ? value : existing.battery,
+      batteryInfo: field == 'batteryInfo' ? value : existing.batteryInfo,
+    );
+
+    editedItems[key] = updated;
+
+    debugPrint('✅ 필드 변경됨 → $field = $value');
+    debugPrint('→ 저장 전: X_Deg=${updated.X_Deg}, Y_Deg=${updated.Y_Deg}, Z_Deg=${updated.Z_Deg}');
+  }
+
 // 🔍 ID 기준으로 필터된 리스트 반환
   List<IotItem> filterItems(String query) {
     final q = query.toLowerCase().trim();
@@ -150,19 +193,25 @@ class IotController extends ChangeNotifier {
   Future<bool> deleteIotItem(String rid, String createAt) async {
     final uri = Uri.parse('$_baseUrl/sensor/delete');
     final headers = {'Content-Type': 'application/json'};
+
+    // ✅ 포맷을 DB와 일치시키기 (yyyy-MM-dd HH:mm:ss)
+    final formattedCreateAt = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.parse(createAt));
+
     final body = jsonEncode({
       'RID': rid,
-      'CreateAt': createAt,
+      'CreateAt': formattedCreateAt,
     });
 
     try {
       final response = await http.post(uri, headers: headers, body: body);
+      debugPrint('🔥 삭제 응답: ${response.statusCode}, ${response.body}');
       return response.statusCode == 200;
     } catch (e) {
-      debugPrint('❌ 삭제 실패: $e');
+      debugPrint('❌ 삭제 실패: $rid, $createAt, $e');
       return false;
     }
   }
+
   //rid의 개수 파악
   Future<int?> fetchRidCount() async {
     final uri = Uri.parse('$_baseUrl/rid-count');
