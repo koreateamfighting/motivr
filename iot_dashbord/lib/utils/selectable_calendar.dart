@@ -6,8 +6,12 @@ import 'package:google_fonts/google_fonts.dart';
 class SelectableCalendar extends StatefulWidget {
 
   final void Function(DateTime? start, DateTime? end)? onDateSelected;
-
-  const SelectableCalendar({super.key, this.onDateSelected});
+  final bool autoClose; // 🔹 추가
+  const SelectableCalendar({
+    super.key,
+    this.onDateSelected,
+    this.autoClose = false, // 기본값: false
+  });
 
   @override
   State<SelectableCalendar> createState() => _SelectableCalendarState();
@@ -158,8 +162,14 @@ class _SelectableCalendarState extends State<SelectableCalendar> {
                       } else {
                         secondSelected = date;
                       }
+
                       // ✅ 날짜 선택이 바뀌었을 때 부모에게 알림
                       widget.onDateSelected?.call(firstSelected, secondSelected);
+
+                      // ✅ 여기! 자동 닫기 처리도 이곳에서 추가하면 돼
+                      if (widget.autoClose && firstSelected != null && secondSelected != null) {
+                        Navigator.of(context).pop();
+                      }
                     });
                   },
 

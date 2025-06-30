@@ -2,8 +2,14 @@ import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:iot_dashboard/model/iot_model.dart';
+import 'package:iot_dashboard/component/timeseries/graph_view.dart';
+import 'package:intl/intl.dart';
+
 
 class IotController extends ChangeNotifier {
+  // 🔧 BASE URL 분리
+  static const String _baseUrl = 'https://hanlimtwin.kr:3030/api';
+
   final List<IotItem> _items = [];
   int normal = 0, caution = 0, danger = 0, inspection = 0, total = 0;
   List<IotItem> get items => _items;
@@ -13,8 +19,63 @@ class IotController extends ChangeNotifier {
     return _items.where((item) => item.id.toLowerCase().contains(q)).toList();
   }
 
-  // 🔧 BASE URL 분리
-  static const String _baseUrl = 'https://hanlimtwin.kr:3030/api';
+  List<DisplacementGroup> getTodayDisplacementGroups() {
+    final grouped = <String, List<IotItem>>{};
+
+    for (final item in _items) {
+      final dt = DateTime.tryParse(item.createAt);
+      if (dt == null || dt.year != DateTime.now().year || dt.month != DateTime.now().month || dt.day != DateTime.now().day) continue;
+
+      grouped.putIfAbsent(item.id, () => []).add(item);
+    }
+
+    return grouped.entries.map((entry) {
+      final x = <DisplacementData>[];
+      final y = <DisplacementData>[];
+      final z = <DisplacementData>[];
+
+      for (final i in entry.value) {
+        final time = DateTime.tryParse(i.createAt);
+        if (time != null) {
+          x.add(DisplacementData(time, double.tryParse(i.X_Deg) ?? 0.0));
+          y.add(DisplacementData(time, double.tryParse(i.Y_Deg) ?? 0.0));
+          z.add(DisplacementData(time, double.tryParse(i.Z_Deg) ?? 0.0));
+        }
+      }
+
+      return DisplacementGroup(rid: entry.key, x: x, y: y, z: z);
+    }).toList();
+  }
+
+  Future<void> fetchSensorDataByTimeRange(DateTime startDate, DateTime endDate) async {
+    final formattedStartDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(startDate);
+    final formattedEndDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(endDate);
+
+    final uri = Uri.parse('$_baseUrl/sensor-data-by-period?startDate=$formattedStartDate&endDate=$formattedEndDate');
+    debugPrint('📡 기간 선택 센서 데이터 조회 시작: $uri');
+
+    try {
+      final response = await http.get(uri);
+      debugPrint('📥 응답 상태코드: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body)['data'];
+        _items.clear();
+        _items.addAll(data.map((e) => IotItem.fromJson(e)));
+        notifyListeners();
+
+        debugPrint('✅ ${data.length}건의 시간 범위 센서 데이터 불러옴');
+      } else {
+        debugPrint('❌ 조회 실패: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('❌ 조회 중 예외 발생: $e');
+    }
+  }
+
+
+
+
 
   // ✅ 전체 센서 데이터 조회 (limit 기본 1000)
   Future<void> fetchAllSensorData({int limit = 10000}) async {

@@ -3,37 +3,58 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
 import 'package:iot_dashboard/component/timeseries/show_loading_dialog.dart';
+import 'package:provider/provider.dart';
+import 'package:iot_dashboard/controller/iot_controller.dart';
+import 'package:iot_dashboard/screen/timeseries_screen.dart';
+
+
 
 class GraphView extends StatefulWidget {
-  const GraphView({super.key});
+  final TimeRange timeRange;
+
+  const GraphView({super.key, required this.timeRange});
 
   @override
   State<GraphView> createState() => _GraphViewState();
 }
-
 class _GraphViewState extends State<GraphView> {
+  late TooltipBehavior _tooltipBehavior;
   String selectedInterval = '30분';
-  final List<String> sensorIds = [
-    'S1_001',
-    'S1_002',
-    'S1_003',
-    'S1_004',
-    'S1_005'
-  ];
+  List<DisplacementGroup> groups = [];
   Map<String, String> selectedIntervals = {};
   final ScrollController _scrollController = ScrollController();
 
-  @override
+  late DateTime xMin;
+  late DateTime xMax;
+
   void initState() {
     super.initState();
+
+
+
     Future.delayed(Duration.zero, () async {
       showLoadingDialog(context);
-      await Future.delayed(Duration(milliseconds: 3000)); // fetch 초기 그래프 데이터
+      final iot = context.read<IotController>();
+      await iot.fetchRecentSensorData(days: 1);
+
+// TimeRange 값을 이용해 데이터 조회
+      await iot.fetchSensorDataByTimeRange(widget.timeRange.start, widget.timeRange.end);
+
+      groups = iot.getTodayDisplacementGroups();
+
+      groups.sort((a, b) {
+        final aNum = int.tryParse(a.rid.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+        final bNum = int.tryParse(b.rid.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+        return aNum.compareTo(bNum);
+      });
+
+      for (final g in groups) {
+        selectedIntervals[g.rid] = '30분';
+      }
+
       Navigator.of(context).pop();
+      setState(() {});
     });
-    for (var id in sensorIds) {
-      selectedIntervals[id] = '10분';
-    }
   }
 
   @override
@@ -68,15 +89,26 @@ class _GraphViewState extends State<GraphView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,
-                children: sensorIds.map((id) => _buildSensorChart(id)).toList(),
+                children: groups.map(_buildSensorChart).toList(),
               ),
             ),
           ),
         ));
   }
 
-  Widget _buildSensorChart(String sensorId) {
-    final currentInterval = selectedIntervals[sensorId]!;
+  Widget _buildSensorChart(DisplacementGroup group)
+  {
+    final interval = selectedIntervals[group.rid] ?? '30분';
+    final allTimes = [...group.x, ...group.y, ...group.z].map((e) => e.time);
+    final xMin = allTimes.isNotEmpty ? allTimes.reduce((a, b) => a.isBefore(b) ? a : b) : DateTime.now();
+    final xMax = allTimes.isNotEmpty ? allTimes.reduce((a, b) => a.isAfter(b) ? a : b) : DateTime.now();
+    _tooltipBehavior = TooltipBehavior(
+      enable: true,
+      shared: true,
+      canShowMarker: true,
+      tooltipPosition: TooltipPosition.pointer,
+      format: 'point.x : point.y', // 👉 기본 형식
+    );
 
     return Container(
       height: 580.h,
@@ -101,7 +133,7 @@ class _GraphViewState extends State<GraphView> {
                     color: Color(0xff3182ce),
                     borderRadius: BorderRadius.circular(5.r),
                   ),
-                  child: Text('[$sensorId]',
+                  child:Text('[${group.rid}]',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'PretendardGOV',
@@ -113,48 +145,17 @@ class _GraphViewState extends State<GraphView> {
                 SizedBox(
                   width: 22.w,
                 ),
-                // InkWell(
-                //     onTap: () {
-                //       setState(() {
-                //         selectedIntervals[sensorId] = '10분';
-                //       });
-                //     },
-                //     child: Container(
-                //       width: 101.w,
-                //       height: 60.h,
-                //       alignment: Alignment.center,
-                //       decoration: BoxDecoration(
-                //         color: Colors.white,
-                //         border: Border.all(
-                //           color: Color(0xff3182ce),
-                //           width: 1.w,
-                //         ),
-                //         borderRadius:
-                //             BorderRadius.circular(5.r), // 선택사항: 둥근 테두리
-                //       ),
-                //       child: Text(
-                //         '10분',
-                //         textAlign: TextAlign.center,
-                //         style: TextStyle(
-                //           fontFamily: 'PretendardGOV',
-                //           fontWeight: FontWeight.w400,
-                //           fontSize: 24.sp,
-                //           color: Color(0xff3182ce),
-                //         ),
-                //       ),
-                //     )),
-                // SizedBox(
-                //   width: 10.w,
-                // ),
-                InkWell(
+
+                ...['30분', '1시간', '2시간', '3시간'].map((label) => Padding(
+                  padding: EdgeInsets.only(right: 10.w),
+                  child: InkWell(
                     onTap: () async {
-                      showLoadingDialog(context); // 👈 로딩 다이얼로그 표시
-                      await Future.delayed(Duration(
-                          milliseconds: 300)); // 실제 API 호출이라면 await fetch...
+                      showLoadingDialog(context);
+                      await Future.delayed(Duration(milliseconds: 200));
                       setState(() {
-                        selectedIntervals[sensorId] = '30분';
+                        selectedIntervals[group.rid] = label;
                       });
-                      Navigator.of(context).pop(); // 👈 다이얼로그 닫기
+                      Navigator.of(context).pop();
                     },
                     child: Container(
                       width: 101.w,
@@ -166,12 +167,10 @@ class _GraphViewState extends State<GraphView> {
                           color: Color(0xff3182ce),
                           width: 1.w,
                         ),
-                        borderRadius:
-                            BorderRadius.circular(5.r), // 선택사항: 둥근 테두리
+                        borderRadius: BorderRadius.circular(5.r),
                       ),
                       child: Text(
-                        '30분',
-                        textAlign: TextAlign.center,
+                        label,
                         style: TextStyle(
                           fontFamily: 'PretendardGOV',
                           fontWeight: FontWeight.w400,
@@ -179,118 +178,9 @@ class _GraphViewState extends State<GraphView> {
                           color: Color(0xff3182ce),
                         ),
                       ),
-                    )),
-                SizedBox(
-                  width: 10.w,
-                ),
-                InkWell(
-                    onTap: () async {
-                      showLoadingDialog(context); // 👈 로딩 다이얼로그 표시
-                      await Future.delayed(Duration(
-                          milliseconds: 300)); // 실제 API 호출이라면 await fetch...
-                      setState(() {
-                        selectedIntervals[sensorId] = '1시간';
-                      });
-                      Navigator.of(context).pop(); // 👈 다이얼로그 닫기
-                    },
-                    child: Container(
-                      width: 101.w,
-                      height: 60.h,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(
-                          color: Color(0xff3182ce),
-                          width: 1.w,
-                        ),
-                        borderRadius:
-                            BorderRadius.circular(5.r), // 선택사항: 둥근 테두리
-                      ),
-                      child: Text(
-                        '1시간',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'PretendardGOV',
-                          fontWeight: FontWeight.w400,
-                          fontSize: 24.sp,
-                          color: Color(0xff3182ce),
-                        ),
-                      ),
-                    )),
-                SizedBox(
-                  width: 10.w,
-                ),
-                InkWell(
-                    onTap: () async {
-                      showLoadingDialog(context); // 👈 로딩 다이얼로그 표시
-                      await Future.delayed(Duration(
-                          milliseconds: 300)); // 실제 API 호출이라면 await fetch...
-                      setState(() {
-                        selectedIntervals[sensorId] = '2시간';
-                      });
-                      Navigator.of(context).pop(); // 👈 다이얼로그 닫기
-                    },
-                    child: Container(
-                      width: 101.w,
-                      height: 60.h,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(
-                          color: Color(0xff3182ce),
-                          width: 1.w,
-                        ),
-                        borderRadius:
-                            BorderRadius.circular(5.r), // 선택사항: 둥근 테두리
-                      ),
-                      child: Text(
-                        '2시간',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'PretendardGOV',
-                          fontWeight: FontWeight.w400,
-                          fontSize: 24.sp,
-                          color: Color(0xff3182ce),
-                        ),
-                      ),
-                    )),
-                SizedBox(
-                  width: 10.w,
-                ),
-                InkWell(
-                    onTap: () async {
-                      showLoadingDialog(context); // 👈 로딩 다이얼로그 표시
-                      await Future.delayed(Duration(
-                          milliseconds: 300)); // 실제 API 호출이라면 await fetch...
-                      setState(() {
-                        selectedIntervals[sensorId] = '3시간';
-                      });
-                      Navigator.of(context).pop(); // 👈 다이얼로그 닫기
-                    },
-                    child: Container(
-                      width: 101.w,
-                      height: 60.h,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(
-                          color: Color(0xff3182ce),
-                          width: 1.w,
-                        ),
-                        borderRadius:
-                            BorderRadius.circular(5.r), // 선택사항: 둥근 테두리
-                      ),
-                      child: Text(
-                        '3시간',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'PretendardGOV',
-                          fontWeight: FontWeight.w400,
-                          fontSize: 24.sp,
-                          color: Color(0xff3182ce),
-                        ),
-                      ),
-                    )),
+                    ),
+                  ),
+                )),
                 Spacer(),
                 Container(
                   width: 45.w,
@@ -316,6 +206,7 @@ class _GraphViewState extends State<GraphView> {
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: SfCartesianChart(
+              tooltipBehavior: _tooltipBehavior, // ✅ 추가!
               margin: EdgeInsets.all(20),
               legend: Legend(
                   isVisible: true,
@@ -329,53 +220,53 @@ class _GraphViewState extends State<GraphView> {
                   )),
               primaryXAxis: DateTimeAxis(
                 intervalType: DateTimeIntervalType.minutes,
-                interval: 10,
+                interval: _getIntervalValue(xMin, xMax).toDouble(),
+                 // ← 이 줄 수정!
                 // 10분 간격
                 dateFormat: DateFormat('HH:mm'),
                 labelRotation: 45,
                 labelIntersectAction: AxisLabelIntersectAction.none,
-                minimum: DateTime(2025, 5, 12, 0, 9),
-                // ⬅️ 시작을 00:09로 명시
-                maximum: DateTime(2025, 5, 12, 23, 59),
+                minimum: xMin.subtract(Duration(minutes: 5)),
+                maximum: xMax.add(Duration(minutes: 5)),
                 // ⬅️ 마지막을 23:59로 명시
                 majorGridLines: const MajorGridLines(width: 0),
                 labelStyle: TextStyle(
-                  fontSize: currentInterval == '10분' ? 10.sp : 18.sp,
+                  fontSize: interval  == '10분' ? 10.sp : 18.sp,
                   // 👈 조건부 스타일
                   color: Colors.white,
                 ),
               ),
               primaryYAxis: NumericAxis(
-                minimum: -0.5,
-                maximum: 0.5,
-                interval: 0.1,
+                minimum: -5,
+                maximum: 5,
+                interval: 1,
                 majorGridLines: const MajorGridLines(width: 0),
                 plotBands: <PlotBand>[
                   PlotBand(
                     isVisible: true,
-                    start: 0.5,
-                    end: 0.5,
+                    start: 5,
+                    end: 5,
                     borderWidth: 2,
                     borderColor: Color(0xffff0404),
                   ),
                   PlotBand(
                     isVisible: true,
-                    start: -0.5,
-                    end: -0.5,
+                    start: -5,
+                    end: -5,
                     borderWidth: 2,
                     borderColor: Color(0xffff0404),
                   ),
                   PlotBand(
                     isVisible: true,
-                    start: 0.3,
-                    end: 0.3,
+                    start: 3,
+                    end: 3,
                     borderWidth: 2,
                     borderColor: Color(0xffffc300),
                   ),
                   PlotBand(
                     isVisible: true,
-                    start: -0.3,
-                    end: -0.3,
+                    start: -3,
+                    end: -3,
                     borderWidth: 2,
                     borderColor: Color(0xffffc300),
                   ),
@@ -437,20 +328,20 @@ class _GraphViewState extends State<GraphView> {
                 ScatterSeries<DisplacementData, DateTime>(
                   name: 'X',
                   color: const Color(0xffff714d),
+                  enableTooltip: true,
                   markerSettings: MarkerSettings(
                     isVisible: true,
                     shape: DataMarkerType.circle,
                     width: 15.w,
                     height: 15.h,
                   ),
-                  dataSource: _getIntervalData(
-                      getMockData(sensorId, 'X', currentInterval),
-                      currentInterval),
+                  dataSource: _getIntervalData(group.x, interval),
                   xValueMapper: (d, _) => d.time,
                   yValueMapper: (d, _) => d.value,
                 ),
                 ScatterSeries<DisplacementData, DateTime>(
                   name: 'Y',
+                  enableTooltip: true,
                   color: const Color(0xff32ade6),
                   markerSettings: MarkerSettings(
                     isVisible: true,
@@ -458,14 +349,13 @@ class _GraphViewState extends State<GraphView> {
                     width: 15.w,
                     height: 15.h,
                   ),
-                  dataSource: _getIntervalData(
-                      getMockData(sensorId, 'Y', currentInterval),
-                      currentInterval),
+                  dataSource:_getIntervalData(group.y, interval),
                   xValueMapper: (d, _) => d.time,
                   yValueMapper: (d, _) => d.value,
                 ),
                 ScatterSeries<DisplacementData, DateTime>(
                   name: 'Z',
+                  enableTooltip: true,
                   color: const Color(0xff00c7be),
                   markerSettings: MarkerSettings(
                     isVisible: true,
@@ -473,9 +363,7 @@ class _GraphViewState extends State<GraphView> {
                     width: 15.w,
                     height: 15.h,
                   ),
-                  dataSource: _getIntervalData(
-                      getMockData(sensorId, 'Z', currentInterval),
-                      currentInterval),
+                  dataSource: _getIntervalData(group.z, interval),
                   xValueMapper: (d, _) => d.time,
                   yValueMapper: (d, _) => d.value,
                 ),
@@ -490,9 +378,9 @@ class _GraphViewState extends State<GraphView> {
   List<DisplacementData> getMockData(
       String sensorId, String axis, String intervalLabel) {
     final start = DateTime(2025, 5, 12, 0, 0);
-    final interval = _getIntervalValue(intervalLabel); // minutes
+    final interval = _getIntervalValue(xMin, xMax);
     return List.generate(144, (index) {
-      final time = start.add(Duration(minutes: index * interval + 9));
+      final time = start.add(Duration(minutes: (index * interval).toInt() + 9)); // .toInt()로 강제 형변환
 
       final base = sensorId.hashCode % 10 * 0.01;
       final offset = axis == 'X'
@@ -506,24 +394,19 @@ class _GraphViewState extends State<GraphView> {
     });
   }
 
-  int _getIntervalValue(String interval) {
-    switch (interval) {
-      case '10분':
-        return 10;
-      case '30분':
-        return 30;
-      case '1시간':
-        return 60;
-      case '2시간':
-        return 120;
-      case '3시간':
-        return 180;
-      case '6시간':
-        return 360;
-      default:
-        return 10;
+  int _getIntervalValue(DateTime xMin, DateTime xMax) {
+    final duration = xMax.difference(xMin).inMinutes;
+
+    // 일주일 또는 그 이상일 때는 더 긴 간격을 설정
+    if (duration >= 7 * 24 * 60) {
+      return 60; // 1시간 간격
+    } else if (duration >= 30 * 24 * 60) {
+      return 180; // 3시간 간격
+    } else {
+      return 30; // 30분 간격
     }
   }
+
 
   double _getFontSize() {
     switch (selectedInterval) {
@@ -617,6 +500,19 @@ class DisplacementData {
 
   DisplacementData(this.time, this.value);
 }
+
+class DisplacementGroup {
+  final String rid;
+  final List<DisplacementData> x;
+  final List<DisplacementData> y;
+  final List<DisplacementData> z;
+
+  DisplacementGroup({required this.rid, required this.x, required this.y, required this.z});
+}
+
+
+
+
 
 List<DisplacementData> getMockDisplacementData() {
   final start = DateTime(2025, 5, 12, 0, 0);
