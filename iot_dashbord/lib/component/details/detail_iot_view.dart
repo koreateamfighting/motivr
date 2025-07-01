@@ -6,7 +6,7 @@ import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:iot_dashboard/model/iot_model.dart';
-import 'package:iot_dashboard/controller//iot_controller.dart';
+import 'package:iot_dashboard/controller/iot_controller.dart';
 import 'package:iot_dashboard/component/details/propulsion_port_view.dart';
 import 'package:iot_dashboard/component/details/reach_port_view.dart';
 import 'package:iot_dashboard/component/details/iot_data_source.dart';

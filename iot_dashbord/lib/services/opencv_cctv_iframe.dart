@@ -33,7 +33,7 @@ class _OpencvCctvIframeState extends State<OpencvCctvIframe> {
 
   void _updateImage() {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    _imageUrl = 'http://hanlimtwin.kr:5001/preview/${widget.cam}?t=$timestamp'; // 🟢 캐시 방지용 쿼리
+    _imageUrl = 'https://hanlimtwin.kr:5001/preview/${widget.cam}?t=$timestamp'; // 🟢 캐시 방지용 쿼리
     _viewId = 'opencv-preview-${widget.cam}-$timestamp';
 
     // ignore: undefined_prefixed_name
