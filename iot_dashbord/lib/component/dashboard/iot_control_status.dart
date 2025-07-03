@@ -17,21 +17,37 @@ class IotControlStatus extends StatefulWidget {
 
 class _IotControlStatusState extends State<IotControlStatus> {
   int normal = 0, caution = 0, danger = 0, inspection = 0, total = 0;
-
+  late Timer _timer;
 
   @override
   void initState() {
     super.initState();
-    _loadSensorStatus();
+    // 🔧 최초 한 번: 렌더링 이후 안전하게 호출
+
     // 주기적으로 센서 상태 갱신
-    Timer.periodic(Duration(seconds: 30), (timer) {
+    _timer = Timer.periodic(Duration(seconds: 30), (timer) {
       _loadSensorStatus(); // 30초마다 상태 갱신
     });
   }
 
+
   Future<void> _loadSensorStatus() async {
-    final controller = Provider.of<IotController>(context, listen: false);
-    await controller.fetchSensorStatusSummary(); // 초기 데이터 불러오기
+    try {
+      final controller = Provider.of<IotController>(context, listen: false);
+      await controller.fetchSensorStatusSummary();
+    } catch (e, stack) {
+      debugPrint('❌ 센서 상태 불러오기 실패: $e');
+      debugPrint('$stack');
+    }
+
+
+
+    @override
+    void dispose() {
+      _timer.cancel();
+      super.dispose();
+    }
+
   }
 
   @override

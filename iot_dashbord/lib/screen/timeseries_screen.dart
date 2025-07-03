@@ -141,11 +141,14 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
                       ),
                     ],
                   ),
+                  Transform.translate(offset: Offset(0, -1),
+                  child:
                   Container(
                     width: double.infinity,
                     height: 37.h,
                     color: Color(0xff3182ce),
-                  ),
+                  ))
+                 ,
                   SizedBox(
                     height: 4.h,
                   ),

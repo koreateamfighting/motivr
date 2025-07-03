@@ -100,7 +100,7 @@ class _WorkProcessStatusState extends State<WorkProcessStatus> {
       return SizedBox(
         height: 481.h,
         child: Center(
-          child: CircularProgressIndicator(color: Colors.white),
+          child: CircularProgressIndicator(color: Color(0xff3182ce)),
         ),
       );
     }

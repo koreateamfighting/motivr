@@ -281,7 +281,7 @@ class _AuthSectionState extends State<AuthSection> {
                             height: 20.h,
                             child: CircularProgressIndicator(
                               strokeWidth: 3.w,
-                              color: Colors.white,
+                              color: Color(0xff3182ce)
                             ),
                           )
                               : Text(

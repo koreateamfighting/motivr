@@ -390,7 +390,7 @@ class _DetailCctvViewState extends State<DetailCctvView> {
                                         )
                                             : const Center(
                                           child: CircularProgressIndicator(
-                                            color: Colors.white,
+                                              color: Color(0xff3182ce)
                                           ),
                                         ),
                                       ),

@@ -151,7 +151,7 @@ class _FieldInfoSectionState extends State<FieldInfoSection> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       // 로딩 중일 때 로딩 인디케이터 보여주기
-      return Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator(color: Color(0xff3182ce)));
     }
 
     return Column(

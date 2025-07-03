@@ -68,45 +68,58 @@ class _DetailScreenState extends State<DetailScreen> {
                       color: Colors.white,
                     ),
 
-                    SizedBox(height: 11.h),
+                    Container(height: 11.h),
+Column(
+  children: [
+    // ✅ 커스텀 탭
+    Row(
+      children: [
+        Expanded(
+          child: GestureDetector(
+            onTap: () {
+              setState(() => selectedTab = 0);
+            },
+            child: buildTab(
+                label: 'IoT',
+                imageName: 'iot',
+                isSelected: selectedTab == 0),
+          ),
+        ),
+        SizedBox(
+          width: 20.w,
+        ),
+        Expanded(
+          child: GestureDetector(
+            onTap: () {
+              setState(() => selectedTab = 1);
+            },
+            child: buildTab(
+                label: 'CCTV',
+                imageName: 'cctv',
+                isSelected: selectedTab == 1),
+          ),
+        ),
+      ],
+    ),
 
-                    // ✅ 커스텀 탭
-                    Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() => selectedTab = 0);
-                            },
-                            child: buildTab(
-                                label: 'IoT',
-                                imageName: 'iot',
-                                isSelected: selectedTab == 0),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 20.w,
-                        ),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() => selectedTab = 1);
-                            },
-                            child: buildTab(
-                                label: 'CCTV',
-                                imageName: 'cctv',
-                                isSelected: selectedTab == 1),
-                          ),
-                        ),
-                      ],
-                    ),
+    // ✅ 아래 파란 줄
+    Transform.translate(offset: Offset(0, -1.h),child:Container(
+      width: 3680.w,
+      height: 31.h,
+      decoration: BoxDecoration(
+        color: Color(0xff3182ce),
+        //color : Colors.red,
+        border: Border(
+          top: BorderSide.none,
+        ),
+      ),
 
-                    // ✅ 아래 파란 줄
-                    Container(
-                      width: 3680.w,
-                      height: 30.h,
-                      color: Color(0xff3182ce),
-                    ),
+
+    ),)
+
+  ],
+),
+
 
                     // ✅ 콘텐츠 박스
                     Container(

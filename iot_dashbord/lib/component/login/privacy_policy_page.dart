@@ -115,7 +115,7 @@ class _PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
                       _buildHeader(context),
                       Expanded(
                         child: _markdownSpan == null
-                            ? const Center(child: CircularProgressIndicator())
+                            ? const Center(child: CircularProgressIndicator(color: Color(0xff3182ce)))
                             : Padding(
                           padding: EdgeInsets.symmetric(horizontal: 577.w),
                           child: SingleChildScrollView(

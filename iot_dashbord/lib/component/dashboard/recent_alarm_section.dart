@@ -210,7 +210,7 @@ class _AlarmListViewState extends State<AlarmListView> {
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Expanded(
-                    child: Center(child: CircularProgressIndicator()));
+                    child: Center(child: CircularProgressIndicator(color: Color(0xff3182ce))));
               } else if (snapshot.hasError) {
                 return Expanded(
                     child: Center(child: Text('❌ 오류: ${snapshot.error}')));

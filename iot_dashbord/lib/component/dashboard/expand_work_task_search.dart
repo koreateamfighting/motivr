@@ -394,7 +394,7 @@ class _ExpandWorkTaskSearchState extends State<ExpandWorkTaskSearch> {
                                                 strokeWidth: 4.w,
                                                 valueColor:
                                                     AlwaysStoppedAnimation<
-                                                        Color>(Colors.white),
+                                                        Color>(Color(0xff3182ce)),
                                               ),
                                             )
                                           :  InkWell(
