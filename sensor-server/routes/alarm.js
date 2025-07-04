@@ -9,7 +9,8 @@ router.get('/alarms', async (req, res) => {
     await sql.connect(dbConfig);
     const result = await sql.query(`
       SELECT TOP 1000 
-        CONVERT(varchar, timestamp, 120) as timestamp,
+      id,
+        CONVERT(varchar, timestamp, 120) as timestamp,        
         level,
         message
       FROM alarms
@@ -52,5 +53,69 @@ router.post('/alarms', async (req, res) => {
     sql.close();
   }
 });
+
+// 알람 수정
+router.put('/alarms', async (req, res) => {
+  const alarms = req.body;
+
+  if (!Array.isArray(alarms) || alarms.length === 0) {
+    return res.status(400).json({ error: '수정할 알람 데이터가 없습니다.' });
+  }
+
+  try {
+    await sql.connect(dbConfig);
+
+    for (const alarm of alarms) {
+      const { id, timestamp, level, message } = alarm;
+    
+      if (!id || !timestamp || !level || !message) continue;
+    
+      await sql.query(`
+        UPDATE alarms
+        SET 
+          timestamp = '${timestamp}',
+          level = N'${level.replace(/'/g, "''")}',
+          message = N'${message.replace(/'/g, "''")}'
+        WHERE id = ${id}
+      `);
+    }
+    res.status(200).json({ message: '알람 수정 완료' });
+  } catch (err) {
+    console.error('❌ 알람 수정 오류:', err);
+    res.status(500).json({ error: '알람 수정 중 오류 발생' });
+  } finally {
+    sql.close();
+  }
+});
+
+
+// 알람 삭제
+router.post('/alarms/delete', async (req, res) => {
+  const { ids } = req.body;
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: '삭제할 ID가 없습니다.' });
+  }
+
+  try {
+    await sql.connect(dbConfig);
+
+    const idList = ids.join(',');
+
+    await sql.query(`
+      DELETE FROM alarms
+      WHERE id IN (${idList})
+    `);
+
+    res.status(200).json({ message: '알람 삭제 완료' });
+  } catch (err) {
+    console.error('❌ 알람 삭제 오류:', err);
+    res.status(500).json({ error: '알람 삭제 중 오류 발생' });
+  } finally {
+    sql.close();
+  }
+});
+
+
 
 module.exports = router;

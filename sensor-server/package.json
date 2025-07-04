@@ -21,6 +21,7 @@
     "https": "^1.0.0",
     "jsonwebtoken": "^9.0.2",
     "luxon": "^3.6.1",
+    "moment-timezone": "^0.6.0",
     "mssql": "^11.0.1",
     "multer": "^2.0.1",
     "node-onvif": "^0.1.7",

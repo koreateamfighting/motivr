@@ -8,6 +8,12 @@ const { spawn } = require('child_process'); // ✅ 추가
 const app = express();
 const path = require('path'); // ✅ 빠졌던 부분
 
+// ✅ CORS 허용
+app.use(cors());
+
+// ✅ 요청 바디 크기 제한을 최대 20GB까지 허용
+app.use(express.json({ limit: '20000mb' }));
+app.use(express.urlencoded({ extended: true, limit: '20000mb' }));
 
 // HTTPS 인증서 설정
 const sslOptions = {
@@ -41,6 +47,7 @@ app.use('/api', require('./routes/notice'));  // 센서/기타
 app.use('/api', require('./routes/worktask'));
 app.use('/api', require('./routes/duty'));
 app.use('/api', require('./routes/fieldinfo'));
+app.use('/api', require('./routes/twin'));
 app.use('/api', require('./routes/specialsensor'));
 app.use('/api', require('./routes/alarmhistory'));
 const settingRouter = require('./routes/settings');

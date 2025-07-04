@@ -405,7 +405,7 @@ schedule.scheduleJob('56 6 * * *', async () => {
   }
 
   // 3. pm2 재시작
-  exec('pm2 restart 2', (error2, stdout2, stderr2) => {
+  exec('pm2 restart motion-server', (error2, stdout2, stderr2) => {
     if (error2) {
       console.error('❌ PM2 2번 재시작 실패:', stderr2);
       return;
@@ -413,7 +413,7 @@ schedule.scheduleJob('56 6 * * *', async () => {
     console.log('✅ PM2 2번 재시작 완료:', stdout2);
   
     // 2번이 성공했을 때만 1번 재시작
-    exec('pm2 restart 1', (error1, stdout1, stderr1) => {
+    exec('pm2 restart cctv-server', (error1, stdout1, stderr1) => {
       if (error1) {
         console.error('❌ PM2 1번 재시작 실패:', stderr1);
       } else {
