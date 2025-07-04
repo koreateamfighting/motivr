@@ -258,34 +258,42 @@ class IotController extends ChangeNotifier {
 
   Future<void> fetchSensorStatusSummary() async {
     final uri = Uri.parse('$_baseUrl/sensor-status-summary');
+    debugPrint('[IotController] ▶️ fetchSensorStatusSummary 호출: $uri');
+
     try {
       final response = await http.get(uri);
+
+      debugPrint('[IotController] 📡 응답 수신: statusCode = ${response.statusCode}');
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
-        // 디버깅을 위한 로그 출력
-        debugPrint('Response Data: $data');
+        // 데이터가 map 형태인지 확인
+        if (data is! Map<String, dynamic>) {
+          debugPrint('❌ 응답 형식 오류: Map<String, dynamic> 아님 → $data');
+          return;
+        }
 
         normal = data['normal'] ?? 0;
         caution = data['caution'] ?? 0;
         danger = data['danger'] ?? 0;
-        inspection = data['needInspection'] ?? 0; // 점검 필요는 서버에서 계산되어 있음
+        inspection = data['needInspection'] ?? 0;
         total = data['total'] ?? 0;
 
-        // 각 상태 값들을 출력
-        debugPrint('Normal: $normal');
-        debugPrint('Caution: $caution');
-        debugPrint('Danger: $danger');
-        debugPrint('Inspection: $inspection');
-        debugPrint('Total: $total');
+        debugPrint('[IotController] ✅ 정상 처리됨');
+        debugPrint('  - Normal     : $normal');
+        debugPrint('  - Caution    : $caution');
+        debugPrint('  - Danger     : $danger');
+        debugPrint('  - Inspection : $inspection');
+        debugPrint('  - Total      : $total');
 
-        // 상태가 갱신될 때마다 notifyListeners 호출
         notifyListeners();
       } else {
-        debugPrint('❌ 센서 상태 요약 실패: ${response.statusCode}');
+        debugPrint('❌ 서버 오류: ${response.statusCode} ${response.reasonPhrase}');
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint('❌ 예외 발생: $e');
+      debugPrint('$stackTrace');
     }
   }
 

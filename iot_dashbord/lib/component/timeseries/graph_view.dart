@@ -7,7 +7,7 @@ import 'package:iot_dashboard/component/timeseries/show_loading_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:iot_dashboard/controller/iot_controller.dart';
 import 'package:iot_dashboard/screen/timeseries_screen.dart';
-import 'package:iot_dashboard/model/iot_model.dart'; // ← IotItem이 여기 들어있어야 함
+
 
 class GraphView extends StatefulWidget {
   final TimeRange timeRange;

@@ -29,7 +29,11 @@ class _IotControlStatusState extends State<IotControlStatus> {
       _loadSensorStatus(); // 30초마다 상태 갱신
     });
   }
-
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
 
   Future<void> _loadSensorStatus() async {
     try {
@@ -42,11 +46,7 @@ class _IotControlStatusState extends State<IotControlStatus> {
 
 
 
-    @override
-    void dispose() {
-      _timer.cancel();
-      super.dispose();
-    }
+
 
   }
 
