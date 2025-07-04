@@ -39,11 +39,13 @@ class _GraphViewState extends State<GraphView> {
     super.didUpdateWidget(oldWidget);
 
     if (!_isSameTimeRange(widget.timeRange, oldWidget.timeRange)) {
+      debugPrint('✅ TimeRange 변경 감지 → _loadData() 호출');
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _loadData(); // 안전하게 빌드 후 데이터 로드
+        _loadData();
       });
     }
   }
+
 
 
   bool _isSameTimeRange(TimeRange a, TimeRange b) {

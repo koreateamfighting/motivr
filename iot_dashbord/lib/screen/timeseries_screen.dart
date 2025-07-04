@@ -36,12 +36,16 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
     start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
     end: DateTime.now().copyWith(hour: 23, minute: 59, second: 59),
   );
-
   void _onQuery(DateTime from, DateTime to) {
+    // 항상 새로운 인스턴스를 생성해 강제 업데이트 유도
+    final newRange = TimeRange(start: from, end: to);
+
+    // 이전 range와 다르지 않더라도 새로 갱신되도록 setState
     setState(() {
-      _currentRange = TimeRange(start: from, end: to);
+      _currentRange = TimeRange(start: newRange.start, end: newRange.end);
     });
   }
+
 
 
   @override

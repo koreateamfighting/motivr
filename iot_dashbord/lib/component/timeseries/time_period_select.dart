@@ -131,9 +131,6 @@ class _TimePeriodSelectState extends State<TimePeriodSelect> {
         endDate = now;
       }
 
-      final from = DateTime(startDate!.year, startDate!.month, startDate!.day, startHour, startMinute);
-      final to = DateTime(endDate!.year, endDate!.month, endDate!.day, endHour, endMinute);
-      widget.onQuery?.call(from, to);
     });
   }
 
@@ -339,8 +336,10 @@ class _TimePeriodSelectState extends State<TimePeriodSelect> {
             child: ElevatedButton(
               onPressed: () {
                 if (startDate != null && endDate != null) {
-                  final from = DateTime(startDate!.year, startDate!.month, startDate!.day, 0, 0, 0);
-                  final to = DateTime(endDate!.year, endDate!.month, endDate!.day, 23, 59, 59);
+                  final from = DateTime(
+                      startDate!.year, startDate!.month, startDate!.day, startHour, startMinute);
+                  final to = DateTime(
+                      endDate!.year, endDate!.month, endDate!.day, endHour, endMinute);
                   widget.onQuery?.call(from, to);
                 }
               },
