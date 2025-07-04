@@ -11,6 +11,7 @@ import 'package:iot_dashboard/component/details/propulsion_port_view.dart';
 import 'package:iot_dashboard/component/details/reach_port_view.dart';
 import 'package:iot_dashboard/component/details/iot_data_source.dart';
 import 'package:iot_dashboard/component/common/dialog_form.dart';
+import 'package:intl/intl.dart';
 
 class DetailIotView extends StatefulWidget {
   const DetailIotView({super.key});

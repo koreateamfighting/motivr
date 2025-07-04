@@ -180,10 +180,8 @@ class _IotInputSectionState extends State<IotInputSection> {
       batteryInfo: batteryInfoController.text.trim(),
       download: '다운로드 파일 준비',
       createAt: (createdAtDate != null && createdAtDate!.isNotEmpty)
-          ? DateTime.parse('${createdAtDate!}T${_pad(createdAtHour)}:${_pad(createdAtMinute)}:${_pad(createdAtSecond)}')
-          .toLocal()
-          .toIso8601String()
-          : '',
+          ? DateTime.parse('${createdAtDate!}T${_pad(createdAtHour)}:${_pad(createdAtMinute)}:${_pad(createdAtSecond)}').toLocal()
+          : DateTime.now(),
 
 
 

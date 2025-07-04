@@ -3,6 +3,7 @@ import 'package:iot_dashboard/component/common/dialog_form.dart';
 import 'package:iot_dashboard/component/common/dialog_form2.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:iot_dashboard/model/iot_model.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class IotDataSource extends DataGridSource {
@@ -37,7 +38,7 @@ class IotDataSource extends DataGridSource {
             value: '${item.longitude} / ${item.latitude}'),
         DataGridCell<String>(columnName: 'status', value: item.eventtype),
         DataGridCell<String>(columnName: 'battery', value: item.battery),
-        DataGridCell<String>(columnName: 'lastUpdated', value: item.createAt),
+        DataGridCell<String>(columnName: 'lastUpdated', value: DateFormat('yyyy-MM-dd HH:mm:ss').format(item.createAt),),
         DataGridCell<String>(
             columnName: 'x', value: isDegree ? item.X_Deg : item.X_MM),
         DataGridCell<String>(

@@ -19,7 +19,13 @@ class IotController extends ChangeNotifier {
 
   final Map<String, IotItem> editedItems = {};
 
-  void onFieldChanged(String id, String createAt, String field, String value) {
+  void onFieldChanged(String id, String createAtStr, String field, String value) {
+    final createAt = DateTime.tryParse(createAtStr);
+    if (createAt == null) {
+      debugPrint('❌ 잘못된 createAt 형식: $createAtStr');
+      return;
+    }
+
     final key = '${id}_$createAt';
     final existing = _items.firstWhere(
           (item) => item.id == id && item.createAt == createAt,
@@ -59,39 +65,10 @@ class IotController extends ChangeNotifier {
     debugPrint('→ 저장 전: X_Deg=${updated.X_Deg}, Y_Deg=${updated.Y_Deg}, Z_Deg=${updated.Z_Deg}');
   }
 
-// 🔍 ID 기준으로 필터된 리스트 반환
-  List<IotItem> filterItems(String query) {
-    final q = query.toLowerCase().trim();
-    return _items.where((item) => item.id.toLowerCase().contains(q)).toList();
-  }
 
-  List<DisplacementGroup> getTodayDisplacementGroups() {
-    final grouped = <String, List<IotItem>>{};
 
-    for (final item in _items) {
-      final dt = DateTime.tryParse(item.createAt);
-      if (dt == null || dt.year != DateTime.now().year || dt.month != DateTime.now().month || dt.day != DateTime.now().day) continue;
 
-      grouped.putIfAbsent(item.id, () => []).add(item);
-    }
 
-    return grouped.entries.map((entry) {
-      final x = <DisplacementData>[];
-      final y = <DisplacementData>[];
-      final z = <DisplacementData>[];
-
-      for (final i in entry.value) {
-        final time = DateTime.tryParse(i.createAt);
-        if (time != null) {
-          x.add(DisplacementData(time, double.tryParse(i.X_Deg) ?? 0.0));
-          y.add(DisplacementData(time, double.tryParse(i.Y_Deg) ?? 0.0));
-          z.add(DisplacementData(time, double.tryParse(i.Z_Deg) ?? 0.0));
-        }
-      }
-
-      return DisplacementGroup(rid: entry.key, x: x, y: y, z: z);
-    }).toList();
-  }
 
   Future<void> fetchSensorDataByTimeRange(DateTime startDate, DateTime endDate) async {
     final formattedStartDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(startDate);
@@ -117,6 +94,47 @@ class IotController extends ChangeNotifier {
     } catch (e) {
       debugPrint('❌ 조회 중 예외 발생: $e');
     }
+  }
+
+
+
+  List<DisplacementGroup> getFilteredDisplacementGroups() {
+    final grouped = <String, List<IotItem>>{};
+
+    debugPrint('📋 전체 _items 개수: ${_items.length}');
+
+    for (final item in _items) {
+      final eventType = item.eventtype.trim();
+      final minute = item.createAt.minute;
+
+      if (eventType != '2') continue;
+      if (minute != 9 && minute != 39) continue;
+
+      grouped.putIfAbsent(item.id, () => []).add(item);
+    }
+
+    debugPrint('✅ 필터링 후 그룹 개수: ${grouped.length}');
+    for (final entry in grouped.entries) {
+      debugPrint('📌 RID=${entry.key}, 데이터 개수: ${entry.value.length}');
+      for (final i in entry.value) {
+        debugPrint('  ↳ time=${i.createAt}, X=${i.X_Deg}, Y=${i.Y_Deg}, Z=${i.Z_Deg}');
+      }
+    }
+
+    return grouped.entries.map((entry) {
+      final x = <DisplacementData>[];
+      final y = <DisplacementData>[];
+      final z = <DisplacementData>[];
+
+      for (final i in entry.value) {
+        final time = i.createAt;
+        x.add(DisplacementData(time, double.tryParse(i.X_Deg) ?? 0.0));
+        y.add(DisplacementData(time, double.tryParse(i.Y_Deg) ?? 0.0));
+        z.add(DisplacementData(time, double.tryParse(i.Z_Deg) ?? 0.0));
+      }
+
+      return DisplacementGroup(rid: entry.key, x: x, y: y, z: z);
+    }).toList();
   }
 
 
@@ -271,7 +289,6 @@ class IotController extends ChangeNotifier {
     }
   }
 
-  // 🆕 최근 센서 데이터 불러오기
   Future<void> fetchRecentSensorData({int days = 1}) async {
     final uri = Uri.parse('$_baseUrl/recent-sensor-data?days=$days');
     debugPrint('📡 최근 센서 데이터 조회 시작: $uri');
@@ -283,8 +300,23 @@ class IotController extends ChangeNotifier {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body)['data'];
+
+        // ✅ 로그 추가 시작
+        debugPrint('📊 서버에서 수신된 레코드 수: ${data.length}');
+        if (data.isNotEmpty) {
+          debugPrint('📊 첫 번째 레코드 createAt: ${data.first['CreateAt']}');
+        }
+        // ✅ 로그 추가 끝
+
         _items.clear();
         _items.addAll(data.map((e) => IotItem.fromJson(e)));
+
+        // ✅ 추가 로그: 파싱 후 확인
+        debugPrint('📋 파싱된 IotItem 개수: ${_items.length}');
+        if (_items.isNotEmpty) {
+          debugPrint('📋 첫 번째 IotItem createAt: ${_items.first.createAt}');
+        }
+
         notifyListeners();
 
         debugPrint('✅ ${data.length}건의 센서 데이터 불러옴');
@@ -294,6 +326,11 @@ class IotController extends ChangeNotifier {
     } catch (e) {
       debugPrint('❌ 조회 중 예외 발생: $e');
     }
+  }
+
+  List<IotItem> filterItems(String query) {
+    final q = query.toLowerCase().trim();
+    return _items.where((item) => item.id.toLowerCase().contains(q)).toList();
   }
 
   // 상태 변수들에 접근할 getter

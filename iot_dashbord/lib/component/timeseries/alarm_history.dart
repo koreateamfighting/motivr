@@ -3,6 +3,7 @@ import 'package:iot_dashboard/model/alarm_model.dart';
 import 'package:iot_dashboard/model/iot_model.dart';
 import 'package:iot_dashboard/controller/iot_controller.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl/intl.dart';
 
 class AlarmHistory extends StatefulWidget {
   final String selectedRid;
@@ -288,7 +289,7 @@ class _AlarmHistoryState extends State<AlarmHistory> {
           Container(
             width: 260.w,
             child: Text(
-              item.createAt,
+              DateFormat('yyyy-MM-dd HH:mm:ss').format(item.createAt),
               style: TextStyle(
                 fontSize: 30.sp,
                 color: Colors.white,

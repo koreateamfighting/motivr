@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import 'package:flutter/foundation.dart';
 
 class IotItem {
   final String id;
@@ -15,7 +16,7 @@ class IotItem {
   final String Z_Deg;
   final String batteryInfo;
   final String download;
-  final String createAt;
+  final DateTime createAt;
 
   IotItem({
     required this.id,
@@ -50,7 +51,7 @@ class IotItem {
     String? Z_Deg,
     String? batteryInfo,
     String? download,
-    String? createAt,
+    DateTime? createAt,
   }) {
     return IotItem(
       id: id ?? this.id,
@@ -72,7 +73,6 @@ class IotItem {
   }
 
 
-
   factory IotItem.fromJson(Map<String, dynamic> json) {
     // 🔧 RID 포맷 보정 (S1_1 → S1_001)
     String rawId = json['RID']?.toString() ?? '';
@@ -84,14 +84,15 @@ class IotItem {
       }
     }
 
-    // 🕒 CreateAt 포맷 보정
+    // 🕒 CreateAt 파싱 (UTC 포맷 → KST로 강제 인식)
     final rawTime = json['CreateAt']?.toString() ?? '';
-    String formattedTime = rawTime;
+    DateTime parsedTime = DateTime.now();
     try {
-      final dt = DateTime.parse(rawTime).toLocal();
-      formattedTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(dt);
+      final kstString = rawTime.replaceFirst('Z', '').replaceFirst('T', ' ').substring(0, 19);
+      parsedTime = DateFormat('yyyy-MM-dd HH:mm:ss').parse(kstString);
+      debugPrint('🕒 [IotItem.fromJson] RID=$paddedId, rawTime=$rawTime → parsedTime=$parsedTime');
     } catch (e) {
-      formattedTime = rawTime;
+      debugPrint('❌ [IotItem.fromJson] 시간 파싱 실패: $rawTime, 에러: $e');
     }
 
     return IotItem(
@@ -109,9 +110,14 @@ class IotItem {
       Z_Deg: json['Z_Deg']?.toString() ?? '',
       batteryInfo: json['BatteryLevel']?.toString() ?? '',
       download: '',
-      createAt: formattedTime,
+      createAt: parsedTime,
     );
   }
+
+
+
+
+
 
   Map<String, dynamic> toJson() {
     String eventtypeCode;
@@ -144,12 +150,10 @@ class IotItem {
       'Z_MM': double.tryParse(Z_MM?.trim() ?? '') ?? 0.0,
       'Latitude': double.tryParse(latitude) ?? 0.0,
       'Longitude': double.tryParse(longitude) ?? 0.0,
+      'CreateAt': DateFormat('yyyy-MM-dd HH:mm:ss').format(createAt.toUtc()), // ✅ UTC 문자열로 변환
     };
 
-    // ✅ 시간 문자열이 있을 경우만 포함
-    if (createAt.isNotEmpty) {
-      json['CreateAt'] = createAt;
-    }
+
 
     return json;
   }
