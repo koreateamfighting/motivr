@@ -58,6 +58,33 @@ class _TimePeriodSelectState extends State<TimePeriodSelect> {
     widget.onQuery?.call(monthStart, now);  // 날짜 범위를 전달
   }
 
+  Widget _timeDropdown(int value, void Function(int?) onChanged, List<int> range) {
+    return Container(
+      width: 80.w,
+      height: 60.h,
+      padding: EdgeInsets.symmetric(horizontal: 5.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(5.r),
+        border: Border.all(color: Color(0xff3182ce), width: 1.w),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int>(
+          value: value,
+          isExpanded: true,
+          icon: Icon(Icons.keyboard_arrow_down, size: 28.sp, color: Colors.black),
+          style: TextStyle(fontSize: 24.sp, color: Colors.black),
+          items: range
+              .map((v) => DropdownMenuItem(
+            value: v,
+            child: Center(child: Text(v.toString().padLeft(2, '0'))),
+          ))
+              .toList(),
+          onChanged: onChanged,
+        ),
+      ),
+    );
+  }
 
 
   DateTime combineDateTime(DateTime date, int hour, int minute) {
@@ -88,21 +115,28 @@ class _TimePeriodSelectState extends State<TimePeriodSelect> {
     final now = DateTime.now();
     setState(() {
       selectedPeriod = type;
+      startHour = 0;
+      startMinute = 0;
+      endHour = 23;
+      endMinute = 59;
+
       if (type == '오늘') {
         startDate = DateTime(now.year, now.month, now.day);
         endDate = now;
-        widget.onQuery?.call(startDate!, endDate!);
       } else if (type == '1주') {
         startDate = DateTime(now.year, now.month, now.day).subtract(Duration(days: 7));
         endDate = now;
-        widget.onQuery?.call(startDate!, endDate!);
       } else if (type == '1개월') {
         startDate = DateTime(now.year, now.month, now.day).subtract(Duration(days: 30));
         endDate = now;
-        widget.onQuery?.call(startDate!, endDate!);
       }
+
+      final from = DateTime(startDate!.year, startDate!.month, startDate!.day, startHour, startMinute);
+      final to = DateTime(endDate!.year, endDate!.month, endDate!.day, endHour, endMinute);
+      widget.onQuery?.call(from, to);
     });
   }
+
 
 
 
@@ -212,6 +246,9 @@ class _TimePeriodSelectState extends State<TimePeriodSelect> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(5.r),
             ),
+            child: _timeDropdown(startHour, (val) {
+              if (val != null) setState(() => startHour = val);
+            }, List.generate(24, (i) => i)), // 시 0~23
           ),
           SizedBox(
             width: 8.w,
@@ -235,6 +272,10 @@ class _TimePeriodSelectState extends State<TimePeriodSelect> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(5.r),
             ),
+            child:  _timeDropdown(startMinute, (val) {
+              if (val != null) setState(() => startMinute = val);
+            }, List.generate(60, (i) => i)), // 분 0~59
+
           ),
           SizedBox(
             width: 15.w,
@@ -258,6 +299,9 @@ class _TimePeriodSelectState extends State<TimePeriodSelect> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(5.r),
             ),
+            child:     _timeDropdown(endHour, (val) {
+              if (val != null) setState(() => endHour = val);
+            }, List.generate(24, (i) => i)),
           ),
           SizedBox(
             width: 8.w,
@@ -281,6 +325,9 @@ class _TimePeriodSelectState extends State<TimePeriodSelect> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(5.r),
             ),
+           child: _timeDropdown(endMinute, (val) {
+              if (val != null) setState(() => endMinute = val);
+            }, List.generate(60, (i) => i)),
           ),
           SizedBox(
             width: 95.w,
@@ -292,8 +339,8 @@ class _TimePeriodSelectState extends State<TimePeriodSelect> {
             child: ElevatedButton(
               onPressed: () {
                 if (startDate != null && endDate != null) {
-                  final from = combineDateTime(startDate!, startHour, startMinute);
-                  final to = combineDateTime(endDate!, endHour, endMinute);
+                  final from = DateTime(startDate!.year, startDate!.month, startDate!.day, 0, 0, 0);
+                  final to = DateTime(endDate!.year, endDate!.month, endDate!.day, 23, 59, 59);
                   widget.onQuery?.call(from, to);
                 }
               },

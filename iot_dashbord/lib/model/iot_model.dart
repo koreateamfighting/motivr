@@ -90,7 +90,7 @@ class IotItem {
     try {
       final kstString = rawTime.replaceFirst('Z', '').replaceFirst('T', ' ').substring(0, 19);
       parsedTime = DateFormat('yyyy-MM-dd HH:mm:ss').parse(kstString);
-      debugPrint('🕒 [IotItem.fromJson] RID=$paddedId, rawTime=$rawTime → parsedTime=$parsedTime');
+      //debugPrint('🕒 [IotItem.fromJson] RID=$paddedId, rawTime=$rawTime → parsedTime=$parsedTime');
     } catch (e) {
       debugPrint('❌ [IotItem.fromJson] 시간 파싱 실패: $rawTime, 에러: $e');
     }

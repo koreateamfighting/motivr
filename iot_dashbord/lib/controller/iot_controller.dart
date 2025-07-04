@@ -117,7 +117,7 @@ class IotController extends ChangeNotifier {
     for (final entry in grouped.entries) {
       debugPrint('📌 RID=${entry.key}, 데이터 개수: ${entry.value.length}');
       for (final i in entry.value) {
-        debugPrint('  ↳ time=${i.createAt}, X=${i.X_Deg}, Y=${i.Y_Deg}, Z=${i.Z_Deg}');
+        //debugPrint('  ↳ time=${i.createAt}, X=${i.X_Deg}, Y=${i.Y_Deg}, Z=${i.Z_Deg}');
       }
     }
 

@@ -27,41 +27,54 @@ class _GraphViewState extends State<GraphView> {
   final ScrollController _scrollController = ScrollController();
 
   @override
+  @override
   void initState() {
     super.initState();
+    Future.delayed(Duration.zero, _loadData);
+  }
 
-    Future.delayed(Duration.zero, () async {
-      showLoadingDialog(context);
-      final iot = context.read<IotController>();
 
-      // ✅ 오늘 날짜 00:00:00 ~ 23:59:59 범위 지정
-      final today = DateTime.now();
-      final start = DateTime(today.year, today.month, today.day, 0, 0, 0);
-      final end = DateTime(today.year, today.month, today.day, 23, 59, 59);
+  @override
+  void didUpdateWidget(covariant GraphView oldWidget) {
+    super.didUpdateWidget(oldWidget);
 
-      await iot.fetchSensorDataByTimeRange(start, end);
-
-      // ✅ EventType = 2 && (minute == 9 || 39) 조건은 Controller 내부 함수에서 필터링
-      groups = iot.getFilteredDisplacementGroups();
-      debugPrint('🎯 데이터 개수: ${iot.items.length}');
-      debugPrint('🎯 필터된 그룹 개수: ${groups.length}');
-
-      // ✅ RID 정렬
-      groups.sort((a, b) {
-        final aNum = int.tryParse(a.rid.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
-        final bNum = int.tryParse(b.rid.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
-        return aNum.compareTo(bNum);
+    if (!_isSameTimeRange(widget.timeRange, oldWidget.timeRange)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadData(); // 안전하게 빌드 후 데이터 로드
       });
+    }
+  }
 
-      // ✅ interval 초기화
-      for (final g in groups) {
-        selectedIntervals[g.rid] = '30분';
-      }
 
-      if (groups.isNotEmpty) widget.onRidTap(groups.first.rid);
-      Navigator.of(context).pop();
-      setState(() {});
+  bool _isSameTimeRange(TimeRange a, TimeRange b) {
+    return a.start == b.start && a.end == b.end;
+  }
+
+  Future<void> _loadData() async {
+    showLoadingDialog(context);
+    final iot = context.read<IotController>();
+    final start = widget.timeRange.start;
+    final end = widget.timeRange.end;
+
+    await iot.fetchSensorDataByTimeRange(start, end);
+
+    groups = iot.getFilteredDisplacementGroups();
+    debugPrint('🎯 데이터 개수: ${iot.items.length}');
+    debugPrint('🎯 필터된 그룹 개수: ${groups.length}');
+
+    groups.sort((a, b) {
+      final aNum = int.tryParse(a.rid.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+      final bNum = int.tryParse(b.rid.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+      return aNum.compareTo(bNum);
     });
+
+    for (final g in groups) {
+      selectedIntervals[g.rid] = '30분';
+    }
+
+    if (groups.isNotEmpty) widget.onRidTap(groups.first.rid);
+    Navigator.of(context).pop();
+    setState(() {});
   }
 
   @override

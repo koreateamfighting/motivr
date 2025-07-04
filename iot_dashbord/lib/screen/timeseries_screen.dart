@@ -30,16 +30,16 @@ class TimeSeriesScreen extends StatefulWidget {
 
 class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
   String selectedRid = '';
-  String selectedInterval = '10분';
+  String selectedInterval = '30분';
   int selectedTab = 0; // 0 = IoT, 1 = CCTV
   TimeRange _currentRange = TimeRange(
-    start: DateTime.now().subtract(Duration(days: 1)),
-    end: DateTime.now(),
+    start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
+    end: DateTime.now().copyWith(hour: 23, minute: 59, second: 59),
   );
 
-  void _onQuery(TimeRange newRange) {
+  void _onQuery(DateTime from, DateTime to) {
     setState(() {
-      _currentRange = newRange;
+      _currentRange = TimeRange(start: from, end: to);
     });
   }
 
@@ -171,7 +171,9 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
                     ),
                     child: Column(
                       children: [
-                        TimePeriodSelect(),
+                        TimePeriodSelect(
+                          onQuery: _onQuery, // ✅ 날짜 변경 적용
+                        ),
                         SizedBox(
                           height: 16.h,
                         ),
@@ -195,8 +197,9 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
                                 });
                               },
                             ),
-
                           ],
+
+
                         )
                       ],
                     ),
@@ -209,104 +212,6 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
         ));
   }
 
-  double _getIntervalValue() {
-    switch (selectedInterval) {
-      case '10분':
-        return 1;
-      case '30분':
-        return 3;
-      case '1시간':
-        return 6;
-      case '3시간':
-        return 18;
-      case '6시간':
-        return 36;
-      default:
-        return 1;
-    }
-  }
-
-  double _getFontSize() {
-    switch (selectedInterval) {
-      case '10분':
-        return 9.sp;
-      case '30분':
-        return 10.sp;
-      case '1시간':
-        return 12.sp;
-      case '3시간':
-        return 13.sp;
-      case '6시간':
-        return 14.sp;
-      default:
-        return 10.sp;
-    }
-  }
-
-  List<DisplacementData> _getIntervalData(List<DisplacementData> original) {
-    switch (selectedInterval) {
-      case '30분':
-        return _aggregateData(original, Duration(minutes: 30));
-      case '1시간':
-        return _aggregateData(original, Duration(hours: 1));
-      case '3시간':
-        return _aggregateData(original, Duration(hours: 3));
-      case '6시간':
-        return _aggregateData(original, Duration(hours: 6));
-      default:
-        return original;
-    }
-  }
-
-  List<DisplacementData> _aggregateData(
-      List<DisplacementData> data, Duration interval) {
-    final List<DisplacementData> aggregated = [];
-    if (data.isEmpty) return aggregated;
-    DateTime current = data.first.time;
-    DateTime end = current.add(interval);
-    List<double> buffer = [];
-    for (final d in data) {
-      if (d.time.isBefore(end)) {
-        buffer.add(d.value);
-      } else {
-        if (buffer.isNotEmpty) {
-          final avg = buffer.reduce((a, b) => a + b) / buffer.length;
-          aggregated.add(DisplacementData(current, avg));
-        }
-        current = end;
-        end = current.add(interval);
-        buffer = [d.value];
-      }
-    }
-    if (buffer.isNotEmpty) {
-      final avg = buffer.reduce((a, b) => a + b) / buffer.length;
-      aggregated.add(DisplacementData(current, avg));
-    }
-    return aggregated;
-  }
-
-  Widget _intervalButton(String label) {
-    final isSelected = selectedInterval == label;
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected ? Color(0xff3cbfad) : Colors.grey[300],
-        foregroundColor: isSelected ? Colors.white : Colors.black,
-        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-      ),
-      onPressed: () {
-        setState(() => selectedInterval = label);
-      },
-      child: Text(
-        label,
-        style: TextStyle(
-          fontFamily: 'PretendardGOV',
-          fontWeight: FontWeight.w600,
-          fontSize: 28.sp,
-        ),
-      ),
-    );
-  }
 }
 
 class DisplacementData {
