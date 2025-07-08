@@ -36,13 +36,14 @@ class _WorkTaskAndNoticeState extends State<WorkTaskAndNotice> {
   Widget build(BuildContext context) {
     return Container(
       width: 987.w,
-      height: 602.h,
+      height: 610.h,
       decoration: BoxDecoration(
         color: Color(0xff1b254b),
         border: Border.all(color: Colors.white,width: 1.w),
         borderRadius: BorderRadius.circular(5.r),
       ),
       child: Column(
+
         children: [
           WorkTaskSection(isExpanded: showWorkTask, onTap: toggleWorkTask),
           NoticeSection(isExpanded: showNotice, onTap: toggleNotice),

@@ -8,12 +8,16 @@ import 'package:provider/provider.dart';
 import 'package:iot_dashboard/controller/iot_controller.dart';
 import 'package:iot_dashboard/screen/timeseries_screen.dart';
 
-
 class GraphView extends StatefulWidget {
   final TimeRange timeRange;
   final void Function(String rid) onRidTap;
+  final ValueNotifier<Set<String>> selectedDownloadRids;
 
-  const GraphView({super.key, required this.timeRange, required this.onRidTap});
+  const GraphView(
+      {super.key,
+      required this.timeRange,
+      required this.onRidTap,
+      required this.selectedDownloadRids});
 
   @override
   State<GraphView> createState() => _GraphViewState();
@@ -26,13 +30,16 @@ class _GraphViewState extends State<GraphView> {
   Map<String, String> selectedIntervals = {};
   final ScrollController _scrollController = ScrollController();
 
-  @override
+  bool _isSelected(String rid) {
+    final selected = widget.selectedDownloadRids.value;
+    return selected.contains('ALL') || selected.contains(rid);
+  }
+
   @override
   void initState() {
     super.initState();
     Future.delayed(Duration.zero, _loadData);
   }
-
 
   @override
   void didUpdateWidget(covariant GraphView oldWidget) {
@@ -45,8 +52,6 @@ class _GraphViewState extends State<GraphView> {
       });
     }
   }
-
-
 
   bool _isSameTimeRange(TimeRange a, TimeRange b) {
     return a.start == b.start && a.end == b.end;
@@ -82,39 +87,44 @@ class _GraphViewState extends State<GraphView> {
   @override
   Widget build(BuildContext context) {
     ScreenUtil.ensureScreenSize();
-    return Container(
-      width: 2916.w,
-      height: 1648.h,
-      decoration: BoxDecoration(
-        color: Color(0xff414c67),
-        borderRadius: BorderRadius.circular(5.r),
-        border: Border.all(color: Color(0xff414c67), width: 4.w),
-      ),
-      child: ScrollbarTheme(
-        data: ScrollbarThemeData(
-          thumbColor: MaterialStateProperty.all(Color(0xff004aff)),
-          trackColor: MaterialStateProperty.all(Colors.white),
-          radius: Radius.circular(10.r),
-          thickness: MaterialStateProperty.all(10.w),
-        ),
-        child: Scrollbar(
-          controller: _scrollController,
-          thumbVisibility: true,
-          radius: Radius.circular(5.r),
-          trackVisibility: true,
-          scrollbarOrientation: ScrollbarOrientation.right,
-          interactive: true,
-          child: SingleChildScrollView(
-            controller: _scrollController,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: groups.map(_buildSensorChart).toList(),
+    return ValueListenableBuilder<Set<String>>(
+        valueListenable: widget.selectedDownloadRids,
+        builder: (context, selectedRids, _) {
+          return Container(
+            width: 2916.w,
+            height: 1648.h,
+            decoration: BoxDecoration(
+              color: Color(0xff414c67),
+              borderRadius: BorderRadius.circular(5.r),
+              border: Border.all(color: Color(0xff414c67), width: 4.w),
             ),
-          ),
-        ),
-      ),
-    );
+            child: ScrollbarTheme(
+              data: ScrollbarThemeData(
+                thumbColor: MaterialStateProperty.all(Color(0xff004aff)),
+                trackColor: MaterialStateProperty.all(Colors.white),
+                radius: Radius.circular(10.r),
+                thickness: MaterialStateProperty.all(10.w),
+              ),
+              child: Scrollbar(
+                controller: _scrollController,
+                thumbVisibility: true,
+                radius: Radius.circular(5.r),
+                trackVisibility: true,
+                scrollbarOrientation: ScrollbarOrientation.right,
+                interactive: true,
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: groups.map(_buildSensorChart).toList(),
+                  ),
+                ),
+              ),
+            ),
+          );
+        });
+    ;
   }
 
   int _getCategoryAxisInterval(String intervalLabel) {
@@ -224,13 +234,34 @@ class _GraphViewState extends State<GraphView> {
                       ),
                     )),
                 Spacer(),
-                Container(
-                  width: 45.w,
-                  height: 45.h,
-                  decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(5.r),
-                    border: Border.all(color: Colors.white, width: 2.w),
+                InkWell(
+                  onTap: () {
+                    final current = widget.selectedDownloadRids.value;
+
+                    // 'ALL'이 선택되어 있으면 개별 선택이 무의미하므로 제거
+                    if (current.contains('ALL')) current.remove('ALL');
+
+                    if (current.contains(group.rid)) {
+                      current.remove(group.rid);
+                    } else {
+                      current.add(group.rid);
+                    }
+
+                    widget.selectedDownloadRids.value = Set.from(current);
+                  },
+                  child: Container(
+                    width: 45.w,
+                    height: 45.h,
+                    decoration: BoxDecoration(
+                      color: _isSelected(group.rid)
+                          ? const Color(0xff3182ce)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(5.r),
+                      border: Border.all(color: Colors.white, width: 2.w),
+                    ),
+                    child: _isSelected(group.rid)
+                        ? Icon(Icons.check, color: Colors.white, size: 28.sp)
+                        : null,
                   ),
                 ),
                 SizedBox(
@@ -278,7 +309,6 @@ class _GraphViewState extends State<GraphView> {
                 minimum: -5,
                 maximum: 5,
                 interval: 1,
-
                 majorGridLines: const MajorGridLines(width: 0),
                 plotBands: [
                   ...[5, -5, 3, -3, 0].map((v) => PlotBand(

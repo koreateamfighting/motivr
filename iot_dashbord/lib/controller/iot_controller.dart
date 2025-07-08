@@ -256,9 +256,16 @@ class IotController extends ChangeNotifier {
     }
   }
 
+  bool isLoading = false;
+  bool hasError = false;
+
   Future<void> fetchSensorStatusSummary() async {
     final uri = Uri.parse('$_baseUrl/sensor-status-summary');
     debugPrint('[IotController] ▶️ fetchSensorStatusSummary 호출: $uri');
+
+    isLoading = true;
+    hasError = false;
+    notifyListeners(); // 🔁 상태 갱신 반영
 
     try {
       final response = await http.get(uri);
@@ -268,9 +275,9 @@ class IotController extends ChangeNotifier {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
-        // 데이터가 map 형태인지 확인
         if (data is! Map<String, dynamic>) {
           debugPrint('❌ 응답 형식 오류: Map<String, dynamic> 아님 → $data');
+          hasError = true;
           return;
         }
 
@@ -286,16 +293,20 @@ class IotController extends ChangeNotifier {
         debugPrint('  - Danger     : $danger');
         debugPrint('  - Inspection : $inspection');
         debugPrint('  - Total      : $total');
-
-        notifyListeners();
       } else {
         debugPrint('❌ 서버 오류: ${response.statusCode} ${response.reasonPhrase}');
+        hasError = true;
       }
     } catch (e, stackTrace) {
       debugPrint('❌ 예외 발생: $e');
       debugPrint('$stackTrace');
+      hasError = true;
+    } finally {
+      isLoading = false;
+      notifyListeners(); // 🔁 로딩 종료 후 상태 갱신
     }
   }
+
 
   Future<void> fetchRecentSensorData({int days = 1}) async {
     final uri = Uri.parse('$_baseUrl/recent-sensor-data?days=$days');

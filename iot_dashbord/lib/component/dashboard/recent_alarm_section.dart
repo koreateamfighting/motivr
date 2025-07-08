@@ -37,7 +37,7 @@ class _AlarmListViewState extends State<AlarmListView> {
   Widget build(BuildContext context) {
     return Container(
       width: 1168.w,
-      height: 602.h,
+      height: 610.h,
       decoration: BoxDecoration(
         //color: Color(0xff111c44),
         color: Color(0xff1b254b),
@@ -161,9 +161,11 @@ class _AlarmListViewState extends State<AlarmListView> {
             decoration: BoxDecoration(
               //color: Color(0xff111c44),
               color: Color(0xff0b1437),
-              border: Border.all(
-                color: Colors.white,
-                width: 1.w,
+              border: Border(
+                bottom: BorderSide(
+                  color: Color(0xffd9d9d9), // 선 색상
+                  width: 1.w, // 선 두께
+                ),
               ),
               borderRadius: BorderRadius.circular(5.r),
               // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
@@ -181,7 +183,7 @@ class _AlarmListViewState extends State<AlarmListView> {
                         softWrap: false,                 // 줄바꿈 비활성화
                         style: TextStyle(
                             fontFamily: 'PretendardGOV',
-                            fontWeight: FontWeight.w300,
+                            fontWeight: FontWeight.w800,
                             fontSize: 24.sp,
                             letterSpacing: -0.2.w,
                             color: Colors.white))),
@@ -191,7 +193,7 @@ class _AlarmListViewState extends State<AlarmListView> {
                     child: Text('유형',
                         style: TextStyle(
                             fontFamily: 'PretendardGOV',
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w800,
                             fontSize: 24.sp,
                             color: Colors.white))),
                 SizedBox(width: 180.w,),
@@ -199,7 +201,7 @@ class _AlarmListViewState extends State<AlarmListView> {
                     child: Text('메세지',
                         style: TextStyle(
                             fontFamily: 'PretendardGOV',
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w800,
                             fontSize: 24.sp,
                             color: Colors.white))),
               ],

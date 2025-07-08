@@ -15,7 +15,6 @@ class CctvMiniView extends StatefulWidget {
 }
 
 class _CctvMiniViewState extends State<CctvMiniView> {
-
   Timer? _refreshTimer;
 
   @override
@@ -78,6 +77,9 @@ class _CctvMiniViewState extends State<CctvMiniView> {
           height: 1.h,
           color: Colors.white,
         ),
+        SizedBox(
+          height: 8.h,
+        ),
         Container(
           width: 859.w,
           height: 503.h,
@@ -87,19 +89,18 @@ class _CctvMiniViewState extends State<CctvMiniView> {
             border: Border.all(color: Colors.grey),
           ),
           child: const HlsPlayerIframe(cam: 'cam1'),
-
         ),
         Container(
           height: 1.h,
           color: Colors.white,
         ),
         Container(
-          height: 320.h,
+          height: 312.h,
           padding: EdgeInsets.only(left: 11.w, right: 11.w),
           child: Column(
             children: [
               Container(
-                height: 69.h,
+                height: 55.h,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -124,152 +125,150 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                 ),
               ),
               Container(
-                height: 240.h,
-                decoration: BoxDecoration(
-                  //color: Color(0xff111c44),
-                  color: Colors.white,
-                  border: Border.all(
+                  height: 240.h,
+                  decoration: BoxDecoration(
+                    //color: Color(0xff111c44),
                     color: Colors.white,
-                    width: 1.w,
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 1.w,
+                    ),
+                    borderRadius: BorderRadius.circular(5.r),
+                    // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                   ),
-                  borderRadius: BorderRadius.circular(5.r),
-                  // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
-                ),
-                child:Stack(
-                  children: [// Stack 내부의 마지막 자식으로 추가
+                  child: Stack(
+                    children: [
+                      // Stack 내부의 마지막 자식으로 추가
 
-                    Positioned.fill(
-                      child: Container(
-                        height: 240.h,
-                        child: LineChart(
-                          LineChartData(
-
-                            minY: -5,
-                            maxY:  5,
-                            backgroundColor: Colors.transparent,
-                            gridData: FlGridData(show: false),
-                            titlesData: FlTitlesData(show: false),
-                            borderData: FlBorderData(show: false),
-                            lineBarsData: [
-                              LineChartBarData(
-                                spots: [
-                                  FlSpot(0, -2),
-                                  FlSpot(1, -1),
-                                  FlSpot(2, 0),
-                                  FlSpot(3, 2.5),
-                                  FlSpot(4, 3),
-                                  FlSpot(5, 1),
-                                  FlSpot(6, 0.5),
-                                  FlSpot(7, -1.5),
-                                ],
-                                isCurved: true,
-                                color: Colors.blue,
-                                barWidth: 2,
-                                dotData: FlDotData(show: false),
-                                belowBarData: BarAreaData(
-                                  show: true,
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.blue.withOpacity(0.8),
-                                      Colors.blue.withOpacity(0.2),
-                                    ],
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
+                      Positioned.fill(
+                        child: Container(
+                          height: 240.h,
+                          child: LineChart(
+                            LineChartData(
+                              minY: -5,
+                              maxY: 5,
+                              backgroundColor: Colors.transparent,
+                              gridData: FlGridData(show: false),
+                              titlesData: FlTitlesData(show: false),
+                              borderData: FlBorderData(show: false),
+                              lineBarsData: [
+                                LineChartBarData(
+                                  spots: [
+                                    FlSpot(0, -2),
+                                    FlSpot(1, -1),
+                                    FlSpot(2, 0),
+                                    FlSpot(3, 2.5),
+                                    FlSpot(4, 3),
+                                    FlSpot(5, 1),
+                                    FlSpot(6, 0.5),
+                                    FlSpot(7, -1.5),
+                                  ],
+                                  isCurved: true,
+                                  color: Colors.blue,
+                                  barWidth: 2,
+                                  dotData: FlDotData(show: false),
+                                  belowBarData: BarAreaData(
+                                    show: true,
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Colors.blue.withOpacity(0.8),
+                                        Colors.blue.withOpacity(0.2),
+                                      ],
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                    ),
                                   ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: 81.65.w,
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '추진구 / CCTV',
+                                style: GoogleFonts.inter(
+                                  color: Color(0xff262d33),
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                '2025-05-23',
+                                style: GoogleFonts.inter(
+                                  color: Color(0xff939699),
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                              SizedBox(
+                                height: 10.h,
+                              ),
+                              Text(
+                                '1.1921',
+                                style: GoogleFonts.inter(
+                                  color: Color(0xff262d33),
+                                  fontSize: 30.sp,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                              Text(
+                                '+0.0015 (+0.13%)',
+                                style: GoogleFonts.inter(
+                                  color: Color(0xff4b5157),
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                              SizedBox(
+                                height: 15.h,
+                              ),
+                              Text(
+                                '0.00 USD',
+                                style: GoogleFonts.inter(
+                                  color: Color(0xff4b5157),
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w400,
                                 ),
                               ),
                             ],
+                          )
+                        ],
+                      ),
+                      Positioned.fill(
+                        child: Container(
+                          color: Colors.black.withOpacity(0.8),
+                          // 회색 배경, 불투명도 30%
+                          alignment: Alignment.center,
+                          child: Text(
+                            '점검중입니다',
+                            style: TextStyle(
+                              fontSize: 30.sp,
+                              fontFamily: 'PretendardGOV',
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xff3185ce),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          width: 81.65.w,
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              '추진구 / CCTV',
-                              style: GoogleFonts.inter(
-                                color: Color(0xff262d33),
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Text(
-                              '2025-05-23',
-                              style: GoogleFonts.inter(
-                                color: Color(0xff939699),
-                                fontSize: 12.sp,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                            SizedBox(
-                              height: 10.h,
-                            ),
-                            Text(
-                              '1.1921',
-                              style: GoogleFonts.inter(
-                                color: Color(0xff262d33),
-                                fontSize: 30.sp,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                            Text(
-                              '+0.0015 (+0.13%)',
-                              style: GoogleFonts.inter(
-                                color: Color(0xff4b5157),
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                            SizedBox(
-                              height: 15.h,
-                            ),
-                            Text(
-                              '0.00 USD',
-                              style: GoogleFonts.inter(
-                                color: Color(0xff4b5157),
-                                fontSize: 12.sp,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ],
-                        )
-                      ],
-                    ),
-                    Positioned.fill(
-                      child: Container(
-                        color: Colors.black.withOpacity(0.8), // 회색 배경, 불투명도 30%
-                        alignment: Alignment.center,
-                        child: Text(
-                          '점검중입니다',
-                          style: TextStyle(
-                            fontSize: 30.sp,
-                            fontFamily: 'PretendardGOV',
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xff3185ce),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                  ],
-                )
-
-              ),
+                    ],
+                  )),
             ],
           ),
         ),
         Container(
           width: 859.w,
           height: 495.h,
-          padding: EdgeInsets.fromLTRB(11.w, 10.h, 11.w, 10.h),
+          padding: EdgeInsets.fromLTRB(11.w, 0.h, 11.w, 10.h),
           decoration: BoxDecoration(
             color: Colors.black,
             border: Border.all(color: Colors.grey),
@@ -286,7 +285,7 @@ class _CctvMiniViewState extends State<CctvMiniView> {
           child: Column(
             children: [
               Container(
-                height: 61.h,
+                height: 55.h,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -310,8 +309,9 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                   ],
                 ),
               ),
-              Expanded(child: Container(
-                height: 248.h,
+              Expanded(
+                  child: Container(
+                height: 247.h,
                 decoration: BoxDecoration(
                   //color: Color(0xff111c44),
                   color: Color(0xffffc4c9),
@@ -324,15 +324,13 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                 ),
                 child: Stack(
                   children: [
-
                     Positioned.fill(
                       child: Container(
                         height: 240.h,
                         child: LineChart(
                           LineChartData(
-
                             minY: -5,
-                            maxY:  5,
+                            maxY: 5,
                             backgroundColor: Colors.white,
                             gridData: FlGridData(show: false),
                             titlesData: FlTitlesData(show: false),
@@ -445,12 +443,9 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                         ),
                       ),
                     ),
-
                   ],
                 ),
-
-              ))
-              ,
+              )),
             ],
           ),
         ),

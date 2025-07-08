@@ -8,7 +8,9 @@ import 'package:iot_dashboard/utils/selectable_calendar.dart';
 
 class TimePeriodSelect extends StatefulWidget {
   final void Function(DateTime from, DateTime to)? onQuery;
-  const TimePeriodSelect({super.key, this.onQuery});
+  final ValueNotifier<Set<String>> selectedDownloadRids; // ✅ 추가
+
+  const TimePeriodSelect({super.key, this.onQuery, required this.selectedDownloadRids});
 
   @override
   State<TimePeriodSelect> createState() => _TimePeriodSelectState();
@@ -132,6 +134,31 @@ class _TimePeriodSelectState extends State<TimePeriodSelect> {
       }
 
     });
+  }
+
+  Widget _toggleSelectAllButton() {
+    final isAllSelectedGlobally = widget.selectedDownloadRids.value.contains('ALL');
+    return InkWell(
+      onTap: () {
+        setState(() {
+          widget.selectedDownloadRids.value.clear();
+          if (!isAllSelectedGlobally) {
+            widget.selectedDownloadRids.value.add('ALL');
+          }
+          widget.selectedDownloadRids.notifyListeners();
+        });
+      },
+      child: Container(
+        width: 55.w,
+        height: 55.h,
+        decoration: BoxDecoration(
+          color: isAllSelectedGlobally ? const Color(0xff3182ce) : Colors.transparent,
+          borderRadius: BorderRadius.circular(5.r),
+          border: Border.all(color: Colors.white, width: 2.w),
+        ),
+        child: isAllSelectedGlobally ? Icon(Icons.check, color: Colors.white, size: 28.sp) : null,
+      ),
+    );
   }
 
 
@@ -406,16 +433,7 @@ class _TimePeriodSelectState extends State<TimePeriodSelect> {
           SizedBox(
             width: 30.w,
           ),
-          Container(
-            width: 55.w,
-            height: 55.h,
-            decoration: BoxDecoration(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.circular(5.r),
-              border:
-              Border.all(color: Colors.white, width: 2.w),
-            ),
-          )
+          _toggleSelectAllButton(),
         ],
       ),
     );

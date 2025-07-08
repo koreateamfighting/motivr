@@ -4,7 +4,7 @@ import 'package:iot_dashboard/component/dashboard/expand_notice_search.dart';
 import 'package:iot_dashboard/controller/notice_controller.dart';
 import 'package:iot_dashboard/model/notice_model.dart';
 import 'package:iot_dashboard/utils/iframe_visibility.dart';
-
+import 'dart:async';
 
 class NoticeSection extends StatefulWidget {
   final bool isExpanded;
@@ -22,11 +22,15 @@ class NoticeSection extends StatefulWidget {
 
 class _NoticeSectionState extends State<NoticeSection> {
   List<Notice> notices = [];
-
+  Timer? _timer;
   @override
   void initState() {
     super.initState();
     _fetchNoticeData();
+    // ✅ 1분마다 작업 내역 자동 갱신
+    _timer = Timer.periodic(Duration(minutes: 1), (_) {
+      _fetchNoticeData();
+    });
   }
 
   void _fetchNoticeData() async {
@@ -35,6 +39,12 @@ class _NoticeSectionState extends State<NoticeSection> {
       notices = data;
     });
   }
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -47,9 +57,11 @@ class _NoticeSectionState extends State<NoticeSection> {
             decoration: BoxDecoration(
               //color: Color(0xff111c44),
               color: Color(0xff1b254b),
-              border: Border.all(
-                color: Colors.white,
-                width: 1.w,
+              border: Border(
+                bottom: BorderSide(
+                  color: Color(0xffd9d9d9), // 선 색상
+                  width: 1.w, // 선 두께
+                ),
               ),
             ),
             child: Row(
@@ -173,11 +185,12 @@ class _NoticeSectionState extends State<NoticeSection> {
             decoration: BoxDecoration(
               //color: Color(0xff111c44),
               color: Color(0xff0b1437),
-              border: Border.all(
-                color: Colors.white,
-                width: 1.w,
+              border: Border(
+                bottom: BorderSide(
+                  color: Color(0xffd9d9d9), // 선 색상
+                  width: 1.w, // 선 두께
+                ),
               ),
-
               // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
             ),
             child: Row(

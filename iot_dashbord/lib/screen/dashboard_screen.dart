@@ -30,11 +30,14 @@ class DashBoard extends StatefulWidget {
 
 class _DashBoardState extends State<DashBoard> {
   bool _fetchTriggered = false;
+  Timer? _timer;
+  Timer? _retryTimer;
+  bool _retryScheduled = false;
+
 
   @override
   void initState() {
     super.initState();
-
 
     // ✅ 페이지 자동 새로고침 타이머
     Timer.periodic(Duration(minutes: 1), (timer) {
@@ -43,10 +46,15 @@ class _DashBoardState extends State<DashBoard> {
         html.window.location.reload(); // 새로고침
       }
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<IotController>().fetchSensorStatusSummary();
+    });
 
-
+    // ✅ 1분마다 주기적 갱신
+    _timer = Timer.periodic(Duration(minutes: 1), (_) {
+      context.read<IotController>().fetchSensorStatusSummary();
+    });
   }
-
 
   @override
   void didChangeDependencies() {
@@ -58,13 +66,16 @@ class _DashBoardState extends State<DashBoard> {
       controller.fetchSensorStatusSummary();
     }
   }
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _retryTimer?.cancel();
+    super.dispose();
+  }
 
 
   @override
-
   Widget build(BuildContext context) {
-
-
     return ScreenUtilInit(
       designSize: const Size(3812, 2144),
       minTextAdapt: true,
@@ -72,10 +83,62 @@ class _DashBoardState extends State<DashBoard> {
       builder: (context, child) {
         return BaseLayout(
           child: Consumer<IotController>(
-            builder: (context,controller, _){
-              final isLoaded = controller.getTotal > 0;
+            builder: (context, controller, _) {
+              final isLoading = controller.isLoading;
+              final hasError = controller.hasError;
+              final total = controller.getTotal;
 
-              return   Column(
+              if (hasError && !_retryScheduled) {
+                _retryScheduled = true;
+                _retryTimer?.cancel(); // 혹시 몰라 초기화
+                _retryTimer = Timer(Duration(seconds: 5), () {
+                  _retryScheduled = false; // 다음 재시도를 위해 초기화
+                  context.read<IotController>().fetchSensorStatusSummary();
+                });
+              }
+              Widget statusWidget;
+
+              if (isLoading) {
+                statusWidget = Container(
+                  width: 613.w,
+                  height: 641.h,
+                  alignment: Alignment.center,
+                  decoration: _statusBoxDecoration(),
+                  child: CircularProgressIndicator(
+                    color: Color(0xff3182ce),
+                  ),
+                );
+              } else if (hasError) {
+                statusWidget = Container(
+                  width: 613.w,
+                  height: 641.h,
+                  alignment: Alignment.center,
+                  decoration: _statusBoxDecoration(),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(
+                        color: Color(0xff3182ce),
+                      )
+                    ],
+                  ),
+                );
+              } else if (total == 0) {
+                statusWidget = Container(
+                  width: 613.w,
+                  height: 641.h,
+                  alignment: Alignment.center,
+                  decoration: _statusBoxDecoration(),
+                  child: Text(
+                    '표시할 데이터가 없습니다.',
+                    style: TextStyle(color: Colors.white, fontSize: 28.sp),
+                  ),
+                );
+              } else {
+                statusWidget = IotControlStatus();
+              }
+
+              return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // ✅ 대시보드 헤더
@@ -104,19 +167,23 @@ class _DashBoardState extends State<DashBoard> {
                     ),
                   ),
                   // ✅ 헤더 하단 선
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 50.w),
-                        width: 3712.w,
-                        height: 4.h,
-                        color: Colors.white,
-                      ),
-                    ],
+                  Container(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 50.w),
+                          width: 3712.w,
+                          height: 4.h,
+                          color: Colors.white,
+                        ),
+                      ],
+                    ),
                   ),
-                  SizedBox(
+
+                  Container(
                     height: 10.h,
+                    color: Color(0xff1b254b),
                   ),
 
                   // ✅ 본문 내용
@@ -137,49 +204,22 @@ class _DashBoardState extends State<DashBoard> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                isLoaded
-                                    ? IotControlStatus(
-
-                                )
-                                    : Container(
-                                  width: 613.w,
-                                  height: 641.h,
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: Color(0xff111c44),
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: 1.w,
-                                    ),
-                                    borderRadius: BorderRadius.circular(5.r),
-                                    // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
-                                  ),
-                                  child: Center(
-                                    child: CircularProgressIndicator(color: Color(0xff3182ce),),
-                                  ),
-                                ),
-
-                                SizedBox(
-                                  height: 46.h,
-                                ),
+                                statusWidget,
+                                SizedBox(height: 26.h),
                                 WorkProcessStatus(),
-                                SizedBox(
-                                  height: 6.h,
-                                ),
+                                SizedBox(height: 26.h),
                                 WeatherInfo(),
-
-                                // IotStatus(),
                               ],
                             ),
                             SizedBox(
-                              width: 9.w,
+                              width: 20.w,
                             ),
                             //두번째 콘텐츠
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
-                                  width: 2165.w,
+                                  width: 2170.w,
                                   height: 1288.h,
                                   decoration: BoxDecoration(
                                     //color: Color(0xff111c44),
@@ -192,7 +232,8 @@ class _DashBoardState extends State<DashBoard> {
                                     // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                                   ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
                                       Container(
@@ -229,10 +270,10 @@ class _DashBoardState extends State<DashBoard> {
                                         color: Colors.white,
                                       ),
                                       Container(
-                                        width: 2129.w,
+                                        width: 2165.w,
                                         height: 1197.h,
                                         padding: EdgeInsets.only(
-                                            top: 14.h, left: 17.w, right: 19.w),
+                                            top: 14.h, left: 16.w,right: 16.w),
                                         color: Color(0xff1b254b),
                                         child: Container(
                                           width: 967.w,
@@ -240,7 +281,7 @@ class _DashBoardState extends State<DashBoard> {
                                           decoration: BoxDecoration(
                                             color: Colors.black,
                                             border:
-                                            Border.all(color: Colors.grey),
+                                                Border.all(color: Colors.grey),
                                           ),
                                           child: UnityWebGLFrame(),
                                         ),
@@ -264,18 +305,16 @@ class _DashBoardState extends State<DashBoard> {
                               ],
                             ),
                             SizedBox(
-                              width: 8.w,
+                              width: 20.w,
                             ),
                             //세번째 콘텐츠
                             Column(
                               children: [
                                 CctvMiniView(),
                                 SizedBox(
-                                  height: 10.h,
+                                  height: 8.h,
                                 ),
-                                Expanded(
-                                  child: CctvLog(),
-                                ),
+                                CctvLog(),
                               ],
                             ),
                           ],
@@ -284,11 +323,18 @@ class _DashBoardState extends State<DashBoard> {
                     ),
                   ),
                 ],
-              ) ;
+              );
             },
-          )         ,
+          ),
         );
       },
+    );
+  }
+  BoxDecoration _statusBoxDecoration() {
+    return BoxDecoration(
+      color: Color(0xff111c44),
+      border: Border.all(color: Colors.white, width: 1.w),
+      borderRadius: BorderRadius.circular(5.r),
     );
   }
 }

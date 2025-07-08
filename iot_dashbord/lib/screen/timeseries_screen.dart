@@ -29,6 +29,7 @@ class TimeSeriesScreen extends StatefulWidget {
 }
 
 class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
+  final ValueNotifier<Set<String>> selectedDownloadRids = ValueNotifier({});
   String selectedRid = '';
   String selectedInterval = '30분';
   int selectedTab = 0; // 0 = IoT, 1 = CCTV
@@ -177,6 +178,7 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
                       children: [
                         TimePeriodSelect(
                           onQuery: _onQuery, // ✅ 날짜 변경 적용
+                          selectedDownloadRids: selectedDownloadRids, // ✅ 추가
                         ),
                         SizedBox(
                           height: 16.h,
@@ -200,6 +202,7 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
                                   selectedRid = rid;
                                 });
                               },
+                              selectedDownloadRids: selectedDownloadRids, // ✅ 추가
                             ),
                           ],
 

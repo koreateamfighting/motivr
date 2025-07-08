@@ -51,7 +51,7 @@ class _CctvLogState extends State<CctvLog> {
         children: [
           // 🔷 헤더
           Container(
-            height: 60.h,
+            height: 50.h,
             child: Row(
               children: [
                 SizedBox(width: 24.w),
@@ -66,25 +66,24 @@ class _CctvLogState extends State<CctvLog> {
                   style: TextStyle(
                     fontFamily: 'PretendardGOV',
                     fontWeight: FontWeight.w500,
-                    fontSize: 36.sp,
+                    fontSize: 32.sp,
                     color: Colors.white,
                   ),
                 ),
               ],
             ),
           ),
-
           // 🔷 구분선
           Container(
             width: 881.w,
             height: 1.h,
             color: Colors.white,
           ),
-
           // 🔷 로그 영역 (2줄 고정 + 스크롤)
-          SizedBox(
+          Container(
             width: 881.w,
-            height: 121.h, // (60 + 1) * 2
+            height: 134.h,
+
             child: logs.isEmpty
                 ? Center(
               child: Text(
@@ -96,64 +95,66 @@ class _CctvLogState extends State<CctvLog> {
                 ),
               ),
             )
-                :
-            Scrollbar(
-              thumbVisibility: true, // 👈 항상 스크롤바 보이도록
-              child: ListView.separated(
-                padding: EdgeInsets.zero,
-                itemCount: logs.length,
-                shrinkWrap: true, // 작은 공간에서도 잘 렌더링
-                primary: false,   // 다른 스크롤뷰와 충돌 방지
-                physics: const AlwaysScrollableScrollPhysics(),
-                separatorBuilder: (_, __) => Container(
-                  height: 1.h,
-                  color: Colors.white,
+                :Container(
+              child: Scrollbar(
+                thumbVisibility: true, // 👈 항상 스크롤바 보이도록
+                child: ListView.separated(
+                  padding: EdgeInsets.zero,
+                  itemCount: logs.length,
+                  shrinkWrap: true, // 작은 공간에서도 잘 렌더링
+                  primary: false,   // 다른 스크롤뷰와 충돌 방지
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  separatorBuilder: (_, __) => Container(
+                    height: 1.h,
+                    color: Colors.white,
+                  ),
+                  itemBuilder: (context, index) {
+                    final time = logs[index]['time']!;
+                    final message = logs[index]['message']!;
+                    return Container(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      height: 60.h,
+                      child: Row(
+                        children: [
+                          // 시간
+                          Container(
+                            width: 333.w,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              time,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: TextStyle(
+                                fontFamily: 'PretendardGOV',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 24.sp,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 51.w),
+                          // 메시지
+                          Expanded(
+                            child: Text(
+                              message,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: TextStyle(
+                                fontFamily: 'PretendardGOV',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 24.sp,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
-                itemBuilder: (context, index) {
-                  final time = logs[index]['time']!;
-                  final message = logs[index]['message']!;
-                  return Container(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w),
-                    height: 60.h,
-                    child: Row(
-                      children: [
-                        // 시간
-                        Container(
-                          width: 333.w,
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            time,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                            style: TextStyle(
-                              fontFamily: 'PretendardGOV',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 24.sp,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 51.w),
-                        // 메시지
-                        Expanded(
-                          child: Text(
-                            message,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                            style: TextStyle(
-                              fontFamily: 'PretendardGOV',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 24.sp,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
               ),
-            ),
+            )
+            ,
           ),
         ],
       ),
