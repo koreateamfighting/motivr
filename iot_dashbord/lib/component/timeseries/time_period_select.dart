@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iot_dashboard/component/common/dialog_form.dart';
+import 'package:iot_dashboard/component/common/dialog_form2.dart';
 import 'package:intl/intl.dart';
 import 'package:iot_dashboard/utils/selectable_calendar.dart';
-
-
+import 'package:provider/provider.dart';
+import 'package:iot_dashboard/controller/iot_controller.dart';
+import 'dart:html' as html; // Flutter Web 전용
+import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart'; // kIsWeb
 
 class TimePeriodSelect extends StatefulWidget {
   final void Function(DateTime from, DateTime to)? onQuery;
   final ValueNotifier<Set<String>> selectedDownloadRids; // ✅ 추가
-
-  const TimePeriodSelect({super.key, this.onQuery, required this.selectedDownloadRids});
+  final List<String> allRids; // ✅ 추가
+  const TimePeriodSelect({super.key, this.onQuery, required this.selectedDownloadRids,    required this.allRids, });
 
   @override
   State<TimePeriodSelect> createState() => _TimePeriodSelectState();
@@ -398,19 +402,87 @@ class _TimePeriodSelectState extends State<TimePeriodSelect> {
             height: 60.h,
             alignment: Alignment.center,
             child: ElevatedButton(
-              onPressed: () async {
-                await showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (_) =>
-                      DialogForm(
-                        mainText: "다운로드 준비중입니다.",
-                        btnText: "확인",
+                onPressed: () async {
+                  final now = DateTime.now();
 
+                  final effectiveStartDate = startDate ?? DateTime(now.year, now.month, now.day);
+                  final effectiveEndDate = endDate ?? now;
+
+                  final from = DateTime(
+                    effectiveStartDate.year,
+                    effectiveStartDate.month,
+                    effectiveStartDate.day,
+                    startHour,
+                    startMinute,
+                  );
+                  final to = DateTime(
+                    effectiveEndDate.year,
+                    effectiveEndDate.month,
+                    effectiveEndDate.day,
+                    endHour,
+                    endMinute,
+                  );
+
+                  final selected = widget.selectedDownloadRids.value;
+                  Set<String> finalRids;
+
+                  if (selected.contains('ALL')) {
+                    final contextRids = context.read<IotController>()
+                        .getFilteredDisplacementGroups()
+                        .map((g) => g.rid)
+                        .toSet();
+                    finalRids = contextRids;
+                  } else {
+                    finalRids = selected;
+                  }
+
+                  if (finalRids.isEmpty) {
+                    await showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (_) => const DialogForm(
+                        mainText: "선택된 RID가 없습니다.",
+                        btnText: "확인",
                       ),
-                );
-              }, // 비어있는 onPressed
-              style: ElevatedButton.styleFrom(
+                    );
+                    return;
+                  }
+
+                  final startStr = DateFormat('yyyy-MM-dd HH:mm:ss').format(from);
+                  final endStr = DateFormat('yyyy-MM-dd HH:mm:ss').format(to);
+                  final ridsStr = finalRids.join(',');
+
+                  await showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (_) => DialogForm2(
+                      mainText: "다운로드 하시겠습니까?",
+                      btnText1: "취소",
+                      btnText2: "확인",
+                      onConfirm: () {
+                        final encodedRids = Uri.encodeComponent(ridsStr);
+                        final encodedStart = Uri.encodeComponent(startStr);
+                        final encodedEnd = Uri.encodeComponent(endStr);
+
+                        final downloadUrl =
+                            'https://hanlimtwin.kr:3030/api/download-excel?startDate=$encodedStart&endDate=$encodedEnd&rids=$encodedRids';
+
+                        debugPrint('📁 다운로드 URL: $downloadUrl');
+
+                        if (kIsWeb) {
+                          html.AnchorElement(href: downloadUrl)
+                            ..setAttribute("download", "")
+                            ..target = 'blank'
+                            ..click();
+                        } else {
+                          debugPrint("❌ 현재 플랫폼에서는 다운로드를 지원하지 않습니다.");
+                        }
+                      },
+                    ),
+                  );
+                },
+
+                style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xff3182ce),
                 // 파란색
                 padding: EdgeInsets.symmetric(

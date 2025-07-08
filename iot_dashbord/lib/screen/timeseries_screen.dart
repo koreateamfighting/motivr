@@ -37,6 +37,9 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
     start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
     end: DateTime.now().copyWith(hour: 23, minute: 59, second: 59),
   );
+
+
+
   void _onQuery(DateTime from, DateTime to) {
     // 항상 새로운 인스턴스를 생성해 강제 업데이트 유도
     final newRange = TimeRange(start: from, end: to);
@@ -51,6 +54,10 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final allRids = context.watch<IotController>()
+        .getFilteredDisplacementGroups()
+        .map((g) => g.rid)
+        .toList();
     return ChangeNotifierProvider(
         create: (_) => IotController()..fetchAllSensorData,
         child: ScreenUtilInit(
@@ -179,6 +186,7 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
                         TimePeriodSelect(
                           onQuery: _onQuery, // ✅ 날짜 변경 적용
                           selectedDownloadRids: selectedDownloadRids, // ✅ 추가
+                          allRids: allRids,
                         ),
                         SizedBox(
                           height: 16.h,

@@ -237,16 +237,12 @@ class _GraphViewState extends State<GraphView> {
                 InkWell(
                   onTap: () {
                     final current = widget.selectedDownloadRids.value;
-
-                    // 'ALL'이 선택되어 있으면 개별 선택이 무의미하므로 제거
                     if (current.contains('ALL')) current.remove('ALL');
-
                     if (current.contains(group.rid)) {
                       current.remove(group.rid);
                     } else {
                       current.add(group.rid);
                     }
-
                     widget.selectedDownloadRids.value = Set.from(current);
                   },
                   child: Container(

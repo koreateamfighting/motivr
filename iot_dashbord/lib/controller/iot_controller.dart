@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:iot_dashboard/model/iot_model.dart';
 import 'package:iot_dashboard/component/timeseries/graph_view.dart';
 import 'package:intl/intl.dart';
-
+import 'dart:html' as html; // Flutter Web 전용
 
 class IotController extends ChangeNotifier {
 
@@ -346,6 +346,44 @@ class IotController extends ChangeNotifier {
       debugPrint('❌ 조회 중 예외 발생: $e');
     }
   }
+
+
+  Future<void> downloadExcelFile(DateTime startDate, DateTime endDate, List<String> ridList) async {
+    final formattedStart = DateFormat('yyyy-MM-dd HH:mm:ss').format(startDate);
+    final formattedEnd = DateFormat('yyyy-MM-dd HH:mm:ss').format(endDate);
+    final rids = ridList.join(',');
+
+    final url = '$_baseUrl/download-excel?startDate=$formattedStart&endDate=$formattedEnd&rids=$rids';
+
+    try {
+      // ✅ 웹 다운로드: <a href="url" download> 트리거
+      final anchor = html.AnchorElement(href: url)
+        ..target = 'blank'
+        ..download = ''
+        ..click();
+
+      debugPrint('📥 다운로드 요청 URL: $url');
+    } catch (e) {
+      debugPrint('❌ 엑셀 다운로드 요청 실패: $e');
+    }
+  }
+
+  Future<void> downloadExcelByRid(String rid) async {
+    final encodedRid = Uri.encodeComponent(rid);
+    final url = '$_baseUrl/download-excel-rid-only?rid=$encodedRid';
+
+    try {
+      final anchor = html.AnchorElement(href: url)
+        ..target = 'blank'
+        ..download = ''
+        ..click();
+
+      debugPrint('📥 단일 RID 다운로드 요청 URL: $url');
+    } catch (e) {
+      debugPrint('❌ RID별 엑셀 다운로드 실패: $e');
+    }
+  }
+
 
   List<IotItem> filterItems(String query) {
     final q = query.toLowerCase().trim();

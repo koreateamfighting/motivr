@@ -3,8 +3,10 @@ import 'package:iot_dashboard/component/common/dialog_form.dart';
 import 'package:iot_dashboard/component/common/dialog_form2.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:iot_dashboard/model/iot_model.dart';
+import 'package:iot_dashboard/controller/iot_controller.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 
 class IotDataSource extends DataGridSource {
   final BuildContext context;
@@ -108,9 +110,14 @@ class IotDataSource extends DataGridSource {
                 await showDialog(
                   context: context,
                   barrierDismissible: false,
-                  builder: (_) => DialogForm(
-                    mainText: "다운로드 준비중입니다.",
-                    btnText: "확인",
+                  builder: (_) => DialogForm2(
+                    mainText: "$id의 엑셀 파일을 다운로드 하시겠습니까?",
+                    btnText1: "취소",
+                    btnText2: "확인",
+                    onConfirm: () {
+                      final controller = context.read<IotController>();
+                      controller.downloadExcelByRid(id);
+                    },
                   ),
                 );
               },
