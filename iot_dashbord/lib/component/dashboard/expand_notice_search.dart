@@ -9,7 +9,7 @@ import 'package:iot_dashboard/utils/format_timestamp.dart';
 import 'package:iot_dashboard/utils/iframe_visibility.dart';
 import 'package:iot_dashboard/theme/colors.dart';
 import 'package:iot_dashboard/component/common/dialog_form.dart';
-
+import 'package:iot_dashboard/utils/auth_service.dart';
 class ExpandNoticeSearch extends StatefulWidget {
 
   final VoidCallback? onDataUploaded;
@@ -302,6 +302,18 @@ class _ExpandNoticeSearchState extends State<ExpandNoticeSearch> {
                                           onTap: isEditing && isNothingChanged
                                               ? null
                                               : () async {
+                                            final isAuthorized = AuthService.isRoot() || AuthService.isStaff(); // ✅ 권한 확인
+                                            if (!isAuthorized) {
+                                              await showDialog(
+                                                context: context,
+                                                barrierDismissible: false,
+                                                builder: (_) => const DialogForm(
+                                                  mainText: '권한이 없습니다.',
+                                                  btnText: '확인',
+                                                ),
+                                              );
+                                              return;
+                                            }
                                                   final currentItems =
                                                       getCurrentPageItems();
                                                   List<Notice> modified = [];

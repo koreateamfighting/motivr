@@ -7,6 +7,7 @@ import 'package:iot_dashboard/controller/iot_controller.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:iot_dashboard/utils/auth_service.dart';
 
 class IotDataSource extends DataGridSource {
   final BuildContext context;
@@ -107,6 +108,18 @@ class IotDataSource extends DataGridSource {
             alignment: Alignment.center,
             child: ElevatedButton(
               onPressed: () async {
+                final isAuthorized = AuthService.isRoot() || AuthService.isStaff(); // ✅ 권한 확인
+                if (!isAuthorized) {
+                  await showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (_) => const DialogForm(
+                      mainText: '권한이 없습니다.',
+                      btnText: '확인',
+                    ),
+                  );
+                  return;
+                }
                 await showDialog(
                   context: context,
                   barrierDismissible: false,

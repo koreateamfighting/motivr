@@ -29,9 +29,9 @@ class AuthService {
     return html.window.localStorage['accessToken'] != null;
   }
 
-  static bool isAdmin() {
+  static bool isStaff() {
 
-    return html.window.localStorage['role'] == 'admin';
+    return html.window.localStorage['role'] == 'staff';
   }
 
   static bool isRoot() {

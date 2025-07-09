@@ -211,7 +211,7 @@ class _WorkProcessStatusState extends State<WorkProcessStatus> {
               GestureDetector(
                 onTap: () async {
 
-                  if (!AuthService.isAdmin()) {
+                  if (!AuthService.isStaff() || !AuthService.isRoot()) {
 
                       hideIframes();
                       await showDialog(

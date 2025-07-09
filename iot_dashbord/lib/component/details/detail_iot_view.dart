@@ -12,6 +12,7 @@ import 'package:iot_dashboard/component/details/reach_port_view.dart';
 import 'package:iot_dashboard/component/details/iot_data_source.dart';
 import 'package:iot_dashboard/component/common/dialog_form.dart';
 import 'package:intl/intl.dart';
+import 'package:iot_dashboard/utils/auth_service.dart';
 
 class DetailIotView extends StatefulWidget {
   const DetailIotView({super.key});
@@ -390,10 +391,25 @@ class _DetailIotViewState extends State<DetailIotView> {
                           // 편집 중이면 저장 실행
                           await _saveChanges();
                         } else {
+                          // ✅ 권한 검사
+                          final isAuthorized = AuthService.isRoot() || AuthService.isStaff();
+                          if (!isAuthorized) {
+                            await showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (_) => const DialogForm(
+                                mainText: '권한이 없습니다.',
+                                btnText: '확인',
+                              ),
+                            );
+                            return;
+                          }
+
                           // 편집 시작
                           _toggleEditMode(items);
                         }
                       },
+
                       child: Container(
                         width: 141.w,
                         height: 60.h,

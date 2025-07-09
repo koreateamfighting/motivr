@@ -14,7 +14,7 @@ import 'package:http/http.dart' as http;
 import 'package:iot_dashboard/component/common/dialog_form.dart';
 import 'package:iot_dashboard/theme/colors.dart';
 import 'dart:convert';
-
+import 'package:iot_dashboard/utils/auth_service.dart';
 class ExpandWorkTaskSearch extends StatefulWidget {
   final VoidCallback? onDataUploaded; // ✅ 콜백 추가
 
@@ -398,7 +398,23 @@ class _ExpandWorkTaskSearchState extends State<ExpandWorkTaskSearch> {
                                               ),
                                             )
                                           :  InkWell(
-                                              onTap: isEditing? null:uploadCsvFile,
+                                        onTap: isEditing
+                                            ? null
+                                            : () async {
+                                          final isAuthorized = AuthService.isRoot() || AuthService.isStaff(); // ✅ 권한 확인
+                                          if (!isAuthorized) {
+                                            await showDialog(
+                                              context: context,
+                                              barrierDismissible: false,
+                                              builder: (_) => const DialogForm(
+                                                mainText: '권한이 없습니다.',
+                                                btnText: '확인',
+                                              ),
+                                            );
+                                            return;
+                                          }
+                                          uploadCsvFile(); // ✅ 권한 있으면 업로드 실행
+                                        },
                                               child: Row(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment
@@ -597,6 +613,18 @@ class _ExpandWorkTaskSearchState extends State<ExpandWorkTaskSearch> {
                                           onTap: isEditing && isNothingChanged
                                               ? null
                                               : () async {
+                                            final isAuthorized = AuthService.isRoot() || AuthService.isStaff(); // ✅ 권한 확인
+                                            if (!isAuthorized) {
+                                              await showDialog(
+                                                context: context,
+                                                barrierDismissible: false,
+                                                builder: (_) => const DialogForm(
+                                                  mainText: '권한이 없습니다.',
+                                                  btnText: '확인',
+                                                ),
+                                              );
+                                              return;
+                                            }
                                                   final currentItems =
                                                       getCurrentPageItems();
                                                   List<WorkTask> modified = [];

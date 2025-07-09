@@ -164,7 +164,7 @@ class _AdminScreenState extends State<AdminScreen> {
   @override
   Widget build(BuildContext context) {
     // ✅ 관리자 권한 없으면 접근 차단
-    if (!AuthService.isAdmin() && !AuthService.isRoot()) {
+    if (!AuthService.isStaff() && !AuthService.isRoot()) {
       Future.microtask(() {
         showDialog(
           context: context,

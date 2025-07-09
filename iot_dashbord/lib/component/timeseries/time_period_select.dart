@@ -9,6 +9,7 @@ import 'package:iot_dashboard/controller/iot_controller.dart';
 import 'dart:html' as html; // Flutter Web 전용
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart'; // kIsWeb
+import 'package:iot_dashboard/utils/auth_service.dart';
 
 class TimePeriodSelect extends StatefulWidget {
   final void Function(DateTime from, DateTime to)? onQuery;
@@ -403,6 +404,18 @@ class _TimePeriodSelectState extends State<TimePeriodSelect> {
             alignment: Alignment.center,
             child: ElevatedButton(
                 onPressed: () async {
+                  final isAuthorized = AuthService.isRoot() || AuthService.isStaff(); // ✅ 권한 확인
+                  if (!isAuthorized) {
+                    await showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (_) => const DialogForm(
+                        mainText: '권한이 없습니다.',
+                        btnText: '확인',
+                      ),
+                    );
+                    return;
+                  }
                   final now = DateTime.now();
 
                   final effectiveStartDate = startDate ?? DateTime(now.year, now.month, now.day);

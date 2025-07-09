@@ -29,7 +29,9 @@ class _CctvLogState extends State<CctvLog> {
     final dateFormat = DateFormat('yyyy-MM-dd HH:mm');
 
     final logs = cctvs.map((e) {
-      final timestamp = dateFormat.format(e.lastRecorded);
+      // 1. UTC로 파싱된 것을 KST로 변환해서 출력
+      final timestamp = dateFormat.format(e.lastRecorded.toLocal());
+
       final cam = e.camId;
 
       final statusMsg = e.isConnected == false
