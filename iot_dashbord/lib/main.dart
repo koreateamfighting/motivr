@@ -6,6 +6,9 @@ import 'package:iot_dashboard/theme/colors.dart';
 import 'package:provider/provider.dart';
 import 'package:iot_dashboard/controller/cctv_controller.dart';
 import 'package:iot_dashboard/controller/iot_controller.dart';
+import 'package:iot_dashboard/state/alarm_history_state.dart';
+import 'package:iot_dashboard/state/notice_state.dart';
+import 'package:iot_dashboard/state/work_task_state.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // ✅ 필수
@@ -17,6 +20,10 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => CctvController()),
         ChangeNotifierProvider(create: (_) => IotController()),
+        ChangeNotifierProvider(create: (_) => AlarmHistoryState()), // ✅ 추가
+        ChangeNotifierProvider(create: (_) => NoticeState()),
+        ChangeNotifierProvider(create: (_) => WorkTaskState()),
+
       ],
       child: const MyApp(),
     ),

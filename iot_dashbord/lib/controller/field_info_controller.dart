@@ -15,7 +15,7 @@ class FieldInfoController {
         final data = jsonDecode(response.body);
         return FieldInfo.fromJson(data);
       } else {
-        print('❌ 조회 실패: ${response.statusCode}');
+        print('❌ 현장 정보 조회 실패: ${response.statusCode}');
         return null;
       }
     } catch (e) {

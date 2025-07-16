@@ -380,8 +380,18 @@ class _DetailIotViewState extends State<DetailIotView> {
                                 ),
                               ),
                             )),
-                        SizedBox(
+                        Container(
                           width: 452.w,
+                          child: Row(
+                            children: [
+                              SizedBox(width: 100.w,),
+                              Text("사이트 최적화를 위해 최신 500건만 노출됩니다.",style: TextStyle(   fontFamily: 'PretendardGOV',
+                                fontWeight: FontWeight.w400,
+                                fontSize: 16.sp,
+                                color: Colors.grey,),)
+                            ],
+                          ),
+
                         ),
                     InkWell(
                       onTap: () async {

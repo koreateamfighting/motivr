@@ -321,9 +321,11 @@ class _GraphViewState extends State<GraphView> {
                 ],
               ),
               series: [
-                ScatterSeries<DisplacementData, DateTime>(
+                LineSeries<DisplacementData, DateTime>(
                   name: 'X',
                   color: const Color(0xffff714d),
+                  width: 1.5.w,          // ✅ 선 얇게
+                  opacity: 0.4,        // ✅ 선 흐릿하게
                   markerSettings: MarkerSettings(
                     isVisible: true,
                     shape: DataMarkerType.circle,
@@ -334,9 +336,11 @@ class _GraphViewState extends State<GraphView> {
                   xValueMapper: (d, _) => d.time,
                   yValueMapper: (d, _) => d.value,
                 ),
-                ScatterSeries<DisplacementData, DateTime>(
+                LineSeries<DisplacementData, DateTime>(
                   name: 'Y',
                   color: const Color(0xff32ade6),
+                  width: 1.5.w,          // ✅ 선 얇게
+                  opacity: 0.4,        // ✅ 선 흐릿하게
                   markerSettings: MarkerSettings(
                     isVisible: true,
                     shape: DataMarkerType.circle,
@@ -347,9 +351,11 @@ class _GraphViewState extends State<GraphView> {
                   xValueMapper: (d, _) => d.time,
                   yValueMapper: (d, _) => d.value,
                 ),
-                ScatterSeries<DisplacementData, DateTime>(
+                LineSeries<DisplacementData, DateTime>(
                   name: 'Z',
                   color: const Color(0xff00c7be),
+                  width: 1.5.w,          // ✅ 선 얇게
+                  opacity: 0.4,        // ✅ 선 흐릿하게
                   markerSettings: MarkerSettings(
                     isVisible: true,
                     shape: DataMarkerType.circle,

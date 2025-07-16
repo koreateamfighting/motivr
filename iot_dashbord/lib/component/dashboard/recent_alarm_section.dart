@@ -17,24 +17,25 @@ class AlarmListView extends StatefulWidget {
 }
 
 class _AlarmListViewState extends State<AlarmListView> {
-  List<Alarm> alarms = [];
+  late Future<List<Alarm>> _alarmFuture;
 
   @override
   void initState() {
     super.initState();
-    _fetchAlarmsData();
+    _alarmFuture = AlarmController.fetchAlarms(); // ✅ 한 번만 호출
   }
 
-  void _fetchAlarmsData() async{
-    final data = await AlarmController.fetchAlarms();
+  void _fetchAlarmsData() {
     setState(() {
-      alarms = data;
+      _alarmFuture = AlarmController.fetchAlarms(); // ✅ 갱신할 때만 새로고침
     });
   }
 
 
+
   @override
   Widget build(BuildContext context) {
+    return FutureBuilder<List<Alarm>>(future: _alarmFuture, builder: (context, snapshot){
     return Container(
       width: 1168.w,
       height: 610.h,
@@ -237,7 +238,7 @@ class _AlarmListViewState extends State<AlarmListView> {
                     return Container(
                       height: 54.h,
                       padding:
-                          EdgeInsets.symmetric(horizontal: 8.w),
+                      EdgeInsets.symmetric(horizontal: 8.w),
                       margin: EdgeInsets.symmetric(vertical: 3.h),
                       color: Color(0xff0b1437),
                       child: Row(
@@ -284,5 +285,7 @@ class _AlarmListViewState extends State<AlarmListView> {
         ],
       ),
     );
+    });
+
   }
 }

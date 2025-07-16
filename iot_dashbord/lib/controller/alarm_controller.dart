@@ -7,9 +7,7 @@ class AlarmController {
 
   static Future<List<Alarm>> fetchAlarms() async {
     try {
-      final response = await http
-          .get(Uri.parse('$_baseUrl/alarms'))
-          .timeout(Duration(seconds: 5));
+      final response = await http.get(Uri.parse('$_baseUrl/alarms'));
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonList = json.decode(response.body);

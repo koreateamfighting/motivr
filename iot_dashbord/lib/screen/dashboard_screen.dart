@@ -6,13 +6,10 @@ import 'package:iot_dashboard/component/dashboard/iot_control_status.dart';
 import 'package:iot_dashboard/component/dashboard/work_process.dart';
 import 'package:iot_dashboard/component/common/unity_webgl_frame.dart';
 import 'package:iot_dashboard/component/common/base_layout.dart';
-import 'package:iot_dashboard/component/common/hlsplayer_view.dart'; // ✅ 이름 통일
-import 'package:iot_dashboard/theme/colors.dart';
-import 'package:iot_dashboard/component/dashboard/iot_status.dart';
 import 'package:iot_dashboard/component/dashboard/weather_info.dart';
 import 'package:iot_dashboard/component/dashboard/recent_alarm_section.dart';
 import 'package:iot_dashboard/component/dashboard/work_task_and_notice.dart';
-import 'package:iot_dashboard/controller/cctv_controller.dart';
+
 import 'package:iot_dashboard/controller/iot_controller.dart';
 import 'dart:async';
 import 'dart:html' as html;
@@ -36,24 +33,13 @@ class _DashBoardState extends State<DashBoard> {
 
 
   @override
-  void initState() {
-    super.initState();
+  void initState() {    super.initState();
 
-    // ✅ 페이지 자동 새로고침 타이머
-    Timer.periodic(Duration(minutes: 1), (timer) {
-      final now = DateTime.now();
-      if (now.hour == 6 && now.minute == 56) {
-        html.window.location.reload(); // 새로고침
-      }
-    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<IotController>().fetchSensorStatusSummary();
     });
 
-    // ✅ 1분마다 주기적 갱신
-    _timer = Timer.periodic(Duration(minutes: 1), (_) {
-      context.read<IotController>().fetchSensorStatusSummary();
-    });
   }
 
   @override

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iot_dashboard/services/weather_api.dart';
 import 'package:iot_dashboard/services/weather_api2.dart';
+import 'dart:async';
 
 class WeatherInfo extends StatefulWidget {
   const WeatherInfo({super.key});
@@ -20,11 +21,21 @@ class _WeatherInfoState extends State<WeatherInfo> {
   String fineDustPm10 = '--';
   String fineDustPm25 = '--';
   bool isLoading = true;
-
+  Timer? _timer; // ✅ 주기적 갱신용 타이머 추가
   @override
   void initState() {
     super.initState();
     _loadWeatherData();
+
+    _timer = Timer.periodic(Duration(minutes: 10), (_) {
+      _loadWeatherData();
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel(); // ✅ 꼭 타이머 해제
+    super.dispose();
   }
 
   Future<void> _loadWeatherData() async {

@@ -25,7 +25,7 @@ class CctvController extends ChangeNotifier {
         print('✅ CCTV 파싱 완료, 개수: ${_items.length}');
         notifyListeners();
       } else {
-        print('❌ 서버 오류: ${response.statusCode}');
+        print('❌ CCTV 컨트롤러 서버 오류: ${response.statusCode}');
       }
     } catch (e) {
       print('❌ CCTV 불러오기 실패: $e');

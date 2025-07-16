@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:iot_dashboard/state/alarm_history_state.dart';
 import 'package:iot_dashboard/model/alarm_history_model.dart';
 
 class AlarmHistoryController {
@@ -34,4 +35,39 @@ class AlarmHistoryController {
       throw Exception('알람 히스토리 조회 실패: ${response.body}');
     }
   }
+
+  // ✅ CCTV 로그 저장용 API 호출
+  static Future<bool> logCctvStatus({
+    required String camId,
+    required bool isConnected,
+    AlarmHistoryState? alarmState, // 💡 optional 전달
+  }) async {
+    final url = Uri.parse('$baseUrl/alarmhistory/cctvlog');
+
+    final body = {
+      'camId': camId,
+      'isConnected': isConnected,
+    };
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 200) {
+        print('✅ CCTV 로그 저장 성공: ${response.body}');
+        return true;
+      } else {
+        print('⚠️ CCTV 로그 저장 실패: ${response.statusCode} - ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('❌ CCTV 로그 저장 예외 발생: $e');
+      return false;
+    }
+  }
+
+
 }

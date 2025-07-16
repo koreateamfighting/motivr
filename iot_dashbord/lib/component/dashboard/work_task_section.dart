@@ -4,6 +4,8 @@ import 'package:iot_dashboard/component/dashboard/expand_work_task_search.dart';
 import 'package:iot_dashboard/controller/worktask_controller.dart';
 import 'package:iot_dashboard/model/worktask_model.dart';
 import 'package:iot_dashboard/utils/iframe_visibility.dart';
+import 'package:provider/provider.dart';
+import 'package:iot_dashboard/state/work_task_state.dart';
 import 'dart:async';
 
 class WorkTaskSection extends StatefulWidget {
@@ -27,13 +29,16 @@ class _WorkTaskSectionState extends State<WorkTaskSection> {
   @override
   void initState() {
     super.initState();
-    _loadWorkTasks();
 
-    // ✅ 1분마다 작업 내역 자동 갱신
+    Future.microtask(() {
+      context.read<WorkTaskState>().fetchTasks();
+    });
+
     _timer = Timer.periodic(Duration(minutes: 1), (_) {
-      _loadWorkTasks();
+      context.read<WorkTaskState>().fetchTasks();
     });
   }
+
 
   void _loadWorkTasks() async {
     try {
@@ -51,160 +56,166 @@ class _WorkTaskSectionState extends State<WorkTaskSection> {
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // 헤더 및 버튼 영역은 그대로
-        InkWell(
-          onTap: widget.onTap,
-          child: Container(
-            height: 60.h,
-            decoration: BoxDecoration(
-              color: Color(0xff111c44),
-              border: Border(
-                bottom: BorderSide(
-                  color: Color(0xffd9d9d9), // 선 색상
-                  width: 1.w, // 선 두께
-                ),
-              ),
-            ),
-            child: Row(
-              children: [
-                SizedBox(width: 26.w),
-                Container(
-                  width: 40.16.w,
-                  height: 40.h,
-                  child: Image.asset('assets/icons/work_task.png'),
-                ),
-                SizedBox(width: 5.w),
-                Text(
-                  '작업명',
-                  style: TextStyle(
-                      fontFamily: 'PretendardGOV',
-                      fontWeight: FontWeight.w500,
-                      fontSize: 36.sp,
-                      color: Colors.white),
-                ),
-                Spacer(),
+    return Consumer<WorkTaskState>(
+      builder: (context, state, _) {
+        final workTasks = state.tasks;
 
-                Container(
-                  width: 60.w,
-                  height: 60.h,
-
-                  child: Image.asset(
-                    widget.isExpanded
-                        ? 'assets/icons/color_arrow_down.png'
-                        : 'assets/icons/color_arrow_right.png',
-
-                  ),
-                )
-
-              ],
-            ),
-          ),
-        ),
-        if (widget.isExpanded)
-          Container(
-            height: 59.h,
-            color: Color(0xff0b1437),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Container(
-                  width: 120.48.w,
-                  height: 40.h,
-                  padding: EdgeInsets.only(top: 5.71.h),
-                  decoration: BoxDecoration(
-                    color: Color(0xff3182ce),
-                    borderRadius: BorderRadius.circular(5.r),
-                  ),
-                  child: InkWell(
-                    onTap: () {
-                      setState(() {
-                         hideIframes();
-                      });
-
-                      Future.microtask(() {
-                        showGeneralDialog(
-                          context: context,
-                          barrierDismissible: true,
-                          barrierLabel: '',
-                          barrierColor: Colors.black.withOpacity(0.5),
-                          transitionDuration: Duration(milliseconds: 200),
-                          pageBuilder:
-                              (context, animation, secondaryAnimation) {
-                            return Align(
-                              alignment: Alignment.centerLeft,
-                              child: Padding(
-                                padding:
-                                    EdgeInsets.only(left: 841.w, top: 100.h),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: SizedBox(
-                                    width: 2750.w,
-                                    height: 1803.h,
-                                    child: ExpandWorkTaskSearch(
-                                      onDataUploaded: _loadWorkTasks, // ✅ 갱신 함수 전달
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ).then((_) {
-                          // showIframes();
-                        });
-                      });
-                    },
-                    child: Text(
-                      '전체 보기',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontFamily: 'PretendardGOV',
-                          fontWeight: FontWeight.w400,
-                          fontSize: 20.sp,
-                          color: Colors.white),
+        return Column(
+          children: [
+            // 헤더 및 버튼 영역은 그대로
+            InkWell(
+              onTap: widget.onTap,
+              child: Container(
+                height: 60.h,
+                decoration: BoxDecoration(
+                  color: Color(0xff111c44),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Color(0xffd9d9d9), // 선 색상
+                      width: 1.w, // 선 두께
                     ),
                   ),
                 ),
-                SizedBox(width: 21.52.w)
-              ],
+                child: Row(
+                  children: [
+                    SizedBox(width: 26.w),
+                    Container(
+                      width: 40.16.w,
+                      height: 40.h,
+                      child: Image.asset('assets/icons/work_task.png'),
+                    ),
+                    SizedBox(width: 5.w),
+                    Text(
+                      '작업명',
+                      style: TextStyle(
+                          fontFamily: 'PretendardGOV',
+                          fontWeight: FontWeight.w500,
+                          fontSize: 36.sp,
+                          color: Colors.white),
+                    ),
+                    Spacer(),
+
+                    Container(
+                      width: 60.w,
+                      height: 60.h,
+
+                      child: Image.asset(
+                        widget.isExpanded
+                            ? 'assets/icons/color_arrow_down.png'
+                            : 'assets/icons/color_arrow_right.png',
+
+                      ),
+                    )
+
+                  ],
+                ),
+              ),
             ),
-          ),
-        Container(height: 1.h, color: Colors.white),
-        if (widget.isExpanded) _buildHeaderRow(),
-        if (widget.isExpanded)
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.w),
-            height: 367.h,
-            color: Color(0xff0b1437),
-            child: workTasks.isEmpty
-                ? Center(
+            if (widget.isExpanded)
+              Container(
+                height: 59.h,
+                color: Color(0xff0b1437),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Container(
+                      width: 120.48.w,
+                      height: 40.h,
+                      padding: EdgeInsets.only(top: 5.71.h),
+                      decoration: BoxDecoration(
+                        color: Color(0xff3182ce),
+                        borderRadius: BorderRadius.circular(5.r),
+                      ),
+                      child: InkWell(
+                        onTap: () {
+                          setState(() {
+                            hideIframes();
+                          });
+
+                          Future.microtask(() {
+                            showGeneralDialog(
+                              context: context,
+                              barrierDismissible: true,
+                              barrierLabel: '',
+                              barrierColor: Colors.black.withOpacity(0.5),
+                              transitionDuration: Duration(milliseconds: 200),
+                              pageBuilder:
+                                  (context, animation, secondaryAnimation) {
+                                return Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Padding(
+                                    padding:
+                                    EdgeInsets.only(left: 841.w, top: 100.h),
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: SizedBox(
+                                        width: 2750.w,
+                                        height: 1803.h,
+                                        child: ExpandWorkTaskSearch(
+                                          onDataUploaded: _loadWorkTasks, // ✅ 갱신 함수 전달
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ).then((_) {
+                              // showIframes();
+                            });
+                          });
+                        },
+                        child: Text(
+                          '전체 보기',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontFamily: 'PretendardGOV',
+                              fontWeight: FontWeight.w400,
+                              fontSize: 20.sp,
+                              color: Colors.white),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 21.52.w)
+                  ],
+                ),
+              ),
+            Container(height: 1.h, color: Colors.white),
+            if (widget.isExpanded) _buildHeaderRow(),
+            if (widget.isExpanded)
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                height: 367.h,
+                color: Color(0xff0b1437),
+                child: workTasks.isEmpty
+                    ? Center(
                     child: Text('작업 내역 없음',
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: 24.sp,
                             fontFamily: 'PretendardGOV')))
-                : ListView.separated(
-                    itemCount: workTasks.length,
-                    separatorBuilder: (_, __) =>
-                        Container(height: 1.h, color: Colors.white),
-                    itemBuilder: (context, index) {
-                      final item = workTasks[index];
-                      return DataRowWidget(
-                        item.title,
-                        '${item.progress}%',
-                        item.startDate ?? '-',
-                        item.endDate ?? '-',
-                      );
-                    },
-                  ),
-          ),
-      ],
+                    : ListView.separated(
+                  itemCount: workTasks.length,
+                  separatorBuilder: (_, __) =>
+                      Container(height: 1.h, color: Colors.white),
+                  itemBuilder: (context, index) {
+                    final item = workTasks[index];
+                    return DataRowWidget(
+                      item.title,
+                      '${item.progress}%',
+                      item.startDate ?? '-',
+                      item.endDate ?? '-',
+                    );
+                  },
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
+
 
   Widget _buildHeaderRow() {
     return Container(

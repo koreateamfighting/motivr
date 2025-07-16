@@ -3,7 +3,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iot_dashboard/controller/cctv_controller.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-
+import 'package:iot_dashboard/controller/alarm_history_controller.dart';
+import 'package:iot_dashboard/state/alarm_history_state.dart';
+import 'dart:async';
 class CctvLog extends StatefulWidget {
   const CctvLog({super.key});
 
@@ -12,19 +14,34 @@ class CctvLog extends StatefulWidget {
 }
 
 class _CctvLogState extends State<CctvLog> {
+  final Set<String> _alreadyLogged = {}; // 중복 전송 방지용
 
+  Timer? _timer;
   @override
   void initState() {
     super.initState();
+
     Future.microtask(() {
       context.read<CctvController>().fetchCctvs();
+    });
 
+    // ✅ 10분마다 자동 갱신
+    _timer = Timer.periodic(Duration(minutes: 10), (_) {
+      context.read<CctvController>().fetchCctvs();
+      context.read<AlarmHistoryState>().triggerRefresh(); // 재빌드 유도
     });
   }
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
 
 
   @override
   Widget build(BuildContext context) {
+    final refreshTrigger = context.watch<AlarmHistoryState>().refreshCount;
     final cctvs = context.watch<CctvController>().items;
     final dateFormat = DateFormat('yyyy-MM-dd HH:mm');
 
@@ -37,6 +54,15 @@ class _CctvLogState extends State<CctvLog> {
       final statusMsg = e.isConnected == false
           ? '[$cam]영상 이미지 수집 성공'
           : '[$cam]영상 이미지 수집 실패'; // ✅ 조건 반영
+      if (!_alreadyLogged.contains(cam)) {
+        _alreadyLogged.add(cam);
+        Future.microtask(() async {
+          await AlarmHistoryController.logCctvStatus(
+            camId: cam,
+            isConnected: e.isConnected,
+          );
+        });
+      }
 
       return {'time': timestamp, 'message': statusMsg};
     }).toList();

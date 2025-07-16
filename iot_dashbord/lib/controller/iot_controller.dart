@@ -89,7 +89,7 @@ class IotController extends ChangeNotifier {
 
         debugPrint('✅ ${data.length}건의 시간 범위 센서 데이터 불러옴');
       } else {
-        debugPrint('❌ 조회 실패: ${response.statusCode}');
+        debugPrint('❌ IOT Controller 센서 시간별 조회 실패: ${response.statusCode}');
       }
     } catch (e) {
       debugPrint('❌ 조회 중 예외 발생: $e');
@@ -141,8 +141,8 @@ class IotController extends ChangeNotifier {
 
 
 
-  // ✅ 전체 센서 데이터 조회 (limit 기본 1000)
-  Future<void> fetchAllSensorData({int limit = 10000}) async {
+  // ✅ 전체 센서 데이터 조회 (limit 기본 500)
+  Future<void> fetchAllSensorData({int limit = 500}) async {
     final uri = Uri.parse('$_baseUrl/sensor-data?limit=$limit');
     debugPrint('📡 전체 센서 데이터 조회 시작: $uri');
 
@@ -158,7 +158,7 @@ class IotController extends ChangeNotifier {
 
         debugPrint('✅ 전체 데이터 로드 완료 (${data.length}건)');
       } else {
-        debugPrint('❌ 조회 실패: ${response.statusCode}');
+        debugPrint('❌ 전체 센서 데이터 최신 500개 조회 실패: ${response.statusCode}');
       }
     } catch (e) {
       debugPrint('❌ 전체 조회 중 예외 발생: $e');
@@ -247,7 +247,7 @@ class IotController extends ChangeNotifier {
         debugPrint('✅ RID 개수: ${data['count']}');
         return data['count'];
       } else {
-        debugPrint('❌ 조회 실패: ${response.statusCode}');
+        debugPrint('❌ rid 개수 파악 조회 실패: ${response.statusCode}');
         return null;
       }
     } catch (e) {
@@ -294,7 +294,7 @@ class IotController extends ChangeNotifier {
         debugPrint('  - Inspection : $inspection');
         debugPrint('  - Total      : $total');
       } else {
-        debugPrint('❌ 서버 오류: ${response.statusCode} ${response.reasonPhrase}');
+        debugPrint('❌ IOT Status 서버 오류: ${response.statusCode} ${response.reasonPhrase}');
         hasError = true;
       }
     } catch (e, stackTrace) {
@@ -340,7 +340,7 @@ class IotController extends ChangeNotifier {
 
         debugPrint('✅ ${data.length}건의 센서 데이터 불러옴');
       } else {
-        debugPrint('❌ 조회 실패: ${response.statusCode}');
+        debugPrint('❌ 하루 최신 데이터 조회 실패: ${response.statusCode}');
       }
     } catch (e) {
       debugPrint('❌ 조회 중 예외 발생: $e');

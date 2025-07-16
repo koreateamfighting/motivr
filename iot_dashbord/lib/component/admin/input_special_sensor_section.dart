@@ -14,11 +14,11 @@ import 'package:iot_dashboard/component/admin/labeled_dropdown_field.dart';
 
 class InputSpecialSensorSection extends StatefulWidget {
   final TextEditingController? inclinometerIdController;
-    final String? inclinometerDate;
+  final String? inclinometerDate;
   final Map<double, TextEditingController>? inclinometerDepthValues;
 
   final TextEditingController? piezometerIdController;
-    final String? piezometerDate;
+  final String? piezometerDate;
   final TextEditingController? piezometerDryDaysController;
   final TextEditingController? piezometerCurrentWaterLevelController;
   final TextEditingController? piezometerGroundLevelController;
@@ -26,13 +26,13 @@ class InputSpecialSensorSection extends StatefulWidget {
   final TextEditingController? piezometerCumulativeChangeController;
 
   final TextEditingController? strainGaugeIdController;
-   final String? strainGaugeDate;
+  final String? strainGaugeDate;
   final TextEditingController? strainGaugeReadingController;
   final TextEditingController? strainGaugeStressController;
   final TextEditingController? strainGaugeDepthController;
 
   final TextEditingController? settlementGaugeIdController;
-    final String? settlementGaugeDate;
+  final String? settlementGaugeDate;
   final TextEditingController? settlementGaugeDryDaysController;
   final TextEditingController? settlementGaugeAbsoluteValues1;
   final TextEditingController? settlementGaugeAbsoluteValues2;
@@ -45,10 +45,8 @@ class InputSpecialSensorSection extends StatefulWidget {
     Key? key,
     this.inclinometerIdController,
     this.inclinometerDate,
-
     this.inclinometerDepthValues,
     this.piezometerIdController,
-
     this.piezometerDate,
     this.piezometerDryDaysController,
     this.piezometerCurrentWaterLevelController,
@@ -72,12 +70,16 @@ class InputSpecialSensorSection extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<InputSpecialSensorSection> createState() => _InputSpecialSensorSectionSectionState();
+  State<InputSpecialSensorSection> createState() =>
+      _InputSpecialSensorSectionSectionState();
 }
 
-class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSection> {
+class _InputSpecialSensorSectionSectionState
+    extends State<InputSpecialSensorSection> {
   bool isExpanded = false;
-  bool get isInclinometerIdValid => inclinometerIdController.text.trim().isNotEmpty;
+
+  bool get isInclinometerIdValid =>
+      inclinometerIdController.text.trim().isNotEmpty;
   late String _selectedInclinometerLocation; // 연결
   late TextEditingController inclinometerIdController;
   late String? inclinometerDate;
@@ -103,7 +105,6 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
   late TextEditingController strainGaugeDepthController;
   DateTime? _selectedStrainGaugeDate;
 
-
   late TextEditingController settlementGaugeIdController;
   late String _selectedSettlementGaugeLocation; // 연결
   late String? settlementGaugeDate;
@@ -115,13 +116,14 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
   late TextEditingController settlementGaugeSubsidenceValues2;
   late TextEditingController settlementGaugeSubsidenceValues3;
   DateTime? _selectedSettlementGaugeDate;
+
   @override
   void initState() {
     super.initState();
 
     inclinometerIdController =
         widget.inclinometerIdController ?? TextEditingController();
- _selectedInclinometerLocation = '추진구';
+    _selectedInclinometerLocation = '추진구';
     inclinometerDate = widget.inclinometerDate;
 
     inclinometerDepthValues = widget.inclinometerDepthValues ?? {};
@@ -193,13 +195,14 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
     }
     if (widget.settlementGaugeDate != null) {
       try {
-        _selectedSettlementGaugeDate = DateTime.parse(widget.settlementGaugeDate!);
+        _selectedSettlementGaugeDate =
+            DateTime.parse(widget.settlementGaugeDate!);
       } catch (_) {
         _selectedSettlementGaugeDate = null;
       }
     }
-
   }
+
   Future<void> _saveInclinometer() async {
     final data = SpecialSensorData(
       installationID: inclinometerIdController.text.trim(),
@@ -228,17 +231,28 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
       depthMinus8_5: double.tryParse(inclinometerDepthValues[-8.5]?.text ?? ''),
       depthMinus9_0: double.tryParse(inclinometerDepthValues[-9.0]?.text ?? ''),
       depthMinus9_5: double.tryParse(inclinometerDepthValues[-9.5]?.text ?? ''),
-      depthMinus10_0: double.tryParse(inclinometerDepthValues[-10.0]?.text ?? ''),
-      depthMinus10_5: double.tryParse(inclinometerDepthValues[-10.5]?.text ?? ''),
-      depthMinus11_0: double.tryParse(inclinometerDepthValues[-11.0]?.text ?? ''),
-      depthMinus11_5: double.tryParse(inclinometerDepthValues[-11.5]?.text ?? ''),
-      depthMinus12_0: double.tryParse(inclinometerDepthValues[-12.0]?.text ?? ''),
-      depthMinus12_5: double.tryParse(inclinometerDepthValues[-12.5]?.text ?? ''),
-      depthMinus13_0: double.tryParse(inclinometerDepthValues[-13.0]?.text ?? ''),
-      depthMinus13_5: double.tryParse(inclinometerDepthValues[-13.5]?.text ?? ''),
-      depthMinus14_0: double.tryParse(inclinometerDepthValues[-14.0]?.text ?? ''),
-      depthMinus14_5: double.tryParse(inclinometerDepthValues[-14.5]?.text ?? ''),
-      depthMinus15_0: double.tryParse(inclinometerDepthValues[-15.0]?.text ?? ''),
+      depthMinus10_0:
+          double.tryParse(inclinometerDepthValues[-10.0]?.text ?? ''),
+      depthMinus10_5:
+          double.tryParse(inclinometerDepthValues[-10.5]?.text ?? ''),
+      depthMinus11_0:
+          double.tryParse(inclinometerDepthValues[-11.0]?.text ?? ''),
+      depthMinus11_5:
+          double.tryParse(inclinometerDepthValues[-11.5]?.text ?? ''),
+      depthMinus12_0:
+          double.tryParse(inclinometerDepthValues[-12.0]?.text ?? ''),
+      depthMinus12_5:
+          double.tryParse(inclinometerDepthValues[-12.5]?.text ?? ''),
+      depthMinus13_0:
+          double.tryParse(inclinometerDepthValues[-13.0]?.text ?? ''),
+      depthMinus13_5:
+          double.tryParse(inclinometerDepthValues[-13.5]?.text ?? ''),
+      depthMinus14_0:
+          double.tryParse(inclinometerDepthValues[-14.0]?.text ?? ''),
+      depthMinus14_5:
+          double.tryParse(inclinometerDepthValues[-14.5]?.text ?? ''),
+      depthMinus15_0:
+          double.tryParse(inclinometerDepthValues[-15.0]?.text ?? ''),
     );
 
     final success = await SpecialSensorController.upsertSensorData(data);
@@ -271,6 +285,7 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
       );
     }
   }
+
   Future<void> _savePiezometer() async {
     final data = SpecialSensorData(
       installationID: piezometerIdController.text.trim(),
@@ -278,16 +293,17 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
       installationLocation: _selectedPiezometerLocation,
       measurementDate: _selectedPiezometerDate,
       elapsedDays: int.tryParse(piezometerDryDaysController.text),
-      currentWaterLevel: double.tryParse(piezometerCurrentWaterLevelController.text),
+      currentWaterLevel:
+          double.tryParse(piezometerCurrentWaterLevelController.text),
       excavationLevel: double.tryParse(piezometerGroundLevelController.text),
       changeAmount: double.tryParse(piezometerChangeAmountController.text),
-      cumulativeDisplacement: double.tryParse(piezometerCumulativeChangeController.text),
+      cumulativeDisplacement:
+          double.tryParse(piezometerCumulativeChangeController.text),
     );
 
     final success = await SpecialSensorController.upsertSensorData(data);
 
     if (success) {
-
       setState(() {
         piezometerIdController.clear();
         _selectedPiezometerLocation = '추진구';
@@ -317,6 +333,7 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
       );
     }
   }
+
   Future<void> _saveStrainGauge() async {
     final data = SpecialSensorData(
       installationID: strainGaugeIdController.text.trim(),
@@ -358,6 +375,7 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
       );
     }
   }
+
   Future<void> _saveSettlementGauge() async {
     final data = SpecialSensorData(
       installationID: settlementGaugeIdController.text.trim(),
@@ -376,7 +394,6 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
     final success = await SpecialSensorController.upsertSensorData(data);
 
     if (success) {
-
       setState(() {
         settlementGaugeIdController.clear();
         _selectedSettlementGaugeLocation = '추진구';
@@ -407,7 +424,6 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -444,8 +460,8 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                   isExpanded
                       ? 'assets/icons/arrow_down.png'
                       : 'assets/icons/arrow_right2.png',
-                  width: isExpanded?40.w:50.w,
-                  height: isExpanded?20.h:30.h,
+                  width: isExpanded ? 40.w : 50.w,
+                  height: isExpanded ? 20.h : 30.h,
                 ),
               ),
               SizedBox(width: 55.w),
@@ -498,7 +514,7 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                     onChanged: (_) => setState(() {}),
                   ),
                 ),
-           CustomDivider(),
+                CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -506,10 +522,11 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                     title: '설치 위치 :',
                     items: ['추진구', '도달구'],
                     selectedValue: _selectedInclinometerLocation,
-                    onChanged: (val) => setState(() => _selectedInclinometerLocation = val!),
+                    onChanged: (val) =>
+                        setState(() => _selectedInclinometerLocation = val!),
                   ),
                 ),
-           CustomDivider(),
+                CustomDivider(),
 
                 SizedBox(
                   height: 16.h,
@@ -519,41 +536,39 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                   initialDate: DateTime.tryParse(inclinometerDate ?? ''),
                   onDateSelected: (date) {
                     setState(() {
-
                       _selectedInclinometerDate = date;
-
                     });
                   },
                 ),
-           CustomDivider(),
-           //      SizedBox(
-           //        width: 2880.w,
-           //        height: 85.h,
-           //        child: labeledTextField(
-           //          title: '측정 심도 :',
-           //          hint: '',
-           //          width: 420,
-           //          height: 60,
-           //          textBoxwidth: 400,
-           //          textBoxHeight: 50,
-           //          controller: inclinometerMeasuredDepthsController,
-           //        ),
-           //      ),
+                CustomDivider(),
+                //      SizedBox(
+                //        width: 2880.w,
+                //        height: 85.h,
+                //        child: labeledTextField(
+                //          title: '측정 심도 :',
+                //          hint: '',
+                //          width: 420,
+                //          height: 60,
+                //          textBoxwidth: 400,
+                //          textBoxHeight: 50,
+                //          controller: inclinometerMeasuredDepthsController,
+                //        ),
+                //      ),
 
-           //      CustomDivider(),
-           //      SizedBox(
-           //        width: 2880.w,
-           //        height: 85.h,
-           //        child: labeledTextField(
-           //          title: '측정 간격 :',
-           //          hint: '',
-           //          width: 420,
-           //          height: 60,
-           //          textBoxwidth: 400,
-           //          textBoxHeight: 50,
-           //          controller: inclinometerMeasuredDepthsController,
-           //        ),
-           //      ),
+                //      CustomDivider(),
+                //      SizedBox(
+                //        width: 2880.w,
+                //        height: 85.h,
+                //        child: labeledTextField(
+                //          title: '측정 간격 :',
+                //          hint: '',
+                //          width: 420,
+                //          height: 60,
+                //          textBoxwidth: 400,
+                //          textBoxHeight: 50,
+                //          controller: inclinometerMeasuredDepthsController,
+                //        ),
+                //      ),
                 Row(
                   children: [
                     SizedBox(
@@ -588,10 +603,9 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                         ),
                       ),
                     ),
-
                   ],
                 ),
-                 CustomDivider(),
+                CustomDivider(),
                 Row(
                   children: [
                     SizedBox(
@@ -626,9 +640,9 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                         ),
                       ),
                     ),
-
                   ],
-                ),           CustomDivider(),
+                ),
+                CustomDivider(),
 // 깊이 입력 헤더
                 Padding(
                   padding: EdgeInsets.only(left: 41.w, bottom: 12.h, top: 12.h),
@@ -706,33 +720,47 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                   }),
                 ),
                 SizedBox(height: 5.h),
-                Container(
-                  color: Color(0xffe7eaf4),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      ActionButton(
-                        '저장',
-                        isInclinometerIdValid ? Color(0xff3182ce) : Colors.grey,
-                        onTap: isInclinometerIdValid ? () async {
-                          await _saveInclinometer();
-                        } : null,
+                Transform.translate(
+                    offset: Offset(-1.w, 0),
+                    child: Container(
+                      color: Color(0xffe7eaf4),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          ActionButton(
+                            '저장',
+                            isInclinometerIdValid
+                                ? Color(0xff3182ce)
+                                : Colors.grey,
+                            onTap: isInclinometerIdValid
+                                ? () async {
+                                    await _saveInclinometer();
+                                  }
+                                : null,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-
-                Container(
+                    )),
+                Transform.translate(
+                  offset: Offset(-1.w, -2.h),
+                  child: Container(
                     alignment: Alignment.centerLeft,
                     color: Color(0xffe7eaf4),
-                    child: Text(
-                      '지하수위계',
-                      style: TextStyle(
-                          fontFamily: 'PretendardGOV',
-                          fontWeight: FontWeight.w700,
-                          fontSize: 32.sp,
-                          color: Color(0xff414c67)),
-                    )),
+                    child: Transform.translate(
+                        offset: Offset(2.w, 0),
+                        child: Container(
+                            width: 2881.w,
+                            color: Color(0xffe7eaf4),
+                            child: Text(
+                              '지하수위계',
+                              style: TextStyle(
+                                  fontFamily: 'PretendardGOV',
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 32.sp,
+                                  color: Color(0xff414c67)),
+                            ))),
+                  ),
+                ),
 
                 SizedBox(height: 5.h),
                 SizedBox(
@@ -749,7 +777,7 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                     onChanged: (_) => setState(() {}),
                   ),
                 ),
-           CustomDivider(),
+                CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -757,10 +785,11 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                     title: '설치 위치 :',
                     items: ['추진구', '도달구'],
                     selectedValue: _selectedPiezometerLocation,
-                    onChanged: (val) => setState(() => _selectedPiezometerLocation = val!),
+                    onChanged: (val) =>
+                        setState(() => _selectedPiezometerLocation = val!),
                   ),
                 ),
-           CustomDivider(),
+                CustomDivider(),
 
                 SizedBox(
                   height: 16.h,
@@ -774,7 +803,7 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                     });
                   },
                 ),
-           CustomDivider(),
+                CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -788,7 +817,7 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                     controller: piezometerDryDaysController,
                   ),
                 ),
-           CustomDivider(),
+                CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -802,7 +831,7 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                     controller: piezometerCurrentWaterLevelController,
                   ),
                 ),
-           CustomDivider(),
+                CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -816,7 +845,7 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                     controller: piezometerGroundLevelController,
                   ),
                 ),
-           CustomDivider(),
+                CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -830,7 +859,7 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                     controller: piezometerChangeAmountController,
                   ),
                 ),
-           CustomDivider(),
+                CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -844,35 +873,50 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                     controller: piezometerCumulativeChangeController,
                   ),
                 ),
-           CustomDivider(),
-                Container(
-                  color: Color(0xffe7eaf4),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      ActionButton(
-                        '저장',
-                        piezometerIdController.text.trim().isNotEmpty ? Color(0xff3182ce) : Colors.grey,
-                        onTap: piezometerIdController.text.trim().isNotEmpty ? () async {
-                          await _savePiezometer();
-                        } : null,
-                      ),
-
-                    ],
+                CustomDivider(),
+                Transform.translate(
+                  offset: Offset(-1.w, 0),
+                  child: Container(
+                    color: Color(0xffe7eaf4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ActionButton(
+                          '저장',
+                          piezometerIdController.text.trim().isNotEmpty
+                              ? Color(0xff3182ce)
+                              : Colors.grey,
+                          onTap: piezometerIdController.text.trim().isNotEmpty
+                              ? () async {
+                                  await _savePiezometer();
+                                }
+                              : null,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
 
-                Container(
+                Transform.translate(
+                  offset: Offset(-1.w, -2.h),
+                  child: Container(
                     alignment: Alignment.centerLeft,
                     color: Color(0xffe7eaf4),
-                    child: Text(
-                      '변형률계',
-                      style: TextStyle(
-                          fontFamily: 'PretendardGOV',
-                          fontWeight: FontWeight.w700,
-                          fontSize: 32.sp,
-                          color: Color(0xff414c67)),
-                    )),
+                    child: Transform.translate(
+                        offset: Offset(2.w, 0),
+                        child: Container(
+                            width: 2881.w,
+                            color: Color(0xffe7eaf4),
+                            child: Text(
+                              '변형률계',
+                              style: TextStyle(
+                                  fontFamily: 'PretendardGOV',
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 32.sp,
+                                  color: Color(0xff414c67)),
+                            ))),
+                  ),
+                ),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -887,7 +931,7 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                     onChanged: (_) => setState(() {}),
                   ),
                 ),
-           CustomDivider(),
+                CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -895,10 +939,11 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                     title: '설치 위치 :',
                     items: ['추진구', '도달구'],
                     selectedValue: _selectedStrainGaugeLocation,
-                    onChanged: (val) => setState(() => _selectedStrainGaugeLocation = val!),
+                    onChanged: (val) =>
+                        setState(() => _selectedStrainGaugeLocation = val!),
                   ),
                 ),
-           CustomDivider(),
+                CustomDivider(),
 
                 SizedBox(
                   height: 16.h,
@@ -909,11 +954,11 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                   onDateSelected: (date) {
                     setState(() {
                       _selectedStrainGaugeDate = date;
-                     /* print('측정날짜는 ? : ${_selectedStrainGaugeDate}');*/
+                      /* print('측정날짜는 ? : ${_selectedStrainGaugeDate}');*/
                     });
                   },
                 ),
-           CustomDivider(),
+                CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -927,7 +972,7 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                     controller: strainGaugeReadingController,
                   ),
                 ),
-           CustomDivider(),
+                CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -941,7 +986,7 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                     controller: strainGaugeStressController,
                   ),
                 ),
-           CustomDivider(),
+                CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -955,34 +1000,50 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                     controller: strainGaugeDepthController,
                   ),
                 ),
-           CustomDivider(),
-                Container(
-                  color: Color(0xffe7eaf4),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      ActionButton(
-                        '저장',
-                        strainGaugeIdController.text.trim().isNotEmpty ? Color(0xff3182ce) : Colors.grey,
-                        onTap: strainGaugeIdController.text.trim().isNotEmpty ? () async {
-                          await _saveStrainGauge();
-                        } : null,
-                      ),
-                    ],
+                CustomDivider(),
+                Transform.translate(
+                  offset: Offset(-1.w, 0),
+                  child: Container(
+                    color: Color(0xffe7eaf4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ActionButton(
+                          '저장',
+                          strainGaugeIdController.text.trim().isNotEmpty
+                              ? Color(0xff3182ce)
+                              : Colors.grey,
+                          onTap: strainGaugeIdController.text.trim().isNotEmpty
+                              ? () async {
+                                  await _saveStrainGauge();
+                                }
+                              : null,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
 
-                Container(
+                Transform.translate(
+                  offset: Offset(-1.w, -2.h),
+                  child: Container(
                     alignment: Alignment.centerLeft,
                     color: Color(0xffe7eaf4),
-                    child: Text(
-                      '지표침하계',
-                      style: TextStyle(
-                          fontFamily: 'PretendardGOV',
-                          fontWeight: FontWeight.w700,
-                          fontSize: 32.sp,
-                          color: Color(0xff414c67)),
-                    )),
+                    child: Transform.translate(
+                        offset: Offset(2.w, 0),
+                        child: Container(
+                            width: 2881.w,
+                            color: Color(0xffe7eaf4),
+                            child: Text(
+                              '지표침하계',
+                              style: TextStyle(
+                                  fontFamily: 'PretendardGOV',
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 32.sp,
+                                  color: Color(0xff414c67)),
+                            ))),
+                  ),
+                ),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -997,18 +1058,19 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                     onChanged: (_) => setState(() {}),
                   ),
                 ),
-           CustomDivider(),
+                CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
-                  child:  LabeledDropdownField(
+                  child: LabeledDropdownField(
                     title: '설치 위치 :',
                     items: ['추진구', '도달구'],
                     selectedValue: _selectedSettlementGaugeLocation,
-                    onChanged: (val) => setState(() => _selectedSettlementGaugeLocation = val!),
+                    onChanged: (val) =>
+                        setState(() => _selectedSettlementGaugeLocation = val!),
                   ),
                 ),
-           CustomDivider(),
+                CustomDivider(),
 
                 SizedBox(
                   height: 16.h,
@@ -1023,7 +1085,7 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                 SizedBox(
                   height: 16.h,
                 ),
-           CustomDivider(),
+                CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -1037,11 +1099,11 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                     controller: settlementGaugeDryDaysController,
                   ),
                 ),
-           CustomDivider(),
+                CustomDivider(),
                 Container(
                   height: 88.h,
                   alignment: Alignment.centerLeft,
-                  child:    Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       labeledTextField(
@@ -1053,7 +1115,9 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                         textBoxHeight: 50,
                         controller: settlementGaugeAbsoluteValues1,
                       ),
-                      SizedBox(width: 200.w,),
+                      SizedBox(
+                        width: 200.w,
+                      ),
                       labeledTextField(
                         hint: '',
                         width: 420,
@@ -1062,7 +1126,9 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                         textBoxHeight: 50,
                         controller: settlementGaugeAbsoluteValues2,
                       ),
-                      SizedBox(width: 200.w,),
+                      SizedBox(
+                        width: 200.w,
+                      ),
                       labeledTextField(
                         hint: '',
                         width: 420,
@@ -1072,13 +1138,13 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                         controller: settlementGaugeAbsoluteValues3,
                       ),
                     ],
-                  ) ,
+                  ),
                 ),
-           CustomDivider(),
+                CustomDivider(),
                 Container(
                   height: 88.h,
                   alignment: Alignment.centerLeft,
-                  child:    Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       labeledTextField(
@@ -1090,7 +1156,9 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                         textBoxHeight: 50,
                         controller: settlementGaugeSubsidenceValues1,
                       ),
-                      SizedBox(width: 200.w,),
+                      SizedBox(
+                        width: 200.w,
+                      ),
                       labeledTextField(
                         hint: '',
                         width: 420,
@@ -1099,7 +1167,9 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                         textBoxHeight: 50,
                         controller: settlementGaugeSubsidenceValues2,
                       ),
-                      SizedBox(width: 200.w,),
+                      SizedBox(
+                        width: 200.w,
+                      ),
                       labeledTextField(
                         hint: '',
                         width: 420,
@@ -1109,9 +1179,8 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
                         controller: settlementGaugeSubsidenceValues3,
                       ),
                     ],
-                  ) ,
+                  ),
                 ),
-
               ],
             ),
           ),
@@ -1121,10 +1190,14 @@ class _InputSpecialSensorSectionSectionState extends State<InputSpecialSensorSec
             children: [
               ActionButton(
                 '저장',
-                settlementGaugeIdController.text.trim().isNotEmpty ? Color(0xff3182ce) : Colors.grey,
-                onTap: settlementGaugeIdController.text.trim().isNotEmpty ? () async {
-                  await _saveSettlementGauge();
-                } : null,
+                settlementGaugeIdController.text.trim().isNotEmpty
+                    ? Color(0xff3182ce)
+                    : Colors.grey,
+                onTap: settlementGaugeIdController.text.trim().isNotEmpty
+                    ? () async {
+                        await _saveSettlementGauge();
+                      }
+                    : null,
               ),
               SizedBox(width: 400.w),
             ],

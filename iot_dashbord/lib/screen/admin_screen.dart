@@ -261,67 +261,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                 SizedBox(
                                   width: 2155.w,
                                 ),
-                                // InkWell(
-                                //     onTap: () async {
-                                //        final title = _titleController.text.trim();
-                                //       // if (title.isEmpty ||
-                                //       //     selectedLogoFile == null) {
-                                //       //   showDialog(
-                                //       //     context: context,
-                                //       //     builder: (_) => AlertDialog(
-                                //       //       title: Text('입력 누락'),
-                                //       //       content: Text('타이틀과 로고 파일을 모두 입력해주세요.'),
-                                //       //       actions: [
-                                //       //         TextButton(
-                                //       //             onPressed: () =>
-                                //       //                 Navigator.pop(context),
-                                //       //             child: Text('확인'))
-                                //       //       ],
-                                //       //     ),
-                                //       //   );
-                                //       //   return;
-                                //       // }
-                                //
-                                //       final result = await SettingController
-                                //           .uploadTitleAndLogo(
-                                //               title, selectedLogoFile!);
-                                //       if (result.success) {
-                                //         print('✅ ${result.message}');
-                                //         showDialog(
-                                //           context: context,
-                                //           builder: (_) =>
-                                //           const DialogForm(
-                                //             mainText:
-                                //             '저장되었습니다.',
-                                //             btnText: '확인',
-                                //             fontSize: 20,
-                                //           ),
-                                //         );
-                                //         await SettingService
-                                //             .refresh(); // 🔁 TopAppBar 갱신 트리거
-                                //       } else {
-                                //         print('❌ ${result.message}');
-                                //       }
-                                //     },
-                                //     child: Container(
-                                //       width: 347.w,
-                                //       height: 60.h,
-                                //       decoration: BoxDecoration(
-                                //         color: Color(0xff3182ce),
-                                //         borderRadius: BorderRadius.circular(5.r),
-                                //       ),
-                                //       alignment: Alignment.center,
-                                //       child: Text(
-                                //         '전체 저장',
-                                //         textAlign: TextAlign.center,
-                                //         style: TextStyle(
-                                //           fontFamily: 'PretendardGOV',
-                                //           fontWeight: FontWeight.w700,
-                                //           fontSize: 36.sp,
-                                //           color: Colors.white,
-                                //         ),
-                                //       ),
-                                //     ))
+
                               ],
                             ),
                           )
