@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
-
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -15,34 +14,34 @@ class MotionLabelPanel extends StatefulWidget {
 
 class _MotionLabelPanelState extends State<MotionLabelPanel> {
   Map<String, bool> labels = {};
-  WebSocket? _socket;
-  StreamSubscription? _subscription;
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    _connectWebSocket();
+    _startPolling();
   }
 
-  void _connectWebSocket() async {
-    final url = 'wss://hanlimtwin.kr:8443/ws/${widget.camId}';
-    try {
-      _socket = await WebSocket.connect(url);
-      _subscription = _socket!.listen((event) {
-        final data = jsonDecode(event);
-        setState(() {
-          labels = Map<String, bool>.from(data['lines'] ?? {});
-        });
-      });
-    } catch (e) {
-      print("WebSocket 연결 오류: $e");
-    }
+  void _startPolling() {
+    _timer = Timer.periodic(Duration(milliseconds: 500), (_) async {
+      final url = Uri.parse('https://hanlimtwin.kr:5001/motion_status/${widget.camId}');
+      try {
+        final response = await http.get(url);
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          setState(() {
+            labels = Map<String, bool>.from(data['lines'] ?? {});
+          });
+        }
+      } catch (e) {
+        print('모션 상태 요청 실패: $e');
+      }
+    });
   }
 
   @override
   void dispose() {
-    _subscription?.cancel();
-    _socket?.close();
+    _timer?.cancel();
     super.dispose();
   }
 
@@ -52,33 +51,36 @@ class _MotionLabelPanelState extends State<MotionLabelPanel> {
       padding: EdgeInsets.all(16.w),
       child: labels.isEmpty
           ? const Center(
-        child: Text(
-          '감지된 모션 없음',
-          style: TextStyle(color: Colors.white),
-        ),
+        child: Text('감지된 모션 없음', style: TextStyle(color: Colors.white)),
       )
-          : Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: labels.entries.map((entry) {
-          return Row(
-            children: [
-              Icon(
-                Icons.circle,
-                size: 14.w,
-                color: entry.value ? Colors.green : Colors.grey,
-              ),
-              SizedBox(width: 8.w),
-              Text(
-                entry.key,
-                style: TextStyle(
-                  fontSize: 28.sp,
-                  color: Colors.white,
-                  fontFamily: 'PretendardGOV',
+          : Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: labels.entries.map((entry) {
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 120.w,  // 원하는 너비로 조절
+                  height: 14.h, // 기존 동그라미 높이 유지
+                  decoration: BoxDecoration(
+                    color: entry.value ? Colors.green : Colors.grey,
+                    borderRadius: BorderRadius.circular(4.r),
+                  ),
                 ),
-              ),
-            ],
-          );
-        }).toList(),
+
+                SizedBox(width: 16.w),
+                Text(entry.key,
+                    style: TextStyle(
+                      fontSize: 28.sp,
+                      color: Colors.white,
+                      fontFamily: 'PretendardGOV',
+                    )),
+              ],
+            );
+          }).toList(),
+        )
       ),
     );
   }
