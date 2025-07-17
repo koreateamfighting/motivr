@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:math' as math;
 import 'package:iot_dashboard/utils/striped_progressbar.dart';
 
-void showLoadingDialog(BuildContext context) {
+void showLoadingDialog(BuildContext context,{VoidCallback? onCancel}) {
   showDialog(
     context: context,
     barrierDismissible: false, // 외부 탭 방지
@@ -75,7 +75,10 @@ void showLoadingDialog(BuildContext context) {
                 height: 60.h,
                 alignment: Alignment.center,
                 child: ElevatedButton(
-                  onPressed: () async {}, // 비어있는 onPressed
+                  onPressed: () async {
+                    Navigator.of(context).pop();
+                    if (onCancel != null) onCancel(); // ✅ 콜백 실행
+                  }, // 비어있는 onPressed
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xff3182ce),
                     // 파란색

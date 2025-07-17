@@ -29,6 +29,7 @@ class _GraphViewState extends State<GraphView> {
   List<DisplacementGroup> groups = [];
   Map<String, String> selectedIntervals = {};
   final ScrollController _scrollController = ScrollController();
+  bool _isCancelled = false;
 
   bool _isSelected(String rid) {
     final selected = widget.selectedDownloadRids.value;
@@ -58,16 +59,26 @@ class _GraphViewState extends State<GraphView> {
   }
 
   Future<void> _loadData() async {
-    showLoadingDialog(context);
+    _isCancelled = false;
+
+    showLoadingDialog(
+      context,
+        onCancel: () {
+          _isCancelled = true;
+
+        }
+    );
+
     final iot = context.read<IotController>();
     final start = widget.timeRange.start;
     final end = widget.timeRange.end;
 
     await iot.fetchSensorDataByTimeRange(start, end);
 
+    // ❗ 사용자가 중간에 "취소"를 누른 경우 → UI 업데이트 생략
+    if (_isCancelled) return;
+
     groups = iot.getFilteredDisplacementGroups();
-    debugPrint('🎯 데이터 개수: ${iot.items.length}');
-    debugPrint('🎯 필터된 그룹 개수: ${groups.length}');
 
     groups.sort((a, b) {
       final aNum = int.tryParse(a.rid.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
@@ -80,9 +91,13 @@ class _GraphViewState extends State<GraphView> {
     }
 
     if (groups.isNotEmpty) widget.onRidTap(groups.first.rid);
-    Navigator.of(context).pop();
-    setState(() {});
+
+    Navigator.of(context).pop(); // 로딩 다이얼로그 닫기
+    if (mounted && !_isCancelled) {
+      setState(() {});
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {

@@ -2,6 +2,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/foundation.dart';
 
 class IotItem {
+  final String? indexKey;
   final String id;
   final String sensortype;
   final String eventtype;
@@ -19,6 +20,7 @@ class IotItem {
   final DateTime createAt;
 
   IotItem({
+    this.indexKey,
     required this.id,
     required this.sensortype,
     required this.eventtype,
@@ -37,6 +39,7 @@ class IotItem {
   });
 
   IotItem copyWith({
+    String? indexKey,
     String? id,
     String? sensortype,
     String? eventtype,
@@ -52,8 +55,10 @@ class IotItem {
     String? batteryInfo,
     String? download,
     DateTime? createAt,
+
   }) {
     return IotItem(
+      indexKey: indexKey?? this.indexKey,
       id: id ?? this.id,
       sensortype: sensortype ?? this.sensortype,
       eventtype: eventtype ?? this.eventtype,
@@ -69,6 +74,7 @@ class IotItem {
       batteryInfo: batteryInfo ?? this.batteryInfo,
       download: download ?? this.download,
       createAt: createAt ?? this.createAt,
+
     );
   }
 
@@ -95,7 +101,8 @@ class IotItem {
       debugPrint('❌ [IotItem.fromJson] 시간 파싱 실패: $rawTime, 에러: $e');
     }
 
-    return IotItem(
+    final item = IotItem(
+      indexKey: json['IndexKey']?.toString() ?? '',
       id: paddedId,
       sensortype: json['SensorType']?.toString() ?? '',
       eventtype: json['EventType']?.toString() ?? '',
@@ -112,6 +119,11 @@ class IotItem {
       download: '',
       createAt: parsedTime,
     );
+    // ✅ 상세 로그
+    debugPrint('📥 [fromJson] RID=$paddedId, IndexKey=${item.indexKey}, X_MM=${item.X_MM}, Y_MM=${item.Y_MM}, Z_MM=${item.Z_MM}, '
+        'X_Deg=${item.X_Deg}, Y_Deg=${item.Y_Deg}, Z_Deg=${item.Z_Deg}');
+
+    return item;
   }
 
 
@@ -136,6 +148,7 @@ class IotItem {
     }
 
     final Map<String, dynamic> json = {
+      'IndexKey': indexKey,
       'RID': id,
       'SensorType': sensortype,
       'EventType': eventtypeCode,

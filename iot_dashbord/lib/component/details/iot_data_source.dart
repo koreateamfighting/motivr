@@ -16,7 +16,7 @@ class IotDataSource extends DataGridSource {
   final Set<String> deletedKeys;
   final Map<String, TextEditingController> fieldControllers;
   final Map<String, String> eventTypeValues;
-  final void Function(String id, String createAt, String field, String value)? onFieldChanged;
+  final void Function(String indexKey,String id, String field, String value)? onFieldChanged;
   final void Function(String key)? onDelete;
 
   List<DataGridRow> _iotRows = [];
@@ -34,6 +34,7 @@ class IotDataSource extends DataGridSource {
       }) {
     _iotRows = items.map<DataGridRow>((item) {
       final cells = <DataGridCell>[
+
         DataGridCell<String>(columnName: 'id', value: item.id),
         DataGridCell<String>(columnName: 'type', value: item.sensortype),
         DataGridCell<String>(
@@ -43,17 +44,18 @@ class IotDataSource extends DataGridSource {
         DataGridCell<String>(columnName: 'battery', value: item.battery),
         DataGridCell<String>(columnName: 'lastUpdated', value: DateFormat('yyyy-MM-dd HH:mm:ss').format(item.createAt),),
         DataGridCell<String>(
-            columnName: 'x', value: isDegree ? item.X_Deg : item.X_MM),
+            columnName: isDegree ? 'x_deg' : 'x_mm', value: isDegree ? item.X_Deg : item.X_MM),
         DataGridCell<String>(
-            columnName: 'y', value: isDegree ? item.Y_Deg : item.Y_MM),
+            columnName: isDegree ? 'y_deg' : 'y_mm',value: isDegree ? item.Y_Deg : item.Y_MM),
         DataGridCell<String>(
-            columnName: 'z', value: isDegree ? item.Z_Deg : item.Z_MM),
+            columnName: isDegree ? 'z_deg' : 'z_mm', value: isDegree ? item.Z_Deg : item.Z_MM),
         DataGridCell<String>(columnName: 'batteryInfo', value: item.batteryInfo),
+        DataGridCell<String>(columnName: 'indexKey', value: item.indexKey ?? ''),
       ];
 
       if (isEditing) {
         cells.add(DataGridCell<String>(
-            columnName: 'deleteKey', value: '${item.id}+${item.createAt}'));
+            columnName: 'deleteKey', value: item.indexKey ?? ''));
       } else {
         cells.add(DataGridCell<String>(
             columnName: 'download', value: item.download));
@@ -71,14 +73,16 @@ class IotDataSource extends DataGridSource {
 
   @override
   DataGridRowAdapter buildRow(DataGridRow row) {
-    final id = row.getCells().firstWhere((c) => c.columnName == 'id').value.toString();
-    final createAt = row.getCells().firstWhere((c) => c.columnName == 'lastUpdated').value.toString();
+
+
 
     return DataGridRowAdapter(
       color: const Color(0xff0b1437),
       cells: row.getCells().map<Widget>((cell) {
         final field = cell.columnName;
-        final key = '${id}_${createAt}_$field';
+        final id = row.getCells().firstWhere((c) => c.columnName == 'id').value.toString();
+        final indexKey = row.getCells().firstWhere((c) => c.columnName == 'indexKey').value.toString();
+
 
         // ✅ 삭제 버튼
         if (field == 'deleteKey') {
@@ -87,9 +91,11 @@ class IotDataSource extends DataGridSource {
             alignment: Alignment.center,
             child: InkWell(
               onTap: () {
-                final deleteKey = cell.value.toString();
+                final id = row.getCells().firstWhere((c) => c.columnName == 'id').value.toString();
+                final createAt = row.getCells().firstWhere((c) => c.columnName == 'lastUpdated').value.toString();
+                final deleteKey = row.getCells().firstWhere((c) => c.columnName == 'indexKey').value.toString();
                 deletedKeys.add(deleteKey);
-                onDelete?.call(deleteKey); // ⬅️ 이 줄 추가!
+                onDelete?.call(deleteKey);
               },
               child: Image.asset(
                 'assets/icons/color_close.png',
@@ -157,21 +163,13 @@ class IotDataSource extends DataGridSource {
 // ✅ 편집 가능한 필드 처리 (TextField)
         final nonEditable = ['id', 'type', 'status', 'lastUpdated'];
         if (isEditing && !nonEditable.contains(field)) {
-          // 🎯 field → x/y/z 일 때 mm/deg 대응 필드명 매핑
-          String mappedField = field;
-          if (field == 'x') mappedField = isDegree ? 'x_deg' : 'x_mm';
-          if (field == 'y') mappedField = isDegree ? 'y_deg' : 'y_mm';
-          if (field == 'z') mappedField = isDegree ? 'z_deg' : 'z_mm';
+          final mappedField = field; // 💡 이미 정확한 이름
 
-          // ✅ key 생성도 mappedField 기준으로!
-          final key = '${id}_${createAt}_$mappedField';
-
-          // ✅ controller 등록
+          final key = '${indexKey}_$mappedField'; // ✅ key 일치
           if (!fieldControllers.containsKey(key)) {
             fieldControllers[key] = TextEditingController(text: cell.value.toString());
           }
           final controller = fieldControllers[key]!;
-
           return Container(
             height: 63.h,
             alignment: Alignment.center,
@@ -184,7 +182,7 @@ class IotDataSource extends DataGridSource {
               controller: controller,
               onChanged: (value) {
                 // ✅ onFieldChanged도 정확한 mappedField로 전달
-                onFieldChanged?.call(id, createAt, mappedField, value);
+                onFieldChanged?.call(id,  indexKey,mappedField, value);
               },
               style: TextStyle(
                 fontFamily: 'PretendardGOV',
@@ -204,9 +202,9 @@ class IotDataSource extends DataGridSource {
 
         // ✅ 상태 컬럼: degree 상태 시 아이콘 표시
         if (field == 'status' && isDegree && !isEditing) {
-          final x = double.tryParse(row.getCells().firstWhere((c) => c.columnName == 'x').value.toString()) ?? 0.0;
-          final y = double.tryParse(row.getCells().firstWhere((c) => c.columnName == 'y').value.toString()) ?? 0.0;
-          final z = double.tryParse(row.getCells().firstWhere((c) => c.columnName == 'z').value.toString()) ?? 0.0;
+          final x = double.tryParse(row.getCells().firstWhere((c) => c.columnName == 'x_deg').value.toString()) ?? 0.0;
+          final y = double.tryParse(row.getCells().firstWhere((c) => c.columnName == 'y_deg').value.toString()) ?? 0.0;
+          final z = double.tryParse(row.getCells().firstWhere((c) => c.columnName == 'z_deg').value.toString()) ?? 0.0;
           final battery = double.tryParse(row.getCells().firstWhere((c) => c.columnName == 'battery').value.toString()) ?? 0.0;
 
           String status;

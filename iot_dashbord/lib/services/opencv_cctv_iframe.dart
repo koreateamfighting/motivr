@@ -12,48 +12,41 @@ class OpencvCctvIframe extends StatefulWidget {
 }
 
 class _OpencvCctvIframeState extends State<OpencvCctvIframe> {
-  late String _viewId;
-  late String _imageUrl;
-  Timer? _refreshTimer;
+  //static const refreshSeconds = 10;
+  late final String _viewId;
+  late html.ImageElement _imgElement;
+  //Timer? _refreshTimer;
 
   @override
   void initState() {
     super.initState();
+    _viewId = 'opencv-cam-${widget.cam}';
+    _imgElement = html.ImageElement()
+      ..style.border = 'none'
+      ..style.width = '100%'
+      ..style.height = '100%'
+      ..alt = 'CCTV 감지 영상';
 
-    print('📸 전달된 cam 값: ${widget.cam}'); // ✅ 여기서 확인 가능
+    // ignore: undefined_prefixed_name
+    ui.platformViewRegistry.registerViewFactory(_viewId, (int viewId) => _imgElement);
+
+    // 초기 이미지 + 타이머 시작
     _updateImage();
-
-    // 💡 1분마다 새로고침 (타이머로 감지 프레임 리프레시)
-    _refreshTimer = Timer.periodic(const Duration(seconds: 60), (_) {
-      if (mounted) {
-        _updateImage();
-      }
-    });
+    // _refreshTimer = Timer.periodic(
+    //   const Duration(seconds: refreshSeconds),
+    //       (_) => _updateImage(),
+    // );
   }
 
   void _updateImage() {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    _imageUrl = 'https://hanlimtwin.kr:5001/preview/${widget.cam}?t=$timestamp'; // 🟢 캐시 방지용 쿼리
-    _viewId = 'opencv-preview-${widget.cam}-$timestamp';
-
-    // ignore: undefined_prefixed_name
-    ui.platformViewRegistry.registerViewFactory(_viewId, (int viewId) {
-      final img = html.ImageElement()
-        ..src = _imageUrl
-        ..style.border = 'none'
-        ..style.width = '100%'
-        ..style.height = '100%'
-        ..alt = 'OpenCV 감지 영상';
-
-      return img;
-    });
-
-    setState(() {});
+    final newUrl = 'https://hanlimtwin.kr:5001/stream/${widget.cam}?t=$timestamp';
+    _imgElement.src = newUrl;
   }
 
   @override
   void dispose() {
-    _refreshTimer?.cancel();
+    //_refreshTimer?.cancel();
     super.dispose();
   }
 

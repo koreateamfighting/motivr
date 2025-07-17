@@ -67,7 +67,7 @@ class _DetailIotViewState extends State<DetailIotView> {
         eventTypeValues.clear();
 
         for (final item in items) {
-          String key(String field) => '${item.id}_${item.createAt}_$field';
+          String key(String field) => '${item.indexKey}_$field';
 
           fieldControllers[key('latitude')] = TextEditingController(text: item.latitude);
           fieldControllers[key('longitude')] = TextEditingController(text: item.longitude);
@@ -80,23 +80,31 @@ class _DetailIotViewState extends State<DetailIotView> {
           fieldControllers[key('y_deg')] = TextEditingController(text: item.Y_Deg);
           fieldControllers[key('z_deg')] = TextEditingController(text: item.Z_Deg);
 
-          eventTypeValues['${item.id}_${item.createAt}'] = item.eventtype;
+          eventTypeValues[item.indexKey ?? ''] = item.eventtype;
         }
       }
     });
   }
-  void _onFieldChanged(String id, String createAt, String field, String value) {
-    if (value.trim().isEmpty) return; // ❗ 빈값 입력은 무시
+  void _onFieldChanged(String id, String indexKey, String field, String value) {
+    if (value.trim().isEmpty) return;
 
-    final key = '${id}_$createAt';
-    final original = context.read<IotController>().items.firstWhere(
-          (e) => e.id == id && e.createAt == createAt,
-      orElse: () => throw Exception('원본 데이터 없음'),
+    debugPrint('🛠️ [onFieldChanged] 호출됨 - indexKey=$indexKey, id=$id, field=$field, value=$value');
+
+    final allItems = context.read<IotController>().items;
+    final exists = allItems.any((e) => e.indexKey == indexKey);
+    debugPrint('📦 [onFieldChanged] indexKey가 원본 리스트에 존재하나? → $exists');
+
+    final original = allItems.firstWhere(
+          (e) => e.indexKey == indexKey,
+      orElse: () {
+        debugPrint('❌ 원본 못 찾음: indexKey=$indexKey');
+        throw Exception('원본 없음');
+      },
     );
 
-    final prev = editedItems[key] ?? original;
+    final prev = editedItems[indexKey] ?? original;
 
-    editedItems[key] = prev.copyWith(
+    final updated = prev.copyWith(
       latitude: field == 'latitude' ? value : prev.latitude,
       longitude: field == 'longitude' ? value : prev.longitude,
       battery: field == 'battery' ? value : prev.battery,
@@ -109,7 +117,12 @@ class _DetailIotViewState extends State<DetailIotView> {
       Z_Deg: field == 'z_deg' ? value : prev.Z_Deg,
       eventtype: field == 'eventtype' ? value : prev.eventtype,
     );
+
+    editedItems[indexKey] = updated;
+
+    debugPrint('✅ [onFieldChanged] 수정 저장됨: field=$field, updated=${updated.toJson()}');
   }
+
 
   Future<void> _saveChanges() async {
     final controller = context.read<IotController>();
@@ -119,8 +132,8 @@ class _DetailIotViewState extends State<DetailIotView> {
 
     // 1. 수정된 항목 전송
     for (final item in editedItems.values) {
-      final baseKey = '${item.id}_${item.createAt}';
-
+      final baseKey = item.indexKey ?? '';
+      debugPrint('📌 저장 시도: indexKey=$baseKey, RID=${item.id}');
       final updatedItem = item.copyWith(
         latitude: fieldControllers['${baseKey}_latitude']?.text.trim() ?? item.latitude,
         longitude: fieldControllers['${baseKey}_longitude']?.text.trim() ?? item.longitude,
@@ -146,19 +159,18 @@ class _DetailIotViewState extends State<DetailIotView> {
       }
     }
 
-    // 2. 삭제 요청 전송
-    for (final key in deletedKeys) {
-      final parts = key.split('+');
-      if (parts.length == 2) {
-        final rid = parts[0];
-        final createAt = parts[1];
-        final success = await controller.deleteIotItem(rid, createAt);
-        if (!success) {
-          hasError = true;
-          errorMessages.add('❌ 삭제 실패: $rid, $createAt');
-        }
+
+
+    // 2. 삭제 요청 전송 (indexKey 기반)
+    for (final indexKey in deletedKeys) {
+      final success = await controller.deleteIotItemByIndexKey(indexKey);
+
+      if (!success) {
+        hasError = true;
+        errorMessages.add('❌ 삭제 실패: indexKey=$indexKey');
       }
     }
+
 
     // 3. 데이터 새로고침
     await controller.fetchAllSensorData();
@@ -446,9 +458,21 @@ class _DetailIotViewState extends State<DetailIotView> {
                         InkWell(
                           onTap: () {
                             setState(() {
+                              // ✅ 편집모드 종료
                               isEditing = false;
-                            });
 
+                              // ✅ 수정된 항목/필드/삭제된 항목 초기화
+                              editedItems.clear();
+                              deletedKeys.clear();
+
+                              // ✅ 텍스트 컨트롤러 해제 및 정리
+                              for (final controller in fieldControllers.values) {
+                                controller.dispose();
+                              }
+                              fieldControllers.clear();
+
+                              eventTypeValues.clear();
+                            });
                           },
                           child: Container(
                             width: 50.w,
@@ -459,6 +483,7 @@ class _DetailIotViewState extends State<DetailIotView> {
                             ),
                           ),
                         ),
+
                       ],
                     ),
                   ),
@@ -522,7 +547,7 @@ class _DetailIotViewState extends State<DetailIotView> {
                         builder: (context, controller, _) {
                           final items = controller
                               .filterItems(_searchQuery)
-                              .where((e) => !deletedKeys.contains('${e.id}+${e.createAt}'))
+                              .where((e) => !deletedKeys.contains(e.indexKey)) // ✅ indexKey 기준으로 변경
                               .toList();
 
 
@@ -570,6 +595,7 @@ class _DetailIotViewState extends State<DetailIotView> {
                                 headerGridLinesVisibility: GridLinesVisibility
                                     .both,
                                 columns: [
+
                                   GridColumn(columnName: 'id',
                                       width: 120.w,
                                       label: buildHeader('ID')),
@@ -589,17 +615,17 @@ class _DetailIotViewState extends State<DetailIotView> {
                                       width: 320.w,
                                       label: buildHeader('마지막 수신')),
                                   GridColumn(
-                                    columnName: 'X_MM',
+                                    columnName: isDegree ? 'x_deg' : 'x_mm',
                                     width: 180.w,
                                     label: buildHeader(isDegree ? 'X(°)' : 'X(mm)'),
                                   ),
                                   GridColumn(
-                                    columnName: 'Y_MM',
+                                    columnName: isDegree ? 'y_deg' : 'y_mm',
                                     width: 180.w,
                                     label: buildHeader(isDegree ? 'Y(°)' : 'Y(mm)'),
                                   ),
                                   GridColumn(
-                                    columnName: 'Z_MM',
+                                    columnName: isDegree ? 'z_deg' : 'z_mm',
                                     width: 180.w,
                                     label: buildHeader(isDegree ? 'Z(°)' : 'Z(mm)'),
                                   ),
@@ -607,6 +633,11 @@ class _DetailIotViewState extends State<DetailIotView> {
                                   GridColumn(columnName: 'batteryInfo',
                                       width: 220.w,
                                       label: buildHeader('배터리 정보')),
+                                  GridColumn(
+                                    columnName: 'indexKey',
+                                    visible: false, // 👈 요 줄이 포인트
+                                    label: const SizedBox.shrink(), // 빈 위젯
+                                  ),
                                   isEditing? GridColumn(
                                     columnName: 'delete',
                                     width: 100.w,

@@ -201,8 +201,13 @@ class IotController extends ChangeNotifier {
     final headers = {'Content-Type': 'application/json'};
     final body = jsonEncode(item.toJson());
 
+    debugPrint('📤 PUT 요청: $uri');
+    debugPrint('📦 Payload: $body');
+
     try {
       final response = await http.put(uri, headers: headers, body: body);
+      debugPrint('📥 응답코드: ${response.statusCode}');
+      debugPrint('📥 응답바디: ${response.body}');
       return response.statusCode == 200;
     } catch (e) {
       debugPrint('❌ 수정 실패: $e');
@@ -211,27 +216,22 @@ class IotController extends ChangeNotifier {
   }
 
   // ✅ 삭제 (POST /sensor/delete)
-  Future<bool> deleteIotItem(String rid, String createAt) async {
+  Future<bool> deleteIotItemByIndexKey(String indexKey) async {
     final uri = Uri.parse('$_baseUrl/sensor/delete');
     final headers = {'Content-Type': 'application/json'};
 
-    // ✅ 포맷을 DB와 일치시키기 (yyyy-MM-dd HH:mm:ss)
-    final formattedCreateAt = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.parse(createAt));
-
-    final body = jsonEncode({
-      'RID': rid,
-      'CreateAt': formattedCreateAt,
-    });
+    final body = jsonEncode({'indexKey': indexKey});
 
     try {
       final response = await http.post(uri, headers: headers, body: body);
       debugPrint('🔥 삭제 응답: ${response.statusCode}, ${response.body}');
       return response.statusCode == 200;
     } catch (e) {
-      debugPrint('❌ 삭제 실패: $rid, $createAt, $e');
+      debugPrint('❌ 삭제 실패: $indexKey, $e');
       return false;
     }
   }
+
 
   //rid의 개수 파악
   Future<int?> fetchRidCount() async {
