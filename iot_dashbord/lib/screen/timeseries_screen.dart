@@ -198,7 +198,10 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
                             AlarmHistory(
                               selectedRid: selectedRid,
                               allItems: context.watch<IotController>().items,
+                              startDate: _currentRange.start,
+                              endDate: _currentRange.end,
                             ),
+
 
                             SizedBox(
                               width: 4.w,

@@ -7,6 +7,7 @@ import 'package:iot_dashboard/controller/cctv_controller.dart';
 import 'package:iot_dashboard/component/details/cctv_table_list.dart';
 import 'package:iot_dashboard/model/cctv_model.dart';
 import 'package:iot_dashboard/services/hls_player_iframe.dart';
+import 'package:iot_dashboard/component/details/motion_label.dart';
 
 class DetailCctvView extends StatefulWidget {
   const DetailCctvView({super.key});
@@ -346,8 +347,8 @@ class _DetailCctvViewState extends State<DetailCctvView> {
                               Row(
                                 children: [
                                   Container(
-                                    width: 2271.w,
-                                    height: 1295.h,
+                                    width: 1920.w,
+                                    height: 1080.h,
                                     color: Colors.black,
                                     child: selectedCamId != null
                                         ? HlsPlayerIframe(
@@ -363,10 +364,35 @@ class _DetailCctvViewState extends State<DetailCctvView> {
                                         CrossAxisAlignment.start,
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
-                                      SizedBox(height: 162.h),
+                                      SizedBox(height: 50.h),
                                       Container(
-                                        width: 356.w,
+                                        width: 800.81.w,
                                         height: 618.h,
+                                        decoration: BoxDecoration(
+                                          color: Color(0xff1b254b),
+                                          border: Border.all(
+                                            color: Colors.white,
+                                            width: 1.w,
+                                          ),
+                                          borderRadius: BorderRadius.circular(5.r),
+                                        ),
+                                        child: selectedCamId != null
+                                            ? MotionLabelPanel(camId: selectedCamId!)
+                                            : Center(
+                                          child: Text(
+                                            '카메라를 선택하세요',
+                                            style: TextStyle(
+                                              fontSize: 28.sp,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                      SizedBox(height: 24.h),
+                                      Container(
+                                        width: 800.81.w,
+                                        height: 480.h,
                                         decoration: BoxDecoration(
                                           //color: Color(0xff111c44),
                                           color: Color(0xff1b254b),
@@ -375,14 +401,9 @@ class _DetailCctvViewState extends State<DetailCctvView> {
                                             width: 1.w,
                                           ),
                                           borderRadius:
-                                              BorderRadius.circular(5.r),
+                                          BorderRadius.circular(5.r),
                                           // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
                                         ),
-                                      ),
-                                      SizedBox(height: 175.h),
-                                      Container(
-                                        width: 435.81.w,
-                                        height: 327.h,
                                         child: selectedCamId != null && selectedCamId!.isNotEmpty
                                             ? OpencvCctvIframe(
                                           key: ValueKey(selectedCamId), // 이거 중요함

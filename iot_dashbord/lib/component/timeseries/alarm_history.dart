@@ -8,9 +8,12 @@ import 'package:intl/intl.dart';
 class AlarmHistory extends StatefulWidget {
   final String selectedRid;
   final List<IotItem> allItems;
+  final DateTime startDate;
+  final DateTime endDate;
 
   const AlarmHistory(
-      {super.key, required this.selectedRid, required this.allItems});
+      {super.key, required this.selectedRid, required this.allItems,  required this.startDate,
+        required this.endDate});
 
   State<AlarmHistory> createState() => _AlarmHistoryState();
 }
@@ -36,7 +39,9 @@ class _AlarmHistoryState extends State<AlarmHistory> {
   void didUpdateWidget(covariant AlarmHistory oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.selectedRid != oldWidget.selectedRid ||
-        widget.allItems != oldWidget.allItems) {
+        widget.allItems != oldWidget.allItems ||
+        widget.startDate != oldWidget.startDate ||
+        widget.endDate != oldWidget.endDate) {
       _filterItems();
     }
   }
@@ -44,9 +49,15 @@ class _AlarmHistoryState extends State<AlarmHistory> {
   void _filterItems() {
     setState(() {
       filteredItems = widget.allItems.where((item) {
-        return item.id == widget.selectedRid &&
-            (item.eventtype == '2' || item.eventtype == '4');
+        final bool ridMatch = item.id == widget.selectedRid;
+        final bool eventMatch = item.eventtype == '2' || item.eventtype == '4';
+        final bool timeMatch =
+            item.createAt.isAfter(widget.startDate) &&
+                item.createAt.isBefore(widget.endDate);
+
+        return ridMatch && eventMatch && timeMatch;
       }).toList();
+      filteredItems.sort((a, b) => b.createAt.compareTo(a.createAt));
     });
   }
 

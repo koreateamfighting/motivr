@@ -119,9 +119,9 @@ class IotItem {
       download: '',
       createAt: parsedTime,
     );
-    // ✅ 상세 로그
-    debugPrint('📥 [fromJson] RID=$paddedId, IndexKey=${item.indexKey}, X_MM=${item.X_MM}, Y_MM=${item.Y_MM}, Z_MM=${item.Z_MM}, '
-        'X_Deg=${item.X_Deg}, Y_Deg=${item.Y_Deg}, Z_Deg=${item.Z_Deg}');
+    // // ✅ 상세 로그
+    // debugPrint('📥 [fromJson] RID=$paddedId, IndexKey=${item.indexKey}, X_MM=${item.X_MM}, Y_MM=${item.Y_MM}, Z_MM=${item.Z_MM}, '
+    //     'X_Deg=${item.X_Deg}, Y_Deg=${item.Y_Deg}, Z_Deg=${item.Z_Deg}');
 
     return item;
   }
