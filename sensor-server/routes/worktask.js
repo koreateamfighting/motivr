@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const sql = require('mssql');
+const { pool, poolConnect } = require('../db'); 
 const dbConfig = require('../dbConfig');
 const multer = require('multer');
 const csv = require('csv-parser');
@@ -14,8 +15,8 @@ const upload = multer({ dest: 'uploads/' });
  */
 router.get('/work-tasks', async (req, res) => {
   try {
-    await sql.connect(dbConfig);
-    const result = await sql.query(`
+    await poolConnect;
+    const result = await pool.request().query(`
       SELECT 
         id,
         title,
@@ -31,7 +32,7 @@ router.get('/work-tasks', async (req, res) => {
     console.error('❌ 작업 리스트 조회 오류:', err);
     res.status(500).json({ error: '작업 데이터를 불러오는 중 오류가 발생했습니다.' });
   } finally {
-    sql.close();
+    console.log('커넥션 풀 유지');
   }
 });
 
@@ -63,11 +64,11 @@ router.post('/upload-csv', upload.single('file'), async (req, res) => {
     })
     .on('end', async () => {
       try {
-        await sql.connect(dbConfig);
-        const request = new sql.Request();
+        await poolConnect;
+       
 
         // ✅ DB에서 start_date를 DATE 형식(yyyy-MM-dd)으로 가져옴
-        const existing = await request.query(`
+        const existing = await pool.request().query(`
           SELECT title, CONVERT(varchar(10), start_date, 120) as start_date
           FROM work_task
         `);
@@ -119,7 +120,7 @@ router.post('/upload-csv', upload.single('file'), async (req, res) => {
         res.status(500).json({ error: 'CSV 저장 중 오류가 발생했습니다.' });
       } finally {
         fs.unlinkSync(filePath);
-        sql.close();
+        console.log('커넥션 풀 유지');
       }
     });
 });
@@ -134,8 +135,8 @@ router.patch('/work-tasks/:id', async (req, res) => {
   }
 
   try {
-    await sql.connect(dbConfig);
-    const request = new sql.Request();
+    await poolConnect;
+    const request = new pool.request().Request();
 
     const safeTitle = title.replace(/'/g, "''");
     const safeProgress = parseInt(progress);
@@ -158,7 +159,7 @@ router.patch('/work-tasks/:id', async (req, res) => {
     console.error('❌ 작업 수정 실패:', err);
     res.status(500).json({ error: '서버 오류로 작업 수정에 실패했습니다.' });
   } finally {
-    sql.close();
+    console.log('커넥션 풀 유지');
   }
 });
 router.post('/bulk-update', async (req, res) => {
@@ -169,14 +170,14 @@ router.post('/bulk-update', async (req, res) => {
   }
 
   try {
-    const pool = await sql.connect(dbConfig);
+    const pool = await poolConnect;
 
     for (const task of tasks) {
       const { id, title, progress, start_date, end_date } = task;
 
       if (!id || !title || progress === undefined) continue;
 
-      await pool.request()
+      await pool.request().request()
         .input('id', sql.Int, id)
         .input('title', sql.NVarChar(100), title)
         .input('progress', sql.Int, progress)
@@ -197,7 +198,7 @@ router.post('/bulk-update', async (req, res) => {
     console.error('❌ 작업 일괄 수정 실패:', err);
     res.status(500).json({ error: '서버 오류로 작업 일괄 수정에 실패했습니다.' });
   } finally {
-    sql.close();
+    console.log('커넥션 풀 유지');
   }
 });
 
@@ -213,12 +214,12 @@ router.post('/delete-tasks', async (req, res) => {
   }
 
   try {
-    await sql.connect(dbConfig);
-    const request = new sql.Request();
+    await poolConnect;
+   
 
     for (const id of ids) {
       if (typeof id !== 'number') continue;
-      await request
+      await pool.request()
         .input('id', sql.Int, id)
         .query('DELETE FROM work_task WHERE id = @id');
     }
@@ -228,7 +229,7 @@ router.post('/delete-tasks', async (req, res) => {
     console.error('❌ 작업 삭제 실패:', err);
     res.status(500).json({ error: '작업 삭제 중 서버 오류가 발생했습니다.' });
   } finally {
-    sql.close();
+    console.log('커넥션 풀 유지');
   }
 });
 

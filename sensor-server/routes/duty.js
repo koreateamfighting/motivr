@@ -2,13 +2,13 @@ const express = require('express');
 const router = express.Router();
 const sql = require('mssql');
 const dbConfig = require('../dbConfig');
-
+const { pool, poolConnect } = require('../db'); 
 
 
 // // ✅ GET: 전체 작업 목록 조회
 // router.get('/duties', async (req, res) => {
 //   try {
-//     const pool = await sql.connect(dbConfig);
+//     const pool = await poolConnect;
 //     const result = await pool.request().query(`
 //       SELECT Id, DutyName, StartDate, EndDate, Progress
 //       FROM Duty
@@ -30,7 +30,7 @@ const dbConfig = require('../dbConfig');
 //   }
 
 //   try {
-//     const pool = await sql.connect(dbConfig);
+//     const pool = await poolConnect;
 //     await pool.request()
 //       .input('DutyName', sql.NVarChar, DutyName)
 //       .input('StartDate', sql.Date, StartDate)
@@ -51,7 +51,7 @@ const dbConfig = require('../dbConfig');
 // ✅ GET: 가장 최근 Duty 1건 조회
 router.get('/duties/latest', async (req, res) => {
     try {
-      const pool = await sql.connect(dbConfig);
+      const pool = await poolConnect;
       const result = await pool.request().query(`
         SELECT TOP 1 Id, DutyName, StartDate, EndDate, Progress
         FROM Duty
@@ -78,7 +78,7 @@ router.patch('/duties/latest', async (req, res) => {
     }
   
     try {
-      const pool = await sql.connect(dbConfig);
+      const pool = await poolConnect;
   
       // 가장 최근 항목 ID 가져오기
       const latestResult = await pool.request().query(`

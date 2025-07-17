@@ -2,6 +2,7 @@ require('dotenv').config();
 const sql = require('mssql');
 const config = require('./dbConfig');
 const moment = require('moment-timezone');
+const { v4: uuidv4 } = require('uuid'); // ✅ UUID 생성기
 
 
 function to2(n) {
@@ -42,13 +43,34 @@ function biasedRandom() {
     const pool = await sql.connect(config);
     const sensorType = '변위';
     const startDate = '2025-07-01';
-    const endDate = '2025-07-04';
+    const endDate = '2025-07-20';
     const dateList = getDateRange(startDate, endDate);
     
 for (const date of dateList){
     for (let i = 1; i <= 20; i++) {
       const rid = `S1_${String(i).padStart(3, '0')}`;
       console.log(`🚀 ${rid} 데이터 삽입 시작`);
+
+        // ✅ SenSorInfo에 RID 등록 여부 확인 + 자동 등록
+    const sensorInfoCheck = await pool.request()
+    .input('rid', sql.NVarChar(100), rid)
+    .query(`SELECT COUNT(*) AS count FROM SenSorInfo WHERE RID = @rid`);
+
+  if (sensorInfoCheck.recordset[0].count === 0) {
+    const now = moment().tz('Asia/Seoul').format(); // ISO string with +09:00
+
+    await pool.request()
+      .input('IndexKey', sql.UniqueIdentifier, uuidv4())
+      .input('RID', sql.NVarChar(100), rid)
+      .input('Name', sql.NVarChar(100), 'unknown')
+      .input('CreateAt', sql.DateTimeOffset, now)
+      .query(`
+        INSERT INTO SenSorInfo (IndexKey, RID, Name, CreateAt)
+        VALUES (@IndexKey, @RID, @Name, @CreateAt)
+      `);
+
+    console.log(`🆕 SenSorInfo 자동 등록됨: ${rid}`);
+  }
 
       // 🌍 GPS 데이터 (EventType 5, 00:00 ~ 23:00)
       for (let h = 0; h < 24; h++) {

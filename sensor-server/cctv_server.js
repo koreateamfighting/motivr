@@ -4,8 +4,10 @@ const fs = require('fs');
 const https = require('https');
 const path = require('path');
 const cors = require('cors');
-const { router: cctvRouter, startHlsProcess } = require('./routes/cctv');
-const { startMotionDetect } = require('./routes/cctv'); // ✅ 추가
+const { Server } = require('socket.io');
+const { router: cctvRouter } = require('./routes/cctv'); // ✅ index.js에서 묶은 라우터
+const { startHlsProcess, startMotionDetect } = require('./routes/cctv/video'); // ✅ 함수는 video.js에서
+const { RTCPeerConnection, RTCVideoSource, RTCVideoFrame } = require('wrtc');
 const app = express();
 
 // HTTPS 인증서
@@ -31,7 +33,32 @@ app.use(express.static('public', {
 
 app.use('/api', cctvRouter);
 
-app.use('/hls', express.static('public/hls'));
+// app.use('/hls', express.static('public/hls',{
+//   setHeaders: (res, path) => {
+//     if (path.endsWith('.m3u8')) {
+//       res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
+//     }
+//     if (path.endsWith('.ts')) {
+//       res.setHeader('Content-Type', 'video/mp2t');
+//     }
+//   }
+// }));
+app.use('/hls', express.static('public/hls', {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.m3u8')) {
+      res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
+    }
+    if (path.endsWith('.ts')) {
+      res.setHeader('Content-Type', 'video/mp2t');
+    }
+
+    // ✅ 캐시 방지 공통 헤더
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+}));
+
 console.log('✅ CCTV 라우터 import 성공');
 startHlsProcess('cam1');
 startMotionDetect('cam1'); // ✅ 감지도 시작

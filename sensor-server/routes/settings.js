@@ -5,7 +5,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const dbConfig = require('../dbConfig');
-
+const { pool, poolConnect } = require('../db'); 
 // 저장 경로 설정
 const uploadDir = path.join(__dirname, '../public/uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
@@ -23,7 +23,7 @@ router.post('/update-settings', upload.single('logo'), async (req, res) => {
   let logoPath = req.file ? `/uploads/${req.file.filename}` : null;
 
   try {
-    const pool = await sql.connect(dbConfig);
+    const pool = await poolConnect;
 
     // 기존 로고 유지 여부
     const latest = await pool.request().query(`
@@ -70,7 +70,7 @@ router.post('/update-settings', upload.single('logo'), async (req, res) => {
 // ✅ 클라이언트 최초 로딩/복구용 최신 설정 조회
 router.get('/latest-sitesettings', async (req, res) => {
   try {
-    const pool = await sql.connect(dbConfig);
+    const pool = await poolConnect;
     const result = await pool.request().query(`
       SELECT TOP 1 Title, LogoUrl, UpdatedAt
       FROM SiteSettings
@@ -91,7 +91,7 @@ router.get('/latest-sitesettings', async (req, res) => {
 // 기존 get-settings (간단 버전)
 router.get('/get-settings', async (req, res) => {
   try {
-    const pool = await sql.connect(dbConfig);
+    const pool = await poolConnect;
     const result = await pool.request().query(`
       SELECT TOP 1 Title, LogoUrl
       FROM SiteSettings

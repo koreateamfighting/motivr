@@ -17,17 +17,31 @@
     const video = document.getElementById('video');
 
     if (Hls.isSupported()) {
-      const hls = new Hls({
-      liveSyncDurationCount: 2, // ✅ 가장 최신에 가깝게 유지
-      maxBufferLength: 30, // ✅ 최대 30초까지만 버퍼
-    });
-      hls.loadSource(`/hls/${cam}.m3u8`);
-      hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
-      hls.on(Hls.Events.ERROR, (event, data) => {
-        console.error(`🚨 HLS.js Error on ${cam}:`, data);
-      });
-    } 
+  const hls = new Hls({
+    liveSyncDurationCount: 2,
+    maxLiveSyncPlaybackRate: 1.5,
+    maxBufferLength: 10,
+    lowLatencyMode: true,
+  });
+
+  hls.loadSource(`/hls/${cam}.m3u8`);
+  hls.attachMedia(video);
+
+  hls.on(Hls.Events.MANIFEST_PARSED, () => {
+    hls.startLoad(-1); // ✅ 최신 세그먼트부터 시작
+    hls.currentLevel = hls.levels.length - 1; // ✅ 최상 화질 고정
+    video.play();
+  });
+
+  hls.on(Hls.Events.FRAG_LOADED, (e, data) => {
+    console.log(`✅ segment loaded: ${data.frag.sn}`);
+  });
+
+  hls.on(Hls.Events.ERROR, (e, d) => {
+    console.error('🚨 HLS.js Error:', d);
+  });
+}
+
     else if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = `/hls/${cam}.m3u8`;
       video.addEventListener('loadedmetadata', () => video.play());

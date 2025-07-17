@@ -1,26 +1,26 @@
 const express = require('express');
 const router = express.Router();
 const sql = require('mssql');
+const { pool, poolConnect } = require('../db'); 
 const dbConfig = require('../dbConfig');
 
 // 공지사항 조회
 router.get('/notices', async (req, res) => {
   try {
-    await sql.connect(dbConfig);
-    const result = await sql.query(`
-      SELECT 
-        id,     
-        content,
-        CONVERT(varchar, created_at, 120) as created_at
-      FROM notice
-      ORDER BY created_at DESC
+    await poolConnect;
+    const result = await pool.request().query(`
+      SELECT TOP 500
+  id, content, CONVERT(varchar, created_at, 120) as created_at
+FROM notice
+ORDER BY created_at DESC
+
     `);
     res.json(result.recordset);
   } catch (err) {
     console.error('❌ 공지사항 조회 오류:', err);
     res.status(500).json({ error: '공지사항을 불러오는 중 오류가 발생했습니다.' });
   } finally {
-    sql.close(); // ✅ 연결 닫기
+    console.log('커넥션 풀 유지');
   }
 });
 
@@ -33,12 +33,12 @@ router.patch('/notices/:id', async (req, res) => {
   }
 
   try {
-    await sql.connect(dbConfig);
-    const request = new sql.Request();
+    await poolConnect;
+    
 
     const safeContent = content.replace(/'/g, "''");
 
-    await request.query(`
+    await pool.request().query(`
       UPDATE notice
       SET content = N'${safeContent}'
       WHERE id = ${id}
@@ -49,7 +49,7 @@ router.patch('/notices/:id', async (req, res) => {
     console.error('❌ 공지사항 수정 실패:', err);
     res.status(500).json({ error: '서버 오류로 공지사항 수정에 실패했습니다.' });
   } finally {
-    sql.close();
+    console.log('커넥션 풀 유지');
   }
 });
 
@@ -63,11 +63,11 @@ router.post('/notices', async (req, res) => {
   }
 
   try {
-    await sql.connect(dbConfig);
+    await poolConnect;
     const safeContent = content.replace(/'/g, "''");
     const safeCreatedAt = createdAt.replace(/'/g, "''"); // 보안 처리
 
-    await sql.query(`
+    await pool.request().query(`
       INSERT INTO notice (content, created_at)
       VALUES (N'${safeContent}', '${safeCreatedAt}')
     `);
@@ -77,7 +77,7 @@ router.post('/notices', async (req, res) => {
     console.error('❌ 공지사항 등록 오류:', err);
     res.status(500).json({ error: '공지사항 등록 중 오류가 발생했습니다.' });
   } finally {
-    sql.close();
+    console.log('커넥션 풀 유지');
   }
 });
 
@@ -92,15 +92,15 @@ router.post('/bulk-update-notices', async (req, res) => {
   }
 
   try {
-    await sql.connect(dbConfig);
+    await poolConnect;
 
     for (const update of updates) {
       const { id, content } = update;
       if (typeof id !== 'number' || typeof content !== 'string') continue;
 
       const safeContent = content.replace(/'/g, "''");
-      const request = new sql.Request();
-      await request.query(`
+      
+      await pool.request().query(`
         UPDATE notice
         SET content = N'${safeContent}'
         WHERE id = ${id}
@@ -112,7 +112,7 @@ router.post('/bulk-update-notices', async (req, res) => {
     console.error('❌ 공지사항 일괄 수정 실패:', err);
     res.status(500).json({ error: '공지사항 일괄 수정 중 서버 오류가 발생했습니다.' });
   } finally {
-    sql.close();
+    console.log('커넥션 풀 유지');
   }
 });
 
@@ -125,12 +125,12 @@ router.post('/delete-notices', async (req, res) => {
   }
 
   try {
-    await sql.connect(dbConfig);
-    const request = new sql.Request();
+    await poolConnect;
+    
 
     for (const id of ids) {
       if (typeof id !== 'number') continue;
-      await request
+      await pool.request()
         .input('id', sql.Int, id)
         .query('DELETE FROM notice WHERE id = @id');
     }
@@ -140,7 +140,7 @@ router.post('/delete-notices', async (req, res) => {
     console.error('❌ 공지사항 삭제 실패:', err);
     res.status(500).json({ error: '공지사항 삭제 중 서버 오류가 발생했습니다.' });
   } finally {
-    sql.close();
+    console.log('커넥션 풀 유지');
   }
 });
 

@@ -84,7 +84,7 @@ router.post('/specialsensor', async (req, res) => {
   
 
   try {
-    const pool = await sql.connect(dbConfig);
+    const pool = await poolConnect;
 
     // 기존 데이터 존재 여부 확인 (InstallationID, Type 기준)
     const existingResult = await pool.request()
@@ -383,7 +383,7 @@ router.post('/specialsensor', async (req, res) => {
 // 최근 1일 내 센서 데이터 조회 (타입별 그룹)
 router.get('/recent-specialsensor-data', async (req, res) => {
     try {
-      const pool = await sql.connect(dbConfig);
+      const pool = await poolConnect;
       const result = await pool.request()
         .query(`
           SELECT *

@@ -2,12 +2,12 @@ const express = require('express');
 const router = express.Router();
 const sql = require('mssql');
 const dbConfig = require('../dbConfig');
-
+const { pool, poolConnect } = require('../db'); 
 // ✅ 최근 1건의 FieldInfo 조회
 router.get('/fieldinfo', async (req, res) => {
   try {
-    await sql.connect(dbConfig);
-    const result = await sql.query(`
+    await poolConnect;
+    const result = await pool.request().query(`
       SELECT TOP 1 *
       FROM FieldInfo
       ORDER BY id DESC
@@ -22,7 +22,7 @@ router.get('/fieldinfo', async (req, res) => {
     console.error('❌ FieldInfo 조회 오류:', err);
     res.status(500).json({ error: '현장 정보를 불러오는 중 오류 발생' });
   } finally {
-    sql.close();
+    console.log("필드인포");
   }
 });
 
@@ -46,7 +46,7 @@ router.post('/fieldinfo', async (req, res) => {
   }
 
   try {
-    await sql.connect(dbConfig);
+    await poolConnect;
     const query = `
       INSERT INTO FieldInfo (
         ConstructionType, ConstructionName, Address, Company, Orderer,
@@ -64,13 +64,13 @@ router.post('/fieldinfo', async (req, res) => {
         ${Longitude || 'NULL'}
       )
     `;
-    await sql.query(query);
+    await pool.request().query(query);
     res.json({ message: '✅ FieldInfo가 성공적으로 저장되었습니다.' });
   } catch (err) {
     console.error('❌ FieldInfo 저장 오류:', err);
     res.status(500).json({ error: '현장 정보 저장 중 오류 발생' });
   } finally {
-    sql.close();
+    console.log("필드인포");
   }
 });
 

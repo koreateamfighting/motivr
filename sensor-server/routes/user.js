@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
 const dbConfig = require('../dbConfig');
-
+const { pool, poolConnect } = require('../db'); 
 
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -31,7 +31,7 @@ router.get('/check-id', async (req, res) => {
   }
 
   try {
-    const pool = await sql.connect(dbConfig);
+    const pool = await poolConnect;
     const result = await pool.request()
       .input('UserID', sql.NVarChar, userID)
       .query('SELECT COUNT(*) as count FROM Users WHERE UserID = @UserID');
@@ -70,7 +70,7 @@ router.post('/register', async (req, res) => {
   }
 
   try {
-    const pool = await sql.connect(dbConfig);
+    const pool = await poolConnect;
     console.log('🔌 DB 연결 성공');
 
     const existingUser = await pool.request()
@@ -123,7 +123,7 @@ router.post('/login', async (req, res) => {
   
 
   try {
-    const pool = await sql.connect(dbConfig);
+    const pool = await poolConnect;
     const result = await pool.request()
       .input('UserID', sql.NVarChar, userID)
       .query('SELECT * FROM Users WHERE UserID = @UserID');
@@ -164,7 +164,7 @@ router.post('/logout', async (req, res) => {
   }
 
   try {
-    const pool = await sql.connect(dbConfig);
+    const pool = await poolConnect;
 
     await pool.request()
       .input('UserID', sql.NVarChar, userID)
@@ -187,7 +187,7 @@ router.get('/find-id', async (req, res) => {
   }
 
   try {
-    const pool = await sql.connect(dbConfig);
+    const pool = await poolConnect;
     const result = await pool.request()
       .input('Name', sql.NVarChar, name)
       .query('SELECT UserID FROM Users WHERE Name = @Name');
@@ -214,7 +214,7 @@ router.post('/recover-password', async (req, res) => {
   }
 
   try {
-    const pool = await sql.connect(dbConfig);
+    const pool = await poolConnect;
     const result = await pool.request()
       .input('UserID', sql.NVarChar, userID)
       .query('SELECT * FROM Users WHERE UserID = @UserID');
@@ -262,7 +262,7 @@ router.post('/change-password', async (req, res) => {
   }
 
   try {
-    const pool = await sql.connect(dbConfig);
+    const pool = await poolConnect;
     const result = await pool.request()
       .input('UserID', sql.NVarChar, userID)
       .query('SELECT * FROM Users WHERE UserID = @UserID');
@@ -292,7 +292,7 @@ router.get('/users/by-role', async (req, res) => {
   const { includeRoles = '', excludeRoles = '' } = req.query;
 
   try {
-    const pool = await sql.connect(dbConfig);
+    const pool = await poolConnect;
 
     const includeList = includeRoles.split(',').filter(r => r.trim());
     const excludeList = excludeRoles.split(',').filter(r => r.trim());
@@ -329,7 +329,7 @@ router.post('/users/update-role', async (req, res) => {
   }
 
   try {
-    const pool = await sql.connect(dbConfig);
+    const pool = await poolConnect;
     const transaction = new sql.Transaction(pool);
     await transaction.begin();
 
@@ -350,7 +350,7 @@ router.post('/users/update-role', async (req, res) => {
 
 router.get('/users/all', async (req, res) => {
   try {
-    const pool = await sql.connect(dbConfig);
+    const pool = await poolConnect;
     const result = await pool.request()
       .query("SELECT UserID, Role FROM Users WHERE UserID != 'admin'"); // 🔒 admin 제외
 
