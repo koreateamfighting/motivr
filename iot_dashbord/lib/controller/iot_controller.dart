@@ -45,6 +45,7 @@ class IotController extends ChangeNotifier {
         batteryInfo: '',
         download: '',
         createAt: createAt,
+        label: 'unknown', // ✅ label 추가
       ),
     );
 
@@ -57,6 +58,7 @@ class IotController extends ChangeNotifier {
       Z_MM: field == 'z_mm' ? value : existing.Z_MM,
       battery: field == 'battery' ? value : existing.battery,
       batteryInfo: field == 'batteryInfo' ? value : existing.batteryInfo,
+      label: existing.label, // ✅ 유지
     );
 
     editedItems[key] = updated;
@@ -142,7 +144,7 @@ class IotController extends ChangeNotifier {
 
 
   // ✅ 전체 센서 데이터 조회 (limit 기본 500)
-  Future<void> fetchAllSensorData({int limit = 500}) async {
+  Future<void> fetchAllSensorData({int limit = 1000}) async {
     final uri = Uri.parse('$_baseUrl/sensor-data?limit=$limit');
     debugPrint('📡 전체 센서 데이터 조회 시작: $uri');
 
@@ -387,8 +389,11 @@ class IotController extends ChangeNotifier {
 
   List<IotItem> filterItems(String query) {
     final q = query.toLowerCase().trim();
-    return _items.where((item) => item.id.toLowerCase().contains(q)).toList();
+    return _items.where((item) =>
+    item.id.toLowerCase().contains(q) ||
+        item.label.toLowerCase().contains(q)).toList();
   }
+
 
   // 상태 변수들에 접근할 getter
   int get getNormal => normal;

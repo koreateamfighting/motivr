@@ -123,7 +123,7 @@ class _RegisterWidgetState extends State<RegisterWidget> {
       company: _companyController.text,
       department: _deptController.text,
       position: _positionController.text,
-      role: _responsibilitiesController.text,
+      responsibilities: _responsibilitiesController.text,
     );
 
     final errorMessage = await UserController.registerUser(user, context);

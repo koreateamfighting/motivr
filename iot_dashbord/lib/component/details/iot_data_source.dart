@@ -36,6 +36,7 @@ class IotDataSource extends DataGridSource {
       final cells = <DataGridCell>[
 
         DataGridCell<String>(columnName: 'id', value: item.id),
+        DataGridCell<String>(columnName: 'label', value: item.label),
         DataGridCell<String>(columnName: 'type', value: item.sensortype),
         DataGridCell<String>(
             columnName: 'location',
@@ -82,6 +83,86 @@ class IotDataSource extends DataGridSource {
         final field = cell.columnName;
         final id = row.getCells().firstWhere((c) => c.columnName == 'id').value.toString();
         final indexKey = row.getCells().firstWhere((c) => c.columnName == 'indexKey').value.toString();
+        if (field == 'location' && isEditing) {
+          final lonKey = '${indexKey}_longitude';
+          final latKey = '${indexKey}_latitude';
+
+          if (!fieldControllers.containsKey(lonKey)) {
+            fieldControllers[lonKey] = TextEditingController(
+                text: row.getCells().firstWhere((c) => c.columnName == 'location').value.toString().split('/').first.trim()
+            );
+          }
+          if (!fieldControllers.containsKey(latKey)) {
+            fieldControllers[latKey] = TextEditingController(
+                text: row.getCells().firstWhere((c) => c.columnName == 'location').value.toString().split('/').last.trim()
+            );
+          }
+
+          return Container(
+            height: 63.h,
+            padding: EdgeInsets.symmetric(horizontal: 8.w),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.white24),
+              color: Colors.white,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Longitude
+                SizedBox(
+                  width: 100.w,
+                  child: TextField(
+                    controller: fieldControllers[lonKey],
+                    onChanged: (value) => onFieldChanged?.call(id, indexKey, 'longitude', value),
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      fontSize: 20.sp,
+                      fontFamily: 'PretendardGOV',
+                      fontWeight: FontWeight.w500,
+                    ),
+                    decoration: InputDecoration(
+                      isDense: true,
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                ),
+                // Slash separator
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w),
+                  child: Text(
+                    '/',
+                    style: TextStyle(
+                      fontSize: 20.sp,
+                      fontFamily: 'PretendardGOV',
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+                // Latitude
+                SizedBox(
+                  width: 100.w,
+                  child: TextField(
+                    controller: fieldControllers[latKey],
+                    onChanged: (value) => onFieldChanged?.call(id, indexKey, 'latitude', value),
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                      fontSize: 20.sp,
+                      fontFamily: 'PretendardGOV',
+                      fontWeight: FontWeight.w500,
+                    ),
+                    decoration: InputDecoration(
+                      isDense: true,
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
 
 
         // ✅ 삭제 버튼
@@ -161,7 +242,7 @@ class IotDataSource extends DataGridSource {
         }
 
 // ✅ 편집 가능한 필드 처리 (TextField)
-        final nonEditable = ['id', 'type', 'status', 'lastUpdated'];
+        final nonEditable = ['id', 'type', 'status', 'lastUpdated', 'label'];
         if (isEditing && !nonEditable.contains(field)) {
           final mappedField = field; // 💡 이미 정확한 이름
 
@@ -211,11 +292,11 @@ class IotDataSource extends DataGridSource {
           Color color;
           String iconAsset;
 
-          if (x >= 5 || y >= 5 || z >= 5) {
+          if (x.abs() >= 5 || y.abs() >= 5 || z.abs() >= 5) {
             status = '경고';
             color = const Color(0xffff6060);
             iconAsset = 'assets/icons/alert_warning.png';
-          } else if (x >= 3 || y >= 3 || z >= 3) {
+          } else if (x.abs() >= 3 || y.abs() >= 3 || z.abs() >= 3) {
             status = '주의';
             color = const Color(0xfffbd50f);
             iconAsset = 'assets/icons/alert_caution.png';

@@ -27,7 +27,7 @@ class _DetailIotViewState extends State<DetailIotView> {
   bool isDegree = true;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
- bool isEditing = false;
+  bool isEditing = false;
   Map<String, IotItem> editedItems = {}; // RID 기준
   Set<String> deletedKeys = {}; // RID+CreateAt 기준
   Map<String, TextEditingController> fieldControllers = {};
@@ -68,7 +68,7 @@ class _DetailIotViewState extends State<DetailIotView> {
 
         for (final item in items) {
           String key(String field) => '${item.indexKey}_$field';
-
+          fieldControllers[key('label')] = TextEditingController(text: item.label);
           fieldControllers[key('latitude')] = TextEditingController(text: item.latitude);
           fieldControllers[key('longitude')] = TextEditingController(text: item.longitude);
           fieldControllers[key('battery')] = TextEditingController(text: item.battery);
@@ -105,6 +105,7 @@ class _DetailIotViewState extends State<DetailIotView> {
     final prev = editedItems[indexKey] ?? original;
 
     final updated = prev.copyWith(
+      label: field == 'label' ? value : prev.label,
       latitude: field == 'latitude' ? value : prev.latitude,
       longitude: field == 'longitude' ? value : prev.longitude,
       battery: field == 'battery' ? value : prev.battery,
@@ -135,6 +136,7 @@ class _DetailIotViewState extends State<DetailIotView> {
       final baseKey = item.indexKey ?? '';
       debugPrint('📌 저장 시도: indexKey=$baseKey, RID=${item.id}');
       final updatedItem = item.copyWith(
+        label: fieldControllers['${baseKey}_label']?.text.trim() ?? item.label,
         latitude: fieldControllers['${baseKey}_latitude']?.text.trim() ?? item.latitude,
         longitude: fieldControllers['${baseKey}_longitude']?.text.trim() ?? item.longitude,
         battery: fieldControllers['${baseKey}_battery']?.text.trim() ?? item.battery,
@@ -298,7 +300,7 @@ class _DetailIotViewState extends State<DetailIotView> {
                               decoration: InputDecoration(
                                   filled: true,
                                   fillColor: Colors.white,
-                                  hintText: 'RID(ID)로 검색',
+                                  hintText: 'Label 또는 RID(ID)로 검색',
                                   hintStyle: TextStyle(
                                     fontFamily: 'PretendardGOV',
                                     fontWeight: FontWeight.w400,
@@ -335,33 +337,33 @@ class _DetailIotViewState extends State<DetailIotView> {
                         SizedBox(
                           width: 29.w,
                         ),
-                    InkWell(
-                      onTap: isEditing
-                          ? null // 🔒 편집 중엔 검색 비활성화
-                          : () {
-                        setState(() {
-                          _searchQuery = _searchController.text.toLowerCase().trim();
-                        });
-                      },
-                      child: Container(
-                        width: 141.w,
-                        height: 60.h,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: isEditing ? Colors.grey : const Color(0xff3182ce), // 🎨 조건부 색상
-                          borderRadius: BorderRadius.circular(5.r),
-                        ),
-                        child: Text(
-                          '검색',
-                          style: TextStyle(
-                            fontFamily: 'PretendardGOV',
-                            fontWeight: FontWeight.w700,
-                            fontSize: 36.sp,
-                            color: Colors.white,
+                        InkWell(
+                          onTap: isEditing
+                              ? null // 🔒 편집 중엔 검색 비활성화
+                              : () {
+                            setState(() {
+                              _searchQuery = _searchController.text.toLowerCase().trim();
+                            });
+                          },
+                          child: Container(
+                            width: 141.w,
+                            height: 60.h,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: isEditing ? Colors.grey : const Color(0xff3182ce), // 🎨 조건부 색상
+                              borderRadius: BorderRadius.circular(5.r),
+                            ),
+                            child: Text(
+                              '검색',
+                              style: TextStyle(
+                                fontFamily: 'PretendardGOV',
+                                fontWeight: FontWeight.w700,
+                                fontSize: 36.sp,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
 
                         SizedBox(
                           width: 102.w,
@@ -397,7 +399,7 @@ class _DetailIotViewState extends State<DetailIotView> {
                           child: Row(
                             children: [
                               SizedBox(width: 100.w,),
-                              Text("사이트 최적화를 위해 최신 500건만 노출됩니다.",style: TextStyle(   fontFamily: 'PretendardGOV',
+                              Text("사이트 최적화를 위해 최신 1000건만 노출됩니다.",style: TextStyle(   fontFamily: 'PretendardGOV',
                                 fontWeight: FontWeight.w400,
                                 fontSize: 16.sp,
                                 color: Colors.grey,),)
@@ -405,52 +407,52 @@ class _DetailIotViewState extends State<DetailIotView> {
                           ),
 
                         ),
-                    InkWell(
-                      onTap: () async {
-                        final items = context.read<IotController>().filterItems(_searchQuery);
+                        InkWell(
+                          onTap: () async {
+                            final items = context.read<IotController>().filterItems(_searchQuery);
 
-                        if (isEditing) {
-                          // 편집 중이면 저장 실행
-                          await _saveChanges();
-                        } else {
-                          // ✅ 권한 검사
-                          final isAuthorized = AuthService.isRoot() || AuthService.isStaff();
-                          if (!isAuthorized) {
-                            await showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (_) => const DialogForm(
-                                mainText: '권한이 없습니다.',
-                                btnText: '확인',
+                            if (isEditing) {
+                              // 편집 중이면 저장 실행
+                              await _saveChanges();
+                            } else {
+                              // ✅ 권한 검사
+                              final isAuthorized = AuthService.isRoot() || AuthService.isStaff();
+                              if (!isAuthorized) {
+                                await showDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (_) => const DialogForm(
+                                    mainText: '권한이 없습니다.',
+                                    btnText: '확인',
+                                  ),
+                                );
+                                return;
+                              }
+
+                              // 편집 시작
+                              _toggleEditMode(items);
+                            }
+                          },
+
+                          child: Container(
+                            width: 141.w,
+                            height: 60.h,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: Color(0xff3182ce),
+                              borderRadius: BorderRadius.circular(5.r),
+                            ),
+                            child: Text(
+                              isEditing ? '저장' : '편집',
+                              style: TextStyle(
+                                fontFamily: 'PretendardGOV',
+                                fontWeight: FontWeight.w700,
+                                fontSize: 36.sp,
+                                color: Colors.white,
                               ),
-                            );
-                            return;
-                          }
-
-                          // 편집 시작
-                          _toggleEditMode(items);
-                        }
-                      },
-
-                      child: Container(
-                        width: 141.w,
-                        height: 60.h,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: Color(0xff3182ce),
-                          borderRadius: BorderRadius.circular(5.r),
-                        ),
-                        child: Text(
-                          isEditing ? '저장' : '편집',
-                          style: TextStyle(
-                            fontFamily: 'PretendardGOV',
-                            fontWeight: FontWeight.w700,
-                            fontSize: 36.sp,
-                            color: Colors.white,
+                            ),
                           ),
                         ),
-                      ),
-                    ),
 
                         SizedBox(
                           width: 7.w,
@@ -539,119 +541,126 @@ class _DetailIotViewState extends State<DetailIotView> {
                   ),
                   // 이 영역만 바꾼 코드 (DataTable → SfDataGrid 사용)
                   Container(
-                      width: 2325.w,
-                      height: 1639.h,
-                      color: Colors.black,
-                      child:
-                      Consumer<IotController>(
-                        builder: (context, controller, _) {
-                          final items = controller
-                              .filterItems(_searchQuery)
-                              .where((e) => !deletedKeys.contains(e.indexKey)) // ✅ indexKey 기준으로 변경
-                              .toList();
+                    width: 2325.w,
+                    height: 1639.h,
+                    color: Colors.black,
+                    child:
+                    Consumer<IotController>(
+                      builder: (context, controller, _) {
+                        final items = controller.items
+                            .where((e) =>
+                        !deletedKeys.contains(e.indexKey) &&
+                            (_searchQuery.isEmpty ||
+                                e.id.toLowerCase().contains(_searchQuery) ||
+                                e.label.toLowerCase().contains(_searchQuery)))
+                            .toList();
 
 
-                          if (items.isEmpty) {
-                            return Center(
-                              child: Text(
-                                '데이터 없음',
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 24.sp),
-                              ),
-                            );
-                          }
 
-                          final dataSource = IotDataSource(
-                            context,
-                            items,
-                            isDegree,
-                            isEditing,
-                            deletedKeys,
-                            fieldControllers,
-                            eventTypeValues,
-                            onFieldChanged: _onFieldChanged,
-                            onDelete: (String key) {
-                              setState(() => deletedKeys.add(key));
-                            },
-                          );
-
-                          return ScrollbarTheme(
-                            data: ScrollbarThemeData(
-                              thumbColor: MaterialStateProperty.all(
-                                  Color(0xff004aff)),
-                              // trackColor: MaterialStateProperty.all(Colors.transparent),
-                              radius: Radius.circular(10.r),
-                              thickness: MaterialStateProperty.all(10.w),
-                            ),
-                            child: Scrollbar(
-                              thumbVisibility: true,
-                              controller: _verticalController,
-                              child: SfDataGrid(
-                                source: dataSource,
-                                allowSorting: false,
-                                verticalScrollController: _verticalController,
-                                columnWidthMode: ColumnWidthMode.none,
-                                gridLinesVisibility: GridLinesVisibility.both,
-                                headerGridLinesVisibility: GridLinesVisibility
-                                    .both,
-                                columns: [
-
-                                  GridColumn(columnName: 'id',
-                                      width: 120.w,
-                                      label: buildHeader('ID')),
-                                  GridColumn(columnName: 'type',
-                                      width: 120.w,
-                                      label: buildHeader('유형')),
-                                  GridColumn(columnName: 'location',
-                                      width: 219.w,
-                                      label: buildHeader('설치 위치')),
-                                  GridColumn(columnName: 'status',
-                                      width: 160.w,
-                                      label: buildHeader('상태')),
-                                  GridColumn(columnName: 'battery',
-                                      width: 160.w,
-                                      label: buildHeader('배터리')),
-                                  GridColumn(columnName: 'lastUpdated',
-                                      width: 320.w,
-                                      label: buildHeader('마지막 수신')),
-                                  GridColumn(
-                                    columnName: isDegree ? 'x_deg' : 'x_mm',
-                                    width: 180.w,
-                                    label: buildHeader(isDegree ? 'X(°)' : 'X(mm)'),
-                                  ),
-                                  GridColumn(
-                                    columnName: isDegree ? 'y_deg' : 'y_mm',
-                                    width: 180.w,
-                                    label: buildHeader(isDegree ? 'Y(°)' : 'Y(mm)'),
-                                  ),
-                                  GridColumn(
-                                    columnName: isDegree ? 'z_deg' : 'z_mm',
-                                    width: 180.w,
-                                    label: buildHeader(isDegree ? 'Z(°)' : 'Z(mm)'),
-                                  ),
-
-                                  GridColumn(columnName: 'batteryInfo',
-                                      width: 220.w,
-                                      label: buildHeader('배터리 정보')),
-                                  GridColumn(
-                                    columnName: 'indexKey',
-                                    visible: false, // 👈 요 줄이 포인트
-                                    label: const SizedBox.shrink(), // 빈 위젯
-                                  ),
-                                  isEditing? GridColumn(
-                                    columnName: 'delete',
-                                    width: 100.w,
-                                    label: buildHeader('삭제'),
-                                  ):
-                                  GridColumn(columnName: 'download',
-                                      width: 442.w,
-                                      label: buildHeader('데이터 다운로드')),
-                                ],
-                              ),
+                        if (items.isEmpty) {
+                          return Center(
+                            child: Text(
+                              '데이터 없음',
+                              style: TextStyle(
+                                  color: Colors.white, fontSize: 24.sp),
                             ),
                           );
-                        },
-                      ),
+                        }
+
+                        final dataSource = IotDataSource(
+                          context,
+                          items,
+                          isDegree,
+                          isEditing,
+                          deletedKeys,
+                          fieldControllers,
+                          eventTypeValues,
+                          onFieldChanged: _onFieldChanged,
+                          onDelete: (String key) {
+                            setState(() => deletedKeys.add(key));
+                          },
+                        );
+
+                        return ScrollbarTheme(
+                          data: ScrollbarThemeData(
+                            thumbColor: MaterialStateProperty.all(
+                                Color(0xff004aff)),
+                            // trackColor: MaterialStateProperty.all(Colors.transparent),
+                            radius: Radius.circular(10.r),
+                            thickness: MaterialStateProperty.all(10.w),
+                          ),
+                          child: Scrollbar(
+                            thumbVisibility: true,
+                            controller: _verticalController,
+                            child: SfDataGrid(
+                              source: dataSource,
+                              allowSorting: false,
+                              verticalScrollController: _verticalController,
+                              columnWidthMode: ColumnWidthMode.none,
+                              gridLinesVisibility: GridLinesVisibility.both,
+                              headerGridLinesVisibility: GridLinesVisibility
+                                  .both,
+                              columns: [
+
+                                GridColumn(columnName: 'id',
+                                    width: 120.w,
+                                    label: buildHeader('ID')),
+                                GridColumn(columnName: 'label',
+                                    width: isEditing? 315.w:120.w,
+                                    label: buildHeader('라벨명')),
+                                GridColumn(columnName: 'type',
+                                    width: 120.w,
+                                    label: buildHeader('유형')),
+                                GridColumn(columnName: 'location',
+                                    width: 250.w,
+                                    label: buildHeader('설치 위치')),
+                                GridColumn(columnName: 'status',
+                                    width: 160.w,
+                                    label: buildHeader('상태')),
+                                GridColumn(columnName: 'battery',
+                                    width: 160.w,
+                                    label: buildHeader('배터리')),
+                                GridColumn(columnName: 'lastUpdated',
+                                    width: 320.w,
+                                    label: buildHeader('마지막 수신')),
+                                GridColumn(
+                                  columnName: isDegree ? 'x_deg' : 'x_mm',
+                                  width: 180.w,
+                                  label: buildHeader(isDegree ? 'X(°)' : 'X(mm)'),
+                                ),
+                                GridColumn(
+                                  columnName: isDegree ? 'y_deg' : 'y_mm',
+                                  width: 180.w,
+                                  label: buildHeader(isDegree ? 'Y(°)' : 'Y(mm)'),
+                                ),
+                                GridColumn(
+                                  columnName: isDegree ? 'z_deg' : 'z_mm',
+                                  width: 180.w,
+                                  label: buildHeader(isDegree ? 'Z(°)' : 'Z(mm)'),
+                                ),
+
+                                GridColumn(columnName: 'batteryInfo',
+                                    width: 200.w,
+                                    label: buildHeader('배터리 정보')),
+                                GridColumn(
+                                  columnName: 'indexKey',
+                                  visible: false, // 👈 요 줄이 포인트
+                                  label: const SizedBox.shrink(), // 빈 위젯
+                                ),
+                                isEditing? GridColumn(
+                                  columnName: 'delete',
+                                  width: 100.w,
+                                  label: buildHeader('삭제'),
+                                ):
+                                GridColumn(columnName: 'download',
+                                    width: 342.w,
+                                    label: buildHeader('데이터 다운로드')),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   )
 
 

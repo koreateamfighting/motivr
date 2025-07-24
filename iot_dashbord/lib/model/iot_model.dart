@@ -18,6 +18,7 @@ class IotItem {
   final String batteryInfo;
   final String download;
   final DateTime createAt;
+  final String label;
 
   IotItem({
     this.indexKey,
@@ -36,6 +37,7 @@ class IotItem {
     required this.batteryInfo,
     required this.download,
     required this.createAt,
+    required this.label
   });
 
   IotItem copyWith({
@@ -55,6 +57,7 @@ class IotItem {
     String? batteryInfo,
     String? download,
     DateTime? createAt,
+    String? label,
 
   }) {
     return IotItem(
@@ -74,7 +77,7 @@ class IotItem {
       batteryInfo: batteryInfo ?? this.batteryInfo,
       download: download ?? this.download,
       createAt: createAt ?? this.createAt,
-
+      label: label ?? this.label,
     );
   }
 
@@ -90,19 +93,19 @@ class IotItem {
       }
     }
 
-    // 🕒 CreateAt 파싱 (UTC 포맷 → KST로 강제 인식)
     final rawTime = json['CreateAt']?.toString() ?? '';
     DateTime parsedTime = DateTime.now();
     try {
-      final kstString = rawTime.replaceFirst('Z', '').replaceFirst('T', ' ').substring(0, 19);
-      parsedTime = DateFormat('yyyy-MM-dd HH:mm:ss').parse(kstString);
-      //debugPrint('🕒 [IotItem.fromJson] RID=$paddedId, rawTime=$rawTime → parsedTime=$parsedTime');
+      final trimmed = rawTime.replaceFirst('Z', '');
+      parsedTime = DateTime.parse(trimmed).toLocal(); // ✅ UTC → KST 변환
     } catch (e) {
       debugPrint('❌ [IotItem.fromJson] 시간 파싱 실패: $rawTime, 에러: $e');
     }
 
+
     final item = IotItem(
       indexKey: json['IndexKey']?.toString() ?? '',
+      label : json['Label']?.toString() ?? '',
       id: paddedId,
       sensortype: json['SensorType']?.toString() ?? '',
       eventtype: json['EventType']?.toString() ?? '',
@@ -118,6 +121,7 @@ class IotItem {
       batteryInfo: json['BatteryLevel']?.toString() ?? '',
       download: '',
       createAt: parsedTime,
+
     );
     // // ✅ 상세 로그
     // debugPrint('📥 [fromJson] RID=$paddedId, IndexKey=${item.indexKey}, X_MM=${item.X_MM}, Y_MM=${item.Y_MM}, Z_MM=${item.Z_MM}, '
@@ -137,15 +141,19 @@ class IotItem {
       case '주기데이터':
         eventtypeCode = '2';
         break;
-      case 'Alert':
-        eventtypeCode = '4';
+      case '주의':
+        eventtypeCode = '67';
+        break;
+      case '경고':
+        eventtypeCode = '68';
         break;
       case 'GPS':
         eventtypeCode = '5';
         break;
       default:
-        eventtypeCode = '0';
+        eventtypeCode = eventtype; // 이미 숫자인 경우 유지
     }
+
 
     final Map<String, dynamic> json = {
       'IndexKey': indexKey,
@@ -161,10 +169,23 @@ class IotItem {
       'X_MM': double.tryParse(X_MM?.trim() ?? '') ?? 0.0,
       'Y_MM': double.tryParse(Y_MM?.trim() ?? '') ?? 0.0,
       'Z_MM': double.tryParse(Z_MM?.trim() ?? '') ?? 0.0,
-      'Latitude': double.tryParse(latitude) ?? 0.0,
-      'Longitude': double.tryParse(longitude) ?? 0.0,
-      'CreateAt': DateFormat('yyyy-MM-dd HH:mm:ss').format(createAt.toUtc()), // ✅ UTC 문자열로 변환
+
+      'Label': label,
+      'CreateAt': createAt.toIso8601String(),
+
+// → 예: "2025-07-23T22:09:00Z"
+
+
+
     };
+
+    // 위도, 경도는 비어있지 않은 경우에만 포함
+    if (latitude.trim().isNotEmpty) {
+      json['Latitude'] = double.tryParse(latitude);
+    }
+    if (longitude.trim().isNotEmpty) {
+      json['Longitude'] = double.tryParse(longitude);
+    }
 
 
 

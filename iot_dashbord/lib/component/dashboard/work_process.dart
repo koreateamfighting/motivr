@@ -9,6 +9,8 @@ import 'package:iot_dashboard/component/common/dialog_form.dart';
 import 'package:iot_dashboard/utils/iframe_visibility.dart';
 import 'package:iot_dashboard/controller/duty_controller.dart';
 import 'package:iot_dashboard/model/duty_model.dart';
+import 'package:iot_dashboard/model/field_info_model.dart';
+import 'package:iot_dashboard/controller/field_info_controller.dart';
 
 class WorkProcessStatus extends StatefulWidget {
   const WorkProcessStatus({super.key});
@@ -21,21 +23,25 @@ class _WorkProcessStatusState extends State<WorkProcessStatus> {
   bool isEditing = false;
   double? progress;
   final TextEditingController _controller = TextEditingController();
+  FieldInfo? fieldInfo; // ✅ 공사 정보 상태 추가
   @override
   void initState() {
     super.initState();
     _loadInitialProgress();
   }
+
   Future<void> _loadInitialProgress() async {
     try {
       final duty = await DutyController.fetchLatestDuty();
-      if (duty != null) {
-        setState(() {
+      final field = await FieldInfoController.fetchLatestFieldInfo();
+      setState(() {
+        if (duty != null) {
           progress = duty.progress / 100.0;
-        });
-      }
+        }
+        fieldInfo = field;
+      });
     } catch (e) {
-      print('❌ Failed to load duty progress: $e');
+      print('❌ 데이터 로드 실패: $e');
     }
   }
 
@@ -107,23 +113,32 @@ class _WorkProcessStatusState extends State<WorkProcessStatus> {
 
     final progressVal = progress!;
     return Column(
-
       children: [
         Container(width: 1542.w, height: 1.h, color: Colors.white),
-        SizedBox(height: 54.h),
+        SizedBox(height: 12.h),
+        Text(
+          '공사명 :${fieldInfo?.constructionName}' ?? '공사명 불러오는 중', // ✅ 텍스트 치환
+          style: TextStyle(
+            fontSize: 28.sp,
+            fontFamily: 'PretendardGOV',
+            fontWeight: FontWeight.w400,
+            color: Colors.white,
+          ),
+        ),
+        SizedBox(height: 24.h), // 텍스트 아래 여백
         Container(
-          height: 481.h,
+          /*height: 385.h,*/
           child: Column(
             children: [
               SizedBox(
                 width: 334.45.w,
-                height: 340.h,
+                height: 318.h,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
                     PieChart(
                       PieChartData(
-                        centerSpaceRadius: 120.w,
+                        centerSpaceRadius: 100.w,
                         startDegreeOffset: -90,
                         sectionsSpace: 0,
                         sections: [
@@ -131,13 +146,13 @@ class _WorkProcessStatusState extends State<WorkProcessStatus> {
                             color: const Color(0xff2980ff),
                             value: progress! * 100,
                             showTitle: false,
-                            radius: 50.w,
+                            radius: 40.w,
                           ),
                           PieChartSectionData(
                             color: const Color(0xffa0aec0),
                             value: 100 - progress! * 100,
                             showTitle: false,
-                            radius: 50.w,
+                            radius: 40.w,
                           ),
                         ],
                       ),
@@ -169,7 +184,6 @@ class _WorkProcessStatusState extends State<WorkProcessStatus> {
                   ],
                 ),
               ),
-              SizedBox(height: 33.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -181,74 +195,51 @@ class _WorkProcessStatusState extends State<WorkProcessStatus> {
               SizedBox(height: 24.h),
               Container(width: 1542.w, height: 1.h, color: Colors.white),
               SizedBox(height: 8.h),
-
-              // // ✅ 관리자 권한 없으면 접근 차단
-              // if (!AuthService.isAdmin()) {
-              // // 마이크로태스크로 실행 → UI가 빌드된 후에 다이얼로그 띄우기
-              // Future.microtask(() {
-              // showDialog(
-              // context: context,
-              // builder: (context) => AlertDialog(
-              // title: Text('접근 거부'),
-              // content: Text('관리자 계정만 들어갈 수 있습니다.'),
-              // actions: [
-              // TextButton(
-              // onPressed: () {
-              // Navigator.of(context).pop();
-              // // 🚪 관리자 아니면 대시보드로 강제 이동
-              // Navigator.of(context).pushReplacementNamed('/DashBoard');
-              // },
-              // child: Text('확인'),
-              // ),
-              // ],
-              // ),
-              // );
-              // });
-              //
-              // // 일단 빈 컨테이너 반환 → 다이얼로그 후 이동
-              // return const Scaffold(body: SizedBox());
-              // }
-              GestureDetector(
-                onTap: () async {
-
-                  if (!AuthService.isStaff()  && !AuthService.isRoot()) {
-
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: GestureDetector(
+                  onTap: () async {
+                    if (!AuthService.isStaff() && !AuthService.isRoot()) {
                       hideIframes();
                       await showDialog(
                         context: context,
-                        barrierDismissible: false, // 바깥 클릭 시 닫히지 않도록
-                        builder: (_) => DialogForm(mainText:"관리자만 공정률 수정이 가능합니다.",btnText: "닫기",),
+                        barrierDismissible: false,
+                        builder: (_) => DialogForm(
+                          mainText: "관리자만 공정률 수정이 가능합니다.",
+                          btnText: "닫기",
+                        ),
                       );
                       showIframes();
-
-
-                  } else {
-                    setState(() {
-                      isEditing = true;
-                      _controller.text = (progress! * 100).toStringAsFixed(0);
-                    });
-                  }
-                },
-                child: Container(
-                  width: 140.w,
-                  height: 40.h,
-                  decoration: BoxDecoration(
-                    color: const Color(0xff3182ce),
-                    borderRadius: BorderRadius.circular(4.r),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '공정률 입력',
-                      style: TextStyle(
-                        fontFamily: 'PretendardGOV',
-                        fontSize: 20.sp,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
+                    } else {
+                      setState(() {
+                        isEditing = true;
+                        _controller.text = (progress! * 100).toStringAsFixed(0);
+                      });
+                    }
+                  },
+                  child: Container(
+                    width: 140.w,
+                    height: 38.h,
+                    margin: EdgeInsets.only(top: 16.h),
+                    // 위에 여백 살짝 줌
+                    decoration: BoxDecoration(
+                      color: const Color(0xff3182ce),
+                      borderRadius: BorderRadius.circular(4.r),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '공정률 입력',
+                        style: TextStyle(
+                          fontFamily: 'PretendardGOV',
+                          fontSize: 20.sp,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -488,7 +479,6 @@ class _WorkProcessStatusState extends State<WorkProcessStatus> {
                         }
                       }
                     },
-
                     child: Text(
                       '완료',
                       textAlign: TextAlign.center,

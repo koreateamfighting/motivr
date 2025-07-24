@@ -24,7 +24,6 @@ class _OpencvCctvIframeState extends State<OpencvCctvIframe> {
     _imgElement = html.ImageElement()
       ..style.border = 'none'
       ..style.width = '100%'
-      ..style.height = '100%'
       ..alt = 'CCTV 감지 영상';
 
     // ignore: undefined_prefixed_name

@@ -19,6 +19,7 @@ import 'package:iot_dashboard/component/common/dialog_form.dart';
 
 class IotInputSection extends StatefulWidget {
   final TextEditingController? iotProductIDController;
+  final TextEditingController? labelController;
   final TextEditingController? latitudeController;
   final TextEditingController? longitudeController;
   final TextEditingController? x_DegController;
@@ -37,6 +38,7 @@ class IotInputSection extends StatefulWidget {
   const IotInputSection({
     Key? key,
     this.iotProductIDController,
+    this.labelController,
     this.longitudeController,
     this.latitudeController,
     this.x_MMController,
@@ -61,6 +63,7 @@ class _IotInputSectionState extends State<IotInputSection> {
   bool isExpanded = false; // ✅ 펼침 여부 상태
   bool _isFormValid = false;
   late TextEditingController iotProductIDController;
+  late TextEditingController labelController;
   late TextEditingController longitudeController;
   late TextEditingController latitudeController;
   late TextEditingController x_MMController;
@@ -88,6 +91,8 @@ class _IotInputSectionState extends State<IotInputSection> {
 
     iotProductIDController =
         widget.iotProductIDController ?? TextEditingController();
+    labelController =
+        widget.labelController ?? TextEditingController();
     latitudeController = widget.latitudeController ?? TextEditingController();
     longitudeController = widget.longitudeController ??
         TextEditingController();
@@ -108,7 +113,7 @@ class _IotInputSectionState extends State<IotInputSection> {
     batteryInfoController =
         widget.batteryInfoController ?? TextEditingController();
     iotProductIDController.addListener(_validateForm);
-
+    labelController.addListener(_validateForm);
     createdAtDate = widget.createdAtDate;
     createdAtHour = widget.createdAtHour ?? '00';
     createdAtMinute = widget.createdAtMinute ?? '00';
@@ -123,14 +128,17 @@ class _IotInputSectionState extends State<IotInputSection> {
 
   void _validateForm() {
     setState(() {
-      _isFormValid = iotProductIDController.text.trim().isNotEmpty;
+      _isFormValid =
+          iotProductIDController.text.trim().isNotEmpty && labelController.text.trim().isNotEmpty;
     });
   }
+
 
   @override
   void dispose() {
     // 컨트롤러 리스너 해제
     iotProductIDController.removeListener(_validateForm);
+    labelController.removeListener(_validateForm);
     x_DegController.removeListener(_checkAngleThreshold);
     y_DegController.removeListener(_checkAngleThreshold);
     z_DegController.removeListener(_checkAngleThreshold);
@@ -142,30 +150,48 @@ class _IotInputSectionState extends State<IotInputSection> {
       return double.tryParse(text.trim()) ?? 0.0;
     }
 
-    final x = parseValue(x_DegController.text);
-    final y = parseValue(y_DegController.text);
-    final z = parseValue(z_DegController.text);
+    final x = parseValue(x_DegController.text).abs();
+    final y = parseValue(y_DegController.text).abs();
+    final z = parseValue(z_DegController.text).abs();
 
-    if ((x > 2 || y > 2 || z > 2) && _selectedEventType != 'Alert') {
+    final isWarning = x >= 5 || y >= 5 || z >= 5;
+    final isCaution = !isWarning && (x >= 3 || y >= 3 || z >= 3);
+
+    if (isWarning && _selectedEventType != '경고') {
       setState(() {
-        _selectedEventType = 'Alert';
+        _selectedEventType = '경고';
       });
 
       showDialog(
         context: context,
         builder: (_) => const DialogForm(
-          mainText: 'X, Y, Z 각도 중 하나가 3을 초과하여 상태가 Alert로 설정되었습니다.',
+          mainText: 'X, Y, Z 각도 중 하나의 절댓값이 5 이상으로 상태가 경고로 설정되었습니다.',
+          btnText: '확인',
+        ),
+      );
+    } else if (isCaution && _selectedEventType != '주의') {
+      setState(() {
+        _selectedEventType = '주의';
+      });
+
+      showDialog(
+        context: context,
+        builder: (_) => const DialogForm(
+          mainText: 'X, Y, Z 각도 중 하나의 절댓값이 3 이상 5 미만으로 상태가 주의로 설정되었습니다.',
           btnText: '확인',
         ),
       );
     }
   }
 
+
+
   Future<void> _handleSubmit() async {
     final controller = Provider.of<IotController>(context, listen: false);
 
     final item = IotItem(
       id: iotProductIDController.text.trim(),
+      label: labelController.text.trim(),
       sensortype: '변위',
       eventtype: _selectedEventType,
       latitude: latitudeController.text.trim(),
@@ -194,6 +220,7 @@ class _IotInputSectionState extends State<IotInputSection> {
     if (success) {
 
       iotProductIDController.clear();
+      labelController.clear();
       latitudeController.clear();
       longitudeController.clear();
       x_MMController.clear();
@@ -221,7 +248,7 @@ class _IotInputSectionState extends State<IotInputSection> {
       showDialog(
         context: context,
         builder: (context) => DialogForm(
-          mainText: '센서 데이터가 저장되었습니다..',
+          mainText: '센서 데이터가 저장되었습니다.',
           btnText: '닫기',
         ),
       );
@@ -289,7 +316,7 @@ class _IotInputSectionState extends State<IotInputSection> {
           SizedBox(height: 5.h),
           Container(
             width: 2880.w,
-            height: 718.h,
+            height: 718.h + 85.h,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(5.r),
               color: const Color(0xff414c67),
@@ -304,7 +331,7 @@ class _IotInputSectionState extends State<IotInputSection> {
                       height: 85.h,
                       child: labeledTextField(
                         title: '제품 식별자(ID) :',
-                        hint: '',
+                        hint: '필수 입력',
                         width: 420,
                         height: 60,
                         textBoxwidth: 400,
@@ -346,14 +373,29 @@ class _IotInputSectionState extends State<IotInputSection> {
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
+                  child: labeledTextField(
+                    title: '라벨명 :',
+                    hint: '필수 입력',
+                    width: 420,
+                    height: 60,
+                    textBoxwidth: 400,
+                    textBoxHeight: 50,
+                    controller: labelController,
+                  ),
+                ),
+                CustomDivider(),
+                SizedBox(
+                  width: 2880.w,
+                  height: 85.h,
                   child: LabeledDropdownField(
                     title: '상태 :',
-                    items: ['주기데이터', 'Alert','GPS'],
+                    items: ['주기데이터', '주의','경고','GPS'],
                     selectedValue: _selectedEventType,
                     onChanged: (val) => setState(() => _selectedEventType = val!),
                   ),
                 ),
                 CustomDivider(),
+
                 Row(
                   children: [
                     SizedBox(

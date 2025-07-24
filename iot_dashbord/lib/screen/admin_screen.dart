@@ -62,6 +62,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
 //iot 정보 입력 변수
   final iotProductIDController = TextEditingController();
+  final labelController = TextEditingController();
   final latitudeController = TextEditingController();
   final longitudeController = TextEditingController();
   final x_DegController = TextEditingController();
@@ -327,6 +328,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
                               IotInputSection(
                                 iotProductIDController: iotProductIDController,
+                                labelController: labelController,
                                 latitudeController: latitudeController,
                                 longitudeController: longitudeController,
                                 x_MMController: x_MMController,
