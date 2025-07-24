@@ -42,7 +42,6 @@ app.use(express.static('public', {
 // 라우터 분리
 app.use('/api', require('./routes/user'));     // 로그인/회원
 app.use('/api', require('./routes/sensor'));  
-app.use('/api', require('./routes/alarm'));  // 센서/기타
 app.use('/api', require('./routes/notice'));  // 센서/기타
 app.use('/api', require('./routes/worktask'));
 app.use('/api', require('./routes/duty'));

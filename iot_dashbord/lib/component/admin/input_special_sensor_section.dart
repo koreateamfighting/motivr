@@ -441,7 +441,7 @@ class _InputSpecialSensorSectionSectionState
             children: [
               SizedBox(width: 41.w),
               Text(
-                '센서 정보',
+                '특수 센서 정보 입력',
                 style: TextStyle(
                   fontFamily: 'PretendardGOV',
                   fontSize: 36.sp,

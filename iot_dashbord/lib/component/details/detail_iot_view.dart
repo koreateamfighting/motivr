@@ -729,7 +729,7 @@ class _DetailIotViewState extends State<DetailIotView> {
     if (columnName == 'status') {
       Color color;
       switch (text) {
-        case '정상':
+        case '정보':
           color = Colors.green;
           break;
         case '주의':
@@ -789,7 +789,7 @@ class _DetailIotViewState extends State<DetailIotView> {
   DataCell buildStatusCell(String status) {
     Color color;
     switch (status) {
-      case '정상':
+      case '정보':
         color = Colors.green;
         break;
       case '주의':

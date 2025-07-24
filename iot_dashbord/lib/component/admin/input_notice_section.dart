@@ -171,7 +171,7 @@ class _NoticeInputSectionState extends State<NoticeInputSection> {
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             ActionButton(
-              '추가',
+              '등록',
               _noticeContentController.text.trim().isEmpty
                   ? Colors.grey
                   : const Color(0xffe98800),

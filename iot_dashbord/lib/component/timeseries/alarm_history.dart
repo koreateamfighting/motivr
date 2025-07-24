@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:iot_dashboard/model/alarm_model.dart';
 import 'package:iot_dashboard/model/iot_model.dart';
 import 'package:iot_dashboard/controller/iot_controller.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';

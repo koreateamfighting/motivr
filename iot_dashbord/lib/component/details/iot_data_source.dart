@@ -305,7 +305,7 @@ class IotDataSource extends DataGridSource {
             color = const Color(0xff83c2f1);
             iconAsset = 'assets/icons/alert_repair.png';
           } else {
-            status = '정상';
+            status = '정보';
             color = const Color(0xff2fa365);
             iconAsset = 'assets/icons/alert_normal.png';
           }

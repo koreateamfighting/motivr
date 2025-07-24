@@ -398,8 +398,8 @@ class _CCTVInputSectionState extends State<CCTVInputSection> {
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             ActionButton(
-              '저장',
-              isCamIdEmpty ? Colors.grey : const Color(0xff3182ce),
+              '등록',
+              isCamIdEmpty ? Colors.grey : const Color(0xffe98800),
               onTap: isCamIdEmpty
                   ? null
                   : () async {

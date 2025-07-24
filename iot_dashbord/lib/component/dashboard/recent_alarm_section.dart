@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../controller/alarm_controller.dart';
-import '../../model/alarm_model.dart';
+import '../../controller/alarm_history_controller.dart';
+import '../../model/alarm_history_model.dart';
 import 'package:intl/intl.dart';
 import 'package:iot_dashboard/component/dashboard/expand_alarm_search.dart';
 import 'package:iot_dashboard/utils/iframe_visibility.dart';
 import 'package:iot_dashboard/utils/format_timestamp.dart';
-import 'package:iot_dashboard/model/alarm_model.dart';
+
 
 
 class AlarmListView extends StatefulWidget {
@@ -17,17 +17,17 @@ class AlarmListView extends StatefulWidget {
 }
 
 class _AlarmListViewState extends State<AlarmListView> {
-  late Future<List<Alarm>> _alarmFuture;
+  late Future<List<AlarmHistory>> _alarmFuture;
 
   @override
   void initState() {
     super.initState();
-    _alarmFuture = AlarmController.fetchAlarms(); // ✅ 한 번만 호출
+    _alarmFuture = AlarmHistoryController.fetchIotAlarmHistory(); // 🔄 교체
   }
 
   void _fetchAlarmsData() {
     setState(() {
-      _alarmFuture = AlarmController.fetchAlarms(); // ✅ 갱신할 때만 새로고침
+      _alarmFuture = AlarmHistoryController.fetchIotAlarmHistory(); // 🔄 교체
     });
   }
 
@@ -35,7 +35,7 @@ class _AlarmListViewState extends State<AlarmListView> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Alarm>>(future: _alarmFuture, builder: (context, snapshot){
+    return FutureBuilder<List<AlarmHistory>>(future: _alarmFuture, builder: (context, snapshot){
     return Container(
       width: 1168.w,
       height: 610.h,
@@ -208,8 +208,8 @@ class _AlarmListViewState extends State<AlarmListView> {
               ],
             ),
           ),
-          FutureBuilder<List<Alarm>>(
-            future: AlarmController.fetchAlarms(),
+          FutureBuilder<List<AlarmHistory>>(
+            future: AlarmHistoryController.fetchIotAlarmHistory(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Expanded(
@@ -247,7 +247,7 @@ class _AlarmListViewState extends State<AlarmListView> {
                           SizedBox(width: 10.w,),
                           SizedBox(
                               width: 215.w,
-                              child: Text(formatTimestamp(alarm.timestamp),
+                              child: Text(  DateFormat('yyyy-MM-dd HH:mm').format(alarm.timestamp), // 초 생략
                                   overflow: TextOverflow.ellipsis, // 넘치면 "..." 처리
                                   maxLines: 1,                      // 최대 한 줄로 제한
                                   softWrap: false,                 // 줄바꿈 비활성화
@@ -260,7 +260,7 @@ class _AlarmListViewState extends State<AlarmListView> {
                           SizedBox(width: 191.w,),
                           SizedBox(
                               width: 48.w,
-                              child: Text(alarm.level,
+                              child: Text(alarm.event,
                                   style: TextStyle(
                                       fontFamily: 'PretendardGOV',
                                       fontWeight: FontWeight.w500,
@@ -268,7 +268,7 @@ class _AlarmListViewState extends State<AlarmListView> {
                                       color: Colors.white))),
                           SizedBox(width: 195.w,),
                           SizedBox(
-                              child: Text(alarm.message,
+                              child: Text(alarm.log!,
                                   style: TextStyle(
                                       fontFamily: 'PretendardGOV',
                                       fontWeight: FontWeight.w500,

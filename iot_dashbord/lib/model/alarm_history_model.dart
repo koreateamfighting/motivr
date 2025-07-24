@@ -1,4 +1,5 @@
 class AlarmHistory {
+  final int? id;
   final String deviceId;
   final DateTime timestamp;
   final String event;
@@ -9,6 +10,7 @@ class AlarmHistory {
   final String type; // 'iot' 또는 'cctv'
 
   AlarmHistory({
+    this.id,
     required this.deviceId,
     required this.timestamp,
     required this.event,
@@ -21,6 +23,7 @@ class AlarmHistory {
 
   factory AlarmHistory.fromJson(Map<String, dynamic> json) {
     return AlarmHistory(
+      id: json['Id'],
       deviceId: json['DeviceID'] ?? '',
       timestamp: DateTime.parse(json['Timestamp']),
       event: json['Event'] ?? '',
@@ -34,6 +37,7 @@ class AlarmHistory {
 
   Map<String, dynamic> toJson() {
     return {
+      if (id != null) 'Id': id, // ⬅️ id 포함 (있을 때만 전송)
       'DeviceID': deviceId,
       'Timestamp': timestamp.toIso8601String(),
       'Event': event,
@@ -43,5 +47,28 @@ class AlarmHistory {
       'Longitude': longitude,
       'Type': type,
     };
+  }
+  AlarmHistory copyWith({
+    int? id,
+    String? deviceId,
+    DateTime? timestamp,
+    String? event,
+    String? log,
+    String? location,
+    double? latitude,
+    double? longitude,
+    String? type,
+  }) {
+    return AlarmHistory(
+      id: id ?? this.id,
+      deviceId: deviceId ?? this.deviceId,
+      timestamp: timestamp ?? this.timestamp,
+      event: event ?? this.event,
+      log: log ?? this.log,
+      location: location ?? this.location,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      type: type ?? this.type,
+    );
   }
 }

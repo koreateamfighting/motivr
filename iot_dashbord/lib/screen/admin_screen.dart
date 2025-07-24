@@ -1,7 +1,7 @@
 // admin_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:iot_dashboard/component/admin/input_alarm_event_section.dart';
+
 import 'package:iot_dashboard/component/admin/input_duty_section.dart';
 import 'package:iot_dashboard/component/admin/input_field_info_section.dart';
 import 'package:iot_dashboard/component/admin/input_iot_section.dart';
@@ -91,6 +91,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
 //이벤트 관리 (iot/cctv) 변수
   final iotHistoryProductIDController = TextEditingController();
+  final iotHistoryProductLabelController = TextEditingController();
   final iotHistoryLatitudeController = TextEditingController();
   final iotHistoryLongitudeController = TextEditingController();
 
@@ -296,13 +297,13 @@ class _AdminScreenState extends State<AdminScreen> {
                                 dutyEndDate: dutyEndDate,
                                 progressController: _progressNameController,
                               ),
-                              EventAlarmSection(
-                                alarmDate: alarmDate,
-                                alarmHour: alarmHour,
-                                alarmMinute: alarmMinute,
-                                alarmSecond: alarmSecond,
-                                alarmMessageController: _alarmMessageController,
-                              ),
+                              // EventAlarmSection(
+                              //   alarmDate: alarmDate,
+                              //   alarmHour: alarmHour,
+                              //   alarmMinute: alarmMinute,
+                              //   alarmSecond: alarmSecond,
+                              //   alarmMessageController: _alarmMessageController,
+                              // ),
                               NoticeInputSection(
                                   noticeContentController:
                                       _noticeContentController),
@@ -328,6 +329,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
                               IotInputSection(
                                 iotProductIDController: iotProductIDController,
+
                                 labelController: labelController,
                                 latitudeController: latitudeController,
                                 longitudeController: longitudeController,
@@ -357,6 +359,7 @@ class _AdminScreenState extends State<AdminScreen> {
                               EventInputSection(
                                 iotHistoryProductIDController:
                                     iotHistoryProductIDController,
+                                iotHistoryProductLabelController: iotHistoryProductLabelController,
                                 iotHistoryLatitudeController:
                                 iotHistoryLatitudeController,
                                 iotHistoryLongitudeController:

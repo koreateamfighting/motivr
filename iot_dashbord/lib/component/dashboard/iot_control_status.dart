@@ -187,7 +187,7 @@ class _IotControlStatusState extends State<IotControlStatus> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _statusRow(
-                        '정상',
+                        '정보',
                         normal.toInt(),
                         total.toInt(),
                         const Color(0xFF2FA365),

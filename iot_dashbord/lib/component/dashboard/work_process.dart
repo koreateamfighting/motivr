@@ -9,8 +9,7 @@ import 'package:iot_dashboard/component/common/dialog_form.dart';
 import 'package:iot_dashboard/utils/iframe_visibility.dart';
 import 'package:iot_dashboard/controller/duty_controller.dart';
 import 'package:iot_dashboard/model/duty_model.dart';
-import 'package:iot_dashboard/model/field_info_model.dart';
-import 'package:iot_dashboard/controller/field_info_controller.dart';
+
 
 class WorkProcessStatus extends StatefulWidget {
   const WorkProcessStatus({super.key});
@@ -23,7 +22,9 @@ class _WorkProcessStatusState extends State<WorkProcessStatus> {
   bool isEditing = false;
   double? progress;
   final TextEditingController _controller = TextEditingController();
-  FieldInfo? fieldInfo; // ✅ 공사 정보 상태 추가
+  //FieldInfo? fieldInfo; // ✅ 공사 정보 상태 추가
+  Duty? _duty; // ✅ Duty 객체 상태 저장
+
   @override
   void initState() {
     super.initState();
@@ -33,12 +34,12 @@ class _WorkProcessStatusState extends State<WorkProcessStatus> {
   Future<void> _loadInitialProgress() async {
     try {
       final duty = await DutyController.fetchLatestDuty();
-      final field = await FieldInfoController.fetchLatestFieldInfo();
+
       setState(() {
         if (duty != null) {
           progress = duty.progress / 100.0;
+          _duty = duty;
         }
-        fieldInfo = field;
       });
     } catch (e) {
       print('❌ 데이터 로드 실패: $e');
@@ -117,7 +118,7 @@ class _WorkProcessStatusState extends State<WorkProcessStatus> {
         Container(width: 1542.w, height: 1.h, color: Colors.white),
         SizedBox(height: 12.h),
         Text(
-          '공사명 :${fieldInfo?.constructionName}' ?? '공사명 불러오는 중', // ✅ 텍스트 치환
+          _duty != null ? '공사명 : ${_duty!.dutyName}' : '공사명 불러오는 중',
           style: TextStyle(
             fontSize: 28.sp,
             fontFamily: 'PretendardGOV',

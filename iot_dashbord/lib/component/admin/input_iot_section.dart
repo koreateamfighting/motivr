@@ -734,7 +734,7 @@ class _IotInputSectionState extends State<IotInputSection> {
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             ActionButton(
-              '추가',
+              '등록',
               _isFormValid ? const Color(0xffe98800) : Colors.grey, // ✅ 색상 전환
               onTap: _isFormValid
                   ? () {
