@@ -25,6 +25,7 @@ class _CctvMiniViewState extends State<CctvMiniView> {
   double cam1Avg = 0;
   double cam2Avg = 0;
   String today = '';
+  String _lastUpdatedTime = ''; // ⏰ 최근 업데이트 시각 저장
   final List<String> _minuteLabels = List.generate(
     1440,
         (i) {
@@ -47,6 +48,7 @@ class _CctvMiniViewState extends State<CctvMiniView> {
     _refreshTimer?.cancel();
     super.dispose();
   }
+
   Future<void> _fetchCctvAlertData() async {
     final now = DateTime.now();
     final todayDate = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
@@ -92,11 +94,13 @@ class _CctvMiniViewState extends State<CctvMiniView> {
       }
 
       setState(() {
-        cam1Spots = cam1;
-        cam2Spots = cam2;
+        cam1Spots = List<FlSpot>.from(cam1); // 👈 강제 갱신용 복제
+        cam2Spots = List<FlSpot>.from(cam2);
         cam1Avg = cam1Cnt > 0 ? (cam1Sum / cam1Cnt) : 0.0;
         cam2Avg = cam2Cnt > 0 ? (cam2Sum / cam2Cnt) : 0.0;
         today = todayDate;
+        _lastUpdatedTime = DateFormat('HH:mm:ss').format(DateTime.now());
+        print('cctv 모션 값 재갱신 :${_lastUpdatedTime}');
       });
     } catch (e) {
       print("❌ CCTV 알람 로딩 실패: $e");
