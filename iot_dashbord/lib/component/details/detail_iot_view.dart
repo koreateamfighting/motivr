@@ -104,6 +104,7 @@ class _DetailIotViewState extends State<DetailIotView> {
 
     final prev = editedItems[indexKey] ?? original;
 
+    // ✨ 필드 업데이트
     final updated = prev.copyWith(
       label: field == 'label' ? value : prev.label,
       latitude: field == 'latitude' ? value : prev.latitude,
@@ -116,13 +117,37 @@ class _DetailIotViewState extends State<DetailIotView> {
       X_Deg: field == 'x_deg' ? value : prev.X_Deg,
       Y_Deg: field == 'y_deg' ? value : prev.Y_Deg,
       Z_Deg: field == 'z_deg' ? value : prev.Z_Deg,
-      eventtype: field == 'eventtype' ? value : prev.eventtype,
+      eventtype: field == 'eventtype' ? value : prev.eventtype, // 수동 변경 시는 유지
     );
 
-    editedItems[indexKey] = updated;
+    // ✨ 각도 기반 eventtype 자동 판단 (GPS 장비 제외)
+    double toDouble(String? v) => double.tryParse(v ?? '') ?? 0;
+    final x = toDouble(fieldControllers['${indexKey}_x_deg']?.text);
+    final y = toDouble(fieldControllers['${indexKey}_y_deg']?.text);
+    final z = toDouble(fieldControllers['${indexKey}_z_deg']?.text);
 
-    debugPrint('✅ [onFieldChanged] 수정 저장됨: field=$field, updated=${updated.toJson()}');
+    String autoEventType = prev.eventtype;
+
+    final isGPS = prev.sensortype.toLowerCase() == 'gps';
+    if (!isGPS) {
+      if (x.abs() >= 5 || y.abs() >= 5 || z.abs() >= 5) {
+        autoEventType = '68'; // 경고
+      } else if (x.abs() >= 3 || y.abs() >= 3 || z.abs() >= 3) {
+        autoEventType = '67'; // 주의
+      } else {
+        autoEventType = '2'; // 정상
+      }
+    } else {
+      autoEventType = '5'; // GPS 장비는 항상 5
+    }
+
+    final autoUpdated = updated.copyWith(eventtype: autoEventType);
+    editedItems[indexKey] = autoUpdated;
+    eventTypeValues[indexKey] = autoEventType;
+
+    debugPrint('✅ [onFieldChanged] 수정 저장됨: field=$field, updated=${autoUpdated.toJson()}');
   }
+
 
 
   Future<void> _saveChanges() async {
@@ -603,44 +628,44 @@ class _DetailIotViewState extends State<DetailIotView> {
                               columns: [
 
                                 GridColumn(columnName: 'id',
-                                    width: 120.w,
+                                    width: 195.w,
                                     label: buildHeader('ID')),
                                 GridColumn(columnName: 'label',
-                                    width: isEditing? 315.w:120.w,
+                                    width: isEditing? 315.w:230.w,
                                     label: buildHeader('라벨명')),
                                 GridColumn(columnName: 'type',
                                     width: 120.w,
                                     label: buildHeader('유형')),
                                 GridColumn(columnName: 'location',
-                                    width: 250.w,
+                                    width: 285.w,
                                     label: buildHeader('설치 위치')),
                                 GridColumn(columnName: 'status',
                                     width: 160.w,
                                     label: buildHeader('상태')),
                                 GridColumn(columnName: 'battery',
-                                    width: 160.w,
+                                    width: 140.w,
                                     label: buildHeader('배터리')),
                                 GridColumn(columnName: 'lastUpdated',
                                     width: 320.w,
                                     label: buildHeader('마지막 수신')),
                                 GridColumn(
                                   columnName: isDegree ? 'x_deg' : 'x_mm',
-                                  width: 180.w,
+                                  width: 150.w,
                                   label: buildHeader(isDegree ? 'X(°)' : 'X(mm)'),
                                 ),
                                 GridColumn(
                                   columnName: isDegree ? 'y_deg' : 'y_mm',
-                                  width: 180.w,
+                                  width: 150.w,
                                   label: buildHeader(isDegree ? 'Y(°)' : 'Y(mm)'),
                                 ),
                                 GridColumn(
                                   columnName: isDegree ? 'z_deg' : 'z_mm',
-                                  width: 180.w,
+                                  width: 150.w,
                                   label: buildHeader(isDegree ? 'Z(°)' : 'Z(mm)'),
                                 ),
 
                                 GridColumn(columnName: 'batteryInfo',
-                                    width: 200.w,
+                                    width: 170.w,
                                     label: buildHeader('배터리 정보')),
                                 GridColumn(
                                   columnName: 'indexKey',
@@ -653,8 +678,8 @@ class _DetailIotViewState extends State<DetailIotView> {
                                   label: buildHeader('삭제'),
                                 ):
                                 GridColumn(columnName: 'download',
-                                    width: 342.w,
-                                    label: buildHeader('데이터 다운로드')),
+                                    width: 242.w,
+                                    label: buildHeader('엑셀 다운로드')),
                               ],
                             ),
                           ),

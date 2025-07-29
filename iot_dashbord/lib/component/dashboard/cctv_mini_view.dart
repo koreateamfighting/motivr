@@ -6,6 +6,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:iot_dashboard/services/webrtc_player.dart';
 import 'dart:async';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
 
 class CctvMiniView extends StatefulWidget {
   const CctvMiniView({super.key});
@@ -16,12 +20,25 @@ class CctvMiniView extends StatefulWidget {
 
 class _CctvMiniViewState extends State<CctvMiniView> {
   Timer? _refreshTimer;
-
+  List<FlSpot> cam1Spots = [];
+  List<FlSpot> cam2Spots = [];
+  double cam1Avg = 0;
+  double cam2Avg = 0;
+  String today = '';
+  final List<String> _minuteLabels = List.generate(
+    1440,
+        (i) {
+      final h = (i ~/ 60).toString().padLeft(2, '0');
+      final m = (i % 60).toString().padLeft(2, '0');
+      return '$h:$m';
+    },
+  );
   @override
   void initState() {
     super.initState();
+    _fetchCctvAlertData(); // 최초 실행
     _refreshTimer = Timer.periodic(Duration(minutes: 1), (_) {
-      if (mounted) setState(() {});
+      _fetchCctvAlertData(); // 1분마다 호출
     });
   }
 
@@ -29,6 +46,87 @@ class _CctvMiniViewState extends State<CctvMiniView> {
   void dispose() {
     _refreshTimer?.cancel();
     super.dispose();
+  }
+  Future<void> _fetchCctvAlertData() async {
+    final now = DateTime.now();
+    final todayDate = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+
+    try {
+      final response = await http.get(Uri.parse('https://hanlimtwin.kr:3030/api/alarmhistory/cctv/alert'));
+      if (response.statusCode != 200) return;
+
+      final data = jsonDecode(response.body)['data'];
+      final cam1Map = _initializeDayMap();
+      final cam2Map = _initializeDayMap();
+
+      for (var item in data) {
+        final deviceId = item['DeviceID'];
+        final event = item['Event'];
+        final timestamp = DateTime.parse(item['Timestamp']);
+        final key = '${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}';
+        final value = event == '주의' ? 1.0 : (event == '경고' ? 2.0 : 0.0);
+
+        if (deviceId == 'cam1') cam1Map[key] = value;
+        if (deviceId == 'cam2') cam2Map[key] = value;
+      }
+
+      List<FlSpot> cam1 = [], cam2 = [];
+      double cam1Sum = 0, cam2Sum = 0;
+      int cam1Cnt = 0, cam2Cnt = 0;
+      final nowKeySet = _getRecent10MinKeys();
+
+      int i = 0;
+      for (var key in cam1Map.keys) {
+        final y1 = cam1Map[key]!;
+        final y2 = cam2Map[key]!;
+        cam1.add(FlSpot(i.toDouble(), y1));
+        cam2.add(FlSpot(i.toDouble(), y2));
+
+        if (nowKeySet.contains(key)) {
+          cam1Sum += y1;
+          cam2Sum += y2;
+          cam1Cnt += 1;
+          cam2Cnt += 1;
+        }
+        i++;
+      }
+
+      setState(() {
+        cam1Spots = cam1;
+        cam2Spots = cam2;
+        cam1Avg = cam1Cnt > 0 ? (cam1Sum / cam1Cnt) : 0.0;
+        cam2Avg = cam2Cnt > 0 ? (cam2Sum / cam2Cnt) : 0.0;
+        today = todayDate;
+      });
+    } catch (e) {
+      print("❌ CCTV 알람 로딩 실패: $e");
+    }
+  }
+
+  Map<String, double> _initializeDayMap() {
+    final map = <String, double>{};
+    final now = DateTime.now();
+    final currentMinutes = now.hour * 60 + now.minute;
+
+    for (int i = 0; i <= currentMinutes; i++) {
+      final dt = DateTime(0).add(Duration(minutes: i));
+      final key = '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+      map[key] = 0.0;
+    }
+
+    return map;
+  }
+
+
+  Set<String> _getRecent10MinKeys() {
+    final now = DateTime.now();
+    final keys = <String>{};
+    for (int i = 0; i < 10; i++) {
+      final dt = now.subtract(Duration(minutes: i));
+      final key = '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+      keys.add(key);
+    }
+    return keys;
   }
 
   @override
@@ -151,18 +249,26 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                               gridData: FlGridData(show: false),
                               titlesData: FlTitlesData(show: false),
                               borderData: FlBorderData(show: false),
+                              lineTouchData: LineTouchData(
+                                touchTooltipData: LineTouchTooltipData(
+                                  getTooltipItems: (touchedSpots) {
+                                    return touchedSpots.map((spot) {
+                                      final time = _minuteLabels[spot.x.toInt()];
+                                      final value = spot.y.toStringAsFixed(1);
+                                      return LineTooltipItem(
+                                        '$time\n$value',
+                                        const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                        ),
+                                      );
+                                    }).toList();
+                                  },
+                                ),
+                              ),
                               lineBarsData: [
                                 LineChartBarData(
-                                  spots: [
-                                    FlSpot(0, -2),
-                                    FlSpot(1, -1),
-                                    FlSpot(2, 0),
-                                    FlSpot(3, 2.5),
-                                    FlSpot(4, 3),
-                                    FlSpot(5, 1),
-                                    FlSpot(6, 0.5),
-                                    FlSpot(7, -1.5),
-                                  ],
+                                  spots: cam1Spots,
                                   isCurved: true,
                                   color: Colors.blue,
                                   barWidth: 2,
@@ -181,7 +287,8 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                                 ),
                               ],
                             ),
-                          ),
+                          )
+
                         ),
                       ),
                       Row(
@@ -203,7 +310,7 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                                 ),
                               ),
                               Text(
-                                '2025-05-23',
+                                today,
                                 style: GoogleFonts.inter(
                                   color: Color(0xff939699),
                                   fontSize: 12.sp,
@@ -214,52 +321,52 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                                 height: 10.h,
                               ),
                               Text(
-                                '1.1921',
+                                '${cam1Avg.toStringAsFixed(2)}',
                                 style: GoogleFonts.inter(
                                   color: Color(0xff262d33),
                                   fontSize: 30.sp,
                                   fontWeight: FontWeight.w400,
                                 ),
                               ),
-                              Text(
-                                '+0.0015 (+0.13%)',
-                                style: GoogleFonts.inter(
-                                  color: Color(0xff4b5157),
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
+                              // Text(
+                              //   '+0.0015 (+0.13%)',
+                              //   style: GoogleFonts.inter(
+                              //     color: Color(0xff4b5157),
+                              //     fontSize: 14.sp,
+                              //     fontWeight: FontWeight.w400,
+                              //   ),
+                              // ),
                               SizedBox(
                                 height: 15.h,
                               ),
-                              Text(
-                                '0.00 USD',
-                                style: GoogleFonts.inter(
-                                  color: Color(0xff4b5157),
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
+                              // Text(
+                              //   '0.00 USD',
+                              //   style: GoogleFonts.inter(
+                              //     color: Color(0xff4b5157),
+                              //     fontSize: 12.sp,
+                              //     fontWeight: FontWeight.w400,
+                              //   ),
+                              // ),
                             ],
                           )
                         ],
                       ),
-                      Positioned.fill(
-                        child: Container(
-                          color: Colors.black.withOpacity(0.8),
-                          // 회색 배경, 불투명도 30%
-                          alignment: Alignment.center,
-                          child: Text(
-                            '점검중입니다',
-                            style: TextStyle(
-                              fontSize: 30.sp,
-                              fontFamily: 'PretendardGOV',
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xff3185ce),
-                            ),
-                          ),
-                        ),
-                      ),
+                      // Positioned.fill(
+                      //   child: Container(
+                      //     color: Colors.black.withOpacity(0.8),
+                      //     // 회색 배경, 불투명도 30%
+                      //     alignment: Alignment.center,
+                      //     child: Text(
+                      //       '점검중입니다',
+                      //       style: TextStyle(
+                      //         fontSize: 30.sp,
+                      //         fontFamily: 'PretendardGOV',
+                      //         fontWeight: FontWeight.w700,
+                      //         color: Color(0xff3185ce),
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
                     ],
                   )),
             ],
@@ -335,18 +442,26 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                             gridData: FlGridData(show: false),
                             titlesData: FlTitlesData(show: false),
                             borderData: FlBorderData(show: false),
+                            lineTouchData: LineTouchData(
+                              touchTooltipData: LineTouchTooltipData(
+                                getTooltipItems: (touchedSpots) {
+                                  return touchedSpots.map((spot) {
+                                    final time = _minuteLabels[spot.x.toInt()];
+                                    final value = spot.y.toStringAsFixed(1);
+                                    return LineTooltipItem(
+                                      '$time\n$value',
+                                      const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                      ),
+                                    );
+                                  }).toList();
+                                },
+                              ),
+                            ),
                             lineBarsData: [
                               LineChartBarData(
-                                spots: [
-                                  FlSpot(0, -2),
-                                  FlSpot(1, -1),
-                                  FlSpot(2, 0),
-                                  FlSpot(3, 2.5),
-                                  FlSpot(4, 3),
-                                  FlSpot(5, 1),
-                                  FlSpot(6, 0.5),
-                                  FlSpot(7, -1.5),
-                                ],
+                                spots: cam2Spots,
                                 isCurved: true,
                                 color: Colors.red,
                                 barWidth: 2,
@@ -365,7 +480,8 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                               ),
                             ],
                           ),
-                        ),
+                        )
+                        ,
                       ),
                     ),
                     Row(
@@ -387,7 +503,7 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                               ),
                             ),
                             Text(
-                              '2025-05-23',
+                              today,
                               style: GoogleFonts.inter(
                                 color: Color(0xff939699),
                                 fontSize: 12.sp,
@@ -398,51 +514,51 @@ class _CctvMiniViewState extends State<CctvMiniView> {
                               height: 10.h,
                             ),
                             Text(
-                              '1.1763',
+                              '${cam2Avg.toStringAsFixed(2)}',
                               style: GoogleFonts.inter(
                                 color: Color(0xff262d33),
                                 fontSize: 30.sp,
                                 fontWeight: FontWeight.w400,
                               ),
                             ),
-                            Text(
-                              '+0.0015 (+0.13%)',
-                              style: GoogleFonts.inter(
-                                color: Color(0xff4b5157),
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                            SizedBox(
-                              height: 15.h,
-                            ),
-                            Text(
-                              '기준치',
-                              style: GoogleFonts.inter(
-                                color: Color(0xff4b5157),
-                                fontSize: 12.sp,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
+                            // Text(
+                            //   '+0.0015 (+0.13%)',
+                            //   style: GoogleFonts.inter(
+                            //     color: Color(0xff4b5157),
+                            //     fontSize: 14.sp,
+                            //     fontWeight: FontWeight.w400,
+                            //   ),
+                            // ),
+                            // SizedBox(
+                            //   height: 15.h,
+                            // ),
+                            // Text(
+                            //   '기준치',
+                            //   style: GoogleFonts.inter(
+                            //     color: Color(0xff4b5157),
+                            //     fontSize: 12.sp,
+                            //     fontWeight: FontWeight.w400,
+                            //   ),
+                            //),
                           ],
                         )
                       ],
                     ),
-                    Positioned.fill(
-                      child: Container(
-                        color: Colors.black.withOpacity(0.8), // 회색 배경, 불투명도 30%
-                        alignment: Alignment.center,
-                        child: Text(
-                          '점검중입니다',
-                          style: TextStyle(
-                            fontSize: 30.sp,
-                            fontFamily: 'PretendardGOV',
-                            fontWeight: FontWeight.w700,
-                            color: Colors.red,
-                          ),
-                        ),
-                      ),
-                    ),
+                    // Positioned.fill(
+                    //   child: Container(
+                    //     color: Colors.black.withOpacity(0.8), // 회색 배경, 불투명도 30%
+                    //     alignment: Alignment.center,
+                    //     child: Text(
+                    //       '점검중입니다',
+                    //       style: TextStyle(
+                    //         fontSize: 30.sp,
+                    //         fontFamily: 'PretendardGOV',
+                    //         fontWeight: FontWeight.w700,
+                    //         color: Colors.red,
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                 ),
               )),

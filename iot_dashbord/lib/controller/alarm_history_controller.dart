@@ -226,6 +226,27 @@ class AlarmHistoryController {
     }
   }
 
+// ✅ 오늘 날짜의 CCTV 주의/경고 알람 조회
+  static Future<List<AlarmHistory>> fetchTodayCctvAlerts() async {
+    final url = Uri.parse('$baseUrl/alarmhistory/cctv/alert');
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        final List<dynamic> records = decoded['data'];
+        return records.map((e) => AlarmHistory.fromJson(e)).toList();
+      } else {
+        print('⚠️ CCTV 알람 조회 실패: ${response.body}');
+        return [];
+      }
+    } catch (e) {
+      print('❌ CCTV 알람 조회 예외 발생: $e');
+      return [];
+    }
+  }
+
 
 
 

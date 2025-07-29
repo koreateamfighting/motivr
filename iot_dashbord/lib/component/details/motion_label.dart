@@ -13,7 +13,7 @@ class MotionLabelPanel extends StatefulWidget {
 }
 
 class _MotionLabelPanelState extends State<MotionLabelPanel> {
-  Map<String, bool> labels = {};
+  Map<String, String> labels = {}; // ✅ 수정
   Timer? _timer;
 
   @override
@@ -24,13 +24,13 @@ class _MotionLabelPanelState extends State<MotionLabelPanel> {
 
   void _startPolling() {
     _timer = Timer.periodic(Duration(milliseconds: 500), (_) async {
-      final url = Uri.parse('https://hanlimtwin.kr:5001/motion_status/${widget.camId}');
+      final url = Uri.parse('https://hanlimtwin.kr:5002/motion_status/${widget.camId}');
       try {
         final response = await http.get(url);
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
           setState(() {
-            labels = Map<String, bool>.from(data['lines'] ?? {});
+            labels = Map<String, String>.from(data['lines'] ?? {}); // ✅ 수정
           });
         }
       } catch (e) {
@@ -62,13 +62,19 @@ class _MotionLabelPanelState extends State<MotionLabelPanel> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 120.w,  // 원하는 너비로 조절
-                  height: 14.h, // 기존 동그라미 높이 유지
+                  width: 120.w,
+                  height: 14.h,
                   decoration: BoxDecoration(
-                    color: entry.value ? Colors.green : Colors.grey,
+                    color: () {
+                      final status = entry.value;
+                      if (status == 'red') return Colors.red;
+                      if (status == 'green') return Colors.green;
+                      return Colors.grey;
+                    }(),
                     borderRadius: BorderRadius.circular(4.r),
                   ),
                 ),
+
 
                 SizedBox(width: 16.w),
                 Text(entry.key,

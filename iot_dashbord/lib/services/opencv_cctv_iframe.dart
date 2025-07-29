@@ -39,7 +39,7 @@ class _OpencvCctvIframeState extends State<OpencvCctvIframe> {
 
   void _updateImage() {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final newUrl = 'https://hanlimtwin.kr:5001/stream/${widget.cam}?t=$timestamp';
+    final newUrl = 'https://hanlimtwin.kr:5002/stream/${widget.cam}?t=$timestamp';
     _imgElement.src = newUrl;
   }
 
