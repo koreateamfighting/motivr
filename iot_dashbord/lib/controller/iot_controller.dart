@@ -5,13 +5,12 @@ import 'package:iot_dashboard/model/iot_model.dart';
 import 'package:iot_dashboard/component/timeseries/graph_view.dart';
 import 'package:intl/intl.dart';
 import 'dart:html' as html; // Flutter Web 전용
-
+import 'package:iot_dashboard/constants/global_constants.dart';
 class IotController extends ChangeNotifier {
 
 
 
-  // 🔧 BASE URL 분리
-  static const String _baseUrl = 'https://hanlimtwin.kr:3030/api';
+
 
   final List<IotItem> _items = [];
   int normal = 0, caution = 0, danger = 0, inspection = 0, total = 0;
@@ -76,7 +75,7 @@ class IotController extends ChangeNotifier {
     final formattedStartDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(startDate);
     final formattedEndDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(endDate);
 
-    final uri = Uri.parse('$_baseUrl/sensor-data-by-period?startDate=$formattedStartDate&endDate=$formattedEndDate');
+    final uri = Uri.parse('$baseUrl3030/sensor-data-by-period?startDate=$formattedStartDate&endDate=$formattedEndDate');
     debugPrint('📡 기간 선택 센서 데이터 조회 시작: $uri');
 
     try {
@@ -145,7 +144,7 @@ class IotController extends ChangeNotifier {
 
   // ✅ 전체 센서 데이터 조회 (limit 기본 500)
   Future<void> fetchAllSensorData({int limit = 1000}) async {
-    final uri = Uri.parse('$_baseUrl/sensor-data?limit=$limit');
+    final uri = Uri.parse('$baseUrl3030/sensor-data?limit=$limit');
     debugPrint('📡 전체 센서 데이터 조회 시작: $uri');
 
     try {
@@ -170,7 +169,7 @@ class IotController extends ChangeNotifier {
 
   // ✅ 센서 데이터 수동 제출
   Future<bool> submitIotItem(IotItem item) async {
-    final uri = Uri.parse('$_baseUrl/sensor');
+    final uri = Uri.parse('$baseUrl3030/sensor');
     final headers = {'Content-Type': 'application/json'};
     final body = jsonEncode(item.toJson());
 
@@ -199,7 +198,7 @@ class IotController extends ChangeNotifier {
 
   // ✅ 수정 (PUT)
   Future<bool> updateIotItem(IotItem item) async {
-    final uri = Uri.parse('$_baseUrl/sensor');
+    final uri = Uri.parse('$baseUrl3030/sensor');
     final headers = {'Content-Type': 'application/json'};
     final body = jsonEncode(item.toJson());
 
@@ -219,7 +218,7 @@ class IotController extends ChangeNotifier {
 
   // ✅ 삭제 (POST /sensor/delete)
   Future<bool> deleteIotItemByIndexKey(String indexKey) async {
-    final uri = Uri.parse('$_baseUrl/sensor/delete');
+    final uri = Uri.parse('$baseUrl3030/sensor/delete');
     final headers = {'Content-Type': 'application/json'};
 
     final body = jsonEncode({'indexKey': indexKey});
@@ -237,7 +236,7 @@ class IotController extends ChangeNotifier {
 
   //rid의 개수 파악
   Future<int?> fetchRidCount() async {
-    final uri = Uri.parse('$_baseUrl/rid-count');
+    final uri = Uri.parse('$baseUrl3030/rid-count');
     debugPrint('📡 RID 개수 조회 시작: $uri');
 
     try {
@@ -262,7 +261,7 @@ class IotController extends ChangeNotifier {
   bool hasError = false;
 
   Future<void> fetchSensorStatusSummary() async {
-    final uri = Uri.parse('$_baseUrl/sensor-status-summary');
+    final uri = Uri.parse('$baseUrl3030/sensor-status-summary');
     debugPrint('[IotController] ▶️ fetchSensorStatusSummary 호출: $uri');
 
     isLoading = true;
@@ -311,7 +310,7 @@ class IotController extends ChangeNotifier {
 
 
   Future<void> fetchRecentSensorData({int days = 1}) async {
-    final uri = Uri.parse('$_baseUrl/recent-sensor-data?days=$days');
+    final uri = Uri.parse('$baseUrl3030/recent-sensor-data?days=$days');
     debugPrint('📡 최근 센서 데이터 조회 시작: $uri');
 
     try {
@@ -355,7 +354,7 @@ class IotController extends ChangeNotifier {
     final formattedEnd = DateFormat('yyyy-MM-dd HH:mm:ss').format(endDate);
     final rids = ridList.join(',');
 
-    final url = '$_baseUrl/download-excel?startDate=$formattedStart&endDate=$formattedEnd&rids=$rids';
+    final url = '$baseUrl3030/download-excel?startDate=$formattedStart&endDate=$formattedEnd&rids=$rids';
 
     try {
       // ✅ 웹 다운로드: <a href="url" download> 트리거
@@ -372,7 +371,7 @@ class IotController extends ChangeNotifier {
 
   Future<void> downloadExcelByRid(String rid) async {
     final encodedRid = Uri.encodeComponent(rid);
-    final url = '$_baseUrl/download-excel-rid-only?rid=$encodedRid';
+    final url = '$baseUrl3030/download-excel-rid-only?rid=$encodedRid';
 
     try {
       final anchor = html.AnchorElement(href: url)

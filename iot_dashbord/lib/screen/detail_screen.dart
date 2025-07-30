@@ -15,7 +15,7 @@ class DetailScreen extends StatefulWidget {
 }
 
 class _DetailScreenState extends State<DetailScreen> {
-  int selectedTab = 0; // 0 = IoT, 1 = CCTV
+  int selectedTab = 1; // 0 = IoT, 1 = CCTV
 
   @override
   Widget build(BuildContext context) {

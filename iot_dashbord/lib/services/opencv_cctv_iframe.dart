@@ -2,7 +2,7 @@ import 'dart:html' as html;
 import 'dart:ui' as ui;
 import 'dart:async';
 import 'package:flutter/material.dart';
-
+import 'package:iot_dashboard/constants/global_constants.dart';
 class OpencvCctvIframe extends StatefulWidget {
   final String cam;
   const OpencvCctvIframe({super.key, this.cam = 'cam1'});
@@ -39,7 +39,7 @@ class _OpencvCctvIframeState extends State<OpencvCctvIframe> {
 
   void _updateImage() {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final newUrl = 'https://hanlimtwin.kr:5002/stream/${widget.cam}?t=$timestamp';
+    final newUrl = '$baseUrl5002/stream/${widget.cam}?t=$timestamp';
     _imgElement.src = newUrl;
   }
 

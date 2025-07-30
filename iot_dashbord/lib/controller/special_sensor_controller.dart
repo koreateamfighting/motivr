@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:iot_dashboard/model/special_sensor_model.dart';
-
+import 'package:iot_dashboard/constants/global_constants.dart';
 class SpecialSensorController {
-  static const String baseUrl = 'https://hanlimtwin.kr:3030/api';
+
 
   static Future<bool> upsertSensorData(SpecialSensorData data) async {
-    final url = Uri.parse('$baseUrl/specialsensor');
+    final url = Uri.parse('$baseUrl3030/specialsensor');
     final body = json.encode(data.toJson());
 
     try {

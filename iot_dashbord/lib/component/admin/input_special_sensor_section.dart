@@ -280,7 +280,7 @@ class _InputSpecialSensorSectionSectionState
         builder: (context) => DialogForm(
           mainText: '저장 중 오류가 발생했습니다.\n서버 상태를 확인하세요.',
           btnText: '닫기',
-          fontSize: 20,
+          fontSize: 16,
         ),
       );
     }

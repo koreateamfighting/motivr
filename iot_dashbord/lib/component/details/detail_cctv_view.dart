@@ -8,6 +8,12 @@ import 'package:iot_dashboard/component/details/cctv_table_list.dart';
 import 'package:iot_dashboard/model/cctv_model.dart';
 import 'package:iot_dashboard/services/hls_player_iframe.dart';
 import 'package:iot_dashboard/component/details/motion_label.dart';
+import 'package:url_launcher/link.dart';
+import 'package:iot_dashboard/controller/alarm_history_controller.dart';
+import 'package:iot_dashboard/utils/auth_service.dart';
+import 'package:iot_dashboard/component/common/dialog_form.dart';
+import 'package:iot_dashboard/component/common/dialog_form2.dart';
+import 'package:iot_dashboard/utils/iframe_visibility.dart';
 
 class DetailCctvView extends StatefulWidget {
   const DetailCctvView({super.key});
@@ -141,35 +147,35 @@ class _DetailCctvViewState extends State<DetailCctvView> {
                                           SizedBox(
                                             width: 54.w,
                                           ),
-                                          _headerCell('ID', 179, 60),
+                                          _headerCell('ID', 120, 60),
                                           SizedBox(
                                             width: 54.w,
                                           ),
-                                          _headerCell('설치 위치', 163.4, 60),
+                                          _headerCell('설치 위치', 140.4, 60),
                                           SizedBox(
-                                            width: 101.6.w,
+                                            width: 80.6.w,
                                           ),
-                                          _headerCell('연결', 100, 60),
+                                          _headerCell('연결', 80, 60),
                                           SizedBox(
                                             width: 73.w,
                                           ),
                                           _headerCell('이벤트', 100, 60),
                                           SizedBox(
-                                            width: 93.w,
+                                            width: 70.w,
                                           ),
                                           _headerCell('이미지 분석', 200, 60),
                                           SizedBox(
-                                            width: 112.w,
+                                            width: 60.w,
                                           ),
                                           _headerCell('주소', 199, 60),
                                           SizedBox(
-                                            width: 565.w,
+                                            width: 660.w,
                                           ),
-                                          _headerCell('마지막 계측', 240.6, 60),
+                                          _headerCell('마지막 계측', 290.6, 60),
                                           SizedBox(
-                                            width: 297.4.w,
+                                            width: 247.4.w,
                                           ),
-                                          _headerCell('다운로드', 163.4, 60),
+                                          _headerCell('엑셀 다운로드', 207.4, 60),
                                         ],
                                       ),
                                     ),
@@ -208,11 +214,11 @@ class _DetailCctvViewState extends State<DetailCctvView> {
                                                   return Row(
                                                     children: [
                                                       SizedBox(
-                                                        width: 54.w,
+                                                        width: 16.w,
                                                       ),
                                                       _cell(
                                                         selected.camId,
-                                                        w: 180,
+                                                        w: 120,
                                                       ),
                                                       SizedBox(
                                                         width: 20.w,
@@ -248,7 +254,7 @@ class _DetailCctvViewState extends State<DetailCctvView> {
                                                         ),
                                                       ),
                                                       SizedBox(
-                                                        width: 123.w,
+                                                        width: 103.w,
                                                       ),
                                                       Container(
                                                           width: 140.w,
@@ -274,18 +280,20 @@ class _DetailCctvViewState extends State<DetailCctvView> {
                                                             ),
                                                           )),
                                                       SizedBox(
-                                                        width: 100.w,
+                                                        width: 40.w,
                                                       ),
                                                       // if(selected.eventState =="정상")
                                                       _cell(
                                                           '${selected.imageAnalysis.toStringAsFixed(2)} 정상',
                                                           w: 200),
                                                       SizedBox(
-                                                        width: 123.w,
+                                                        width: 83.w,
                                                       ),
                                                       _cell(
                                                         selected.streamUrl,
-                                                        w: 600,
+                                                        w: 700,
+                                                        fontSize: 36.sp,
+                                                        isLink: true
                                                       ),
                                                       SizedBox(
                                                         width: 140.w,
@@ -295,45 +303,69 @@ class _DetailCctvViewState extends State<DetailCctvView> {
                                                         '${selected.lastRecorded.hour.toString().padLeft(2, '0')}:${selected.lastRecorded.minute.toString().padLeft(2, '0')}',
                                                         w: 500,
                                                       ),
+
                                                       Container(
-                                                        width: 149.61.w,
+                                                        width: 310.61.w,
                                                         height: 55.08.h,
-                                                        alignment:
-                                                            Alignment.center,
+                                                        alignment: Alignment.center,
                                                         child: TextButton(
-                                                          onPressed: () {
-                                                            // TODO: implement download logic
-                                                          },
-                                                          style: TextButton
-                                                              .styleFrom(
-                                                                  backgroundColor:
-                                                                      const Color(
-                                                                          0xff2196f3),
-                                                                  padding: EdgeInsets.symmetric(
-                                                                      horizontal:
-                                                                          24.w,
-                                                                      vertical:
-                                                                          10.h),
-                                                                  shape:
-                                                                      RoundedRectangleBorder(
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                            5.r), // ✅ 여기서 radius 지정
-                                                                  )),
+                                                          onPressed: selectedCamId != null
+                                                              ? () async {
+                                                            final isAuthorized =
+                                                                AuthService.isRoot() || AuthService.isStaff(); // 권한 확인
+                                                            if (!isAuthorized) {
+                                                              await showDialog(
+                                                                context: context,
+                                                                barrierDismissible: false,
+                                                                builder: (_) => const DialogForm(
+                                                                  mainText: '권한이 없습니다.',
+                                                                  btnText: '확인',
+                                                                ),
+                                                              );
+                                                              return;
+                                                            }
+
+                                                            // ✅ iframe 숨기기
+                                                            hideIframes();
+
+                                                            await showDialog(
+                                                              context: context,
+                                                              barrierDismissible: false,
+                                                              builder: (_) => DialogForm2(
+                                                                mainText: "$selectedCamId의 엑셀 파일을 다운로드 하시겠습니까?",
+                                                                btnText1: "취소",
+                                                                btnText2: "확인",
+                                                                onConfirm: () {
+                                                                  AlarmHistoryController.downloadCctvLogExcel(selectedCamId!);
+                                                                },
+                                                              ),
+                                                            );
+
+                                                            // ✅ iframe 다시 보이기
+                                                            showIframes();
+                                                          }
+                                                              : null,
+
+
+                                                          style: TextButton.styleFrom(
+                                                            backgroundColor: const Color(0xff2196f3),
+                                                            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 10.h),
+                                                            shape: RoundedRectangleBorder(
+                                                              borderRadius: BorderRadius.circular(5.r),
+                                                            ),
+                                                          ),
                                                           child: Text(
-                                                            '다운로드',
+                                                            '다운로드 (최근7일 데이터)',
                                                             style: TextStyle(
-                                                                color: Colors
-                                                                    .white,
-                                                                fontSize: 24.sp,
-                                                                fontFamily:
-                                                                    'PretendardGOV',
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w500),
+                                                              color: Colors.white,
+                                                              fontSize: 24.sp,
+                                                              fontFamily: 'PretendardGOV',
+                                                              fontWeight: FontWeight.w500,
+                                                            ),
                                                           ),
                                                         ),
-                                                      ),
+                                                      )
+
                                                     ],
                                                   );
                                                 },
@@ -343,83 +375,89 @@ class _DetailCctvViewState extends State<DetailCctvView> {
                                   ],
                                 ),
                               ),
-                              SizedBox(height: 25.h),
-                              Row(
+                              SizedBox(height: 75.h),
+                              Column(
                                 children: [
-                                  Container(
-                                    width: 1920.w,
-                                    height: 1080.h,
-                                    color: Colors.black,
-                                    child: selectedCamId != null
-                                        ? HlsPlayerIframe(
-                                            key: ValueKey(
-                                                selectedCamId), // 이거 중요
-                                            cam: selectedCamId!,
-                                          )
-                                        : const SizedBox.shrink(),
-                                  ),
-                                  SizedBox(width: 56.w),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.start,
+                                  SizedBox(height: 24.h,),
+                                  Row(
                                     children: [
-                                      SizedBox(height: 50.h),
                                       Container(
-                                        width: 800.81.w,
-                                        height: 618.h,
-                                        decoration: BoxDecoration(
-                                          color: Color(0xff1b254b),
-                                          border: Border.all(
-                                            color: Colors.white,
-                                            width: 1.w,
-                                          ),
-                                          borderRadius: BorderRadius.circular(5.r),
-                                        ),
+                                        width: 1935.w,
+                                        height: 1130.h,
+                                        color: Colors.black,
                                         child: selectedCamId != null
-                                            ? MotionLabelPanel(camId: selectedCamId!)
-                                            : Center(
-                                          child: Text(
-                                            '카메라를 선택하세요',
-                                            style: TextStyle(
-                                              fontSize: 28.sp,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-
-                                      SizedBox(height: 24.h),
-                                      Container(
-                                        width: 800.81.w,
-                                        height: 480.h,
-                                        decoration: BoxDecoration(
-                                          //color: Color(0xff111c44),
-                                          color: Color(0xff1b254b),
-                                          border: Border.all(
-                                            color: Colors.white,
-                                            width: 1.w,
-                                          ),
-                                          borderRadius:
-                                          BorderRadius.circular(5.r),
-                                          // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
-                                        ),
-                                        child: selectedCamId != null && selectedCamId!.isNotEmpty
-                                            ? OpencvCctvIframe(
-                                          key: ValueKey(selectedCamId), // 이거 중요함
+                                            ? HlsPlayerIframe(
+                                          key: ValueKey(
+                                              selectedCamId), // 이거 중요
                                           cam: selectedCamId!,
                                         )
-                                            : const Center(
-                                          child: CircularProgressIndicator(
-                                              color: Color(0xff3182ce)
-                                          ),
-                                        ),
+                                            : const SizedBox.shrink(),
                                       ),
+                                      SizedBox(width: 56.w),
+                                      Column(
+                                        crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        children: [
+                                          SizedBox(height: 8.h),
+                                          Container(
+                                            width: 800.81.w,
+                                            height: 618.h,
+                                            decoration: BoxDecoration(
+                                              color: Color(0xff1b254b),
+                                              border: Border.all(
+                                                color: Colors.white,
+                                                width: 1.w,
+                                              ),
+                                              borderRadius: BorderRadius.circular(5.r),
+                                            ),
+                                            child: selectedCamId != null
+                                                ? MotionLabelPanel(camId: selectedCamId!)
+                                                : Center(
+                                              child: Text(
+                                                '카메라를 선택하세요',
+                                                style: TextStyle(
+                                                  fontSize: 28.sp,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
 
+                                          SizedBox(height: 24.h),
+                                          Container(
+                                            width: 800.81.w,
+                                            height: 480.h,
+                                            decoration: BoxDecoration(
+                                              //color: Color(0xff111c44),
+                                              color: Color(0xff1b254b),
+                                              border: Border.all(
+                                                color: Colors.white,
+                                                width: 1.w,
+                                              ),
+                                              borderRadius:
+                                              BorderRadius.circular(5.r),
+                                              // child: 이후 실제 위젯 들어갈 수 있도록 구성해둠
+                                            ),
+                                            child: selectedCamId != null && selectedCamId!.isNotEmpty
+                                                ? OpencvCctvIframe(
+                                              key: ValueKey(selectedCamId), // 이거 중요함
+                                              cam: selectedCamId!,
+                                            )
+                                                : const Center(
+                                              child: CircularProgressIndicator(
+                                                  color: Color(0xff3182ce)
+                                              ),
+                                            ),
+                                          ),
+
+                                        ],
+                                      )
                                     ],
                                   )
                                 ],
                               )
+
                             ],
                           ),
                         ),
@@ -454,23 +492,47 @@ class _DetailCctvViewState extends State<DetailCctvView> {
   }
 
   Widget _cell(
-    String text, {
-    required double w,
-    double h = 55.08,
-  }) {
+      String text, {
+        required double w,
+        double h = 55.08,
+        double? fontSize,
+        bool isLink = false,
+      }) {
+    final uri = Uri.tryParse(text);
+
     return Container(
       width: w.w,
       height: h.h,
       alignment: Alignment.centerLeft,
-      child: Text(
+      child: isLink && uri != null && uri.hasAbsolutePath
+          ? Link(
+        uri: uri,
+        target: LinkTarget.blank, // ✅ 새 탭으로 열기
+        builder: (context, followLink) => GestureDetector(
+          onTap: followLink,
+          child: Text(
+            text,
+            style: TextStyle(
+              fontFamily: 'PretendardGOV',
+              fontSize: (fontSize ?? 36).sp,
+              color: Colors.blueAccent,
+              decoration: TextDecoration.underline,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      )
+          : Text(
         text,
         style: TextStyle(
           fontFamily: 'PretendardGOV',
-          fontSize: 36.sp,
+          fontSize: (fontSize ?? 36).sp,
           color: Colors.white,
           fontWeight: FontWeight.w600,
         ),
       ),
     );
   }
+
+
 }

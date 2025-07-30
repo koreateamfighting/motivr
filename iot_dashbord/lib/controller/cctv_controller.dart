@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:iot_dashboard/model/cctv_model.dart';
-
+import 'package:iot_dashboard/constants/global_constants.dart';
 class CctvController extends ChangeNotifier {
   List<CctvItem> _items = [];
 
@@ -13,9 +13,7 @@ class CctvController extends ChangeNotifier {
   Future<void> fetchCctvs() async {
     print('📡 fetchCctvs 호출됨');
     try {
-      final response = await http.get(
-        Uri.parse('https://hanlimtwin.kr:4040/api/cctvs'),
-      );
+      final response = await http.get(Uri.parse('$baseUrl4040/cctvs'));
       print('📥 응답 상태 코드: ${response.statusCode}');
       print('📦 응답 바디: ${response.body}');
 
@@ -47,7 +45,7 @@ class CctvController extends ChangeNotifier {
     String? onvifUser,
     String? onvifPass,
   }) async {
-    final url = Uri.parse('https://hanlimtwin.kr:4040/api/cctvs');
+    final url = Uri.parse('$baseUrl4040/cctvs');
 
     final body = {
       'camID': camID,

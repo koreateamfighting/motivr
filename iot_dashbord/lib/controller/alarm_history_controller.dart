@@ -2,9 +2,12 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:iot_dashboard/state/alarm_history_state.dart';
 import 'package:iot_dashboard/model/alarm_history_model.dart';
+import 'dart:html' as html; // 웹 전용
+import 'dart:typed_data';
+import 'package:iot_dashboard/constants/global_constants.dart';
 
 class AlarmHistoryController {
-  static const String baseUrl = 'https://hanlimtwin.kr:3030/api';
+
 
 
 // ✅ IoT 알람 히스토리 저장 (Label + RID 조합)
@@ -17,7 +20,7 @@ class AlarmHistoryController {
     double? latitude,
     double? longitude,
   }) async {
-    final url = Uri.parse('$baseUrl/alarmhistory/iot');
+    final url = Uri.parse('$baseUrl3030/alarmhistory/iot');
 
     final body = {
       'DeviceID': rid,
@@ -57,7 +60,7 @@ class AlarmHistoryController {
     required String log,
     required String location,
   }) async {
-    final url = Uri.parse('$baseUrl/alarmhistory/cctv');
+    final url = Uri.parse('$baseUrl3030/alarmhistory/cctv');
 
     final body = {
       'DeviceID': deviceId,
@@ -89,7 +92,7 @@ class AlarmHistoryController {
 
   // ✅ 알람 히스토리 조회 - IOT 전용
   static Future<List<AlarmHistory>> fetchIotAlarmHistory() async {
-    final response = await http.get(Uri.parse('$baseUrl/alarmhistory/iot'));
+    final response = await http.get(Uri.parse('$baseUrl3030/alarmhistory/iot'));
 
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
@@ -102,7 +105,7 @@ class AlarmHistoryController {
 
   // ✅ 알람 히스토리 조회 - CCTV 전용
   static Future<List<AlarmHistory>> fetchCctvAlarmHistory() async {
-    final response = await http.get(Uri.parse('$baseUrl/alarmhistory/cctv'));
+    final response = await http.get(Uri.parse('$baseUrl3030/alarmhistory/cctv'));
 
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
@@ -113,7 +116,7 @@ class AlarmHistoryController {
     }
   }// 알람 수정
   static Future<bool> updateAlarms(List<AlarmHistory> alarms) async {
-    final url = Uri.parse('$baseUrl/alarmhistory/update');
+    final url = Uri.parse('$baseUrl3030/alarmhistory/update');
 
     final body = alarms.map((a) => {
       'Id': a.id,
@@ -144,7 +147,7 @@ class AlarmHistoryController {
 
 // 알람 삭제
   static Future<bool> deleteAlarms(List<int> ids) async {
-    final url = Uri.parse('$baseUrl/alarmhistory/delete');
+    final url = Uri.parse('$baseUrl3030/alarmhistory/delete');
 
     try {
       final response = await http.post(
@@ -173,7 +176,7 @@ class AlarmHistoryController {
     required bool isConnected,
     AlarmHistoryState? alarmState, // 💡 optional 전달
   }) async {
-    final url = Uri.parse('$baseUrl/alarmhistory/cctvlog');
+    final url = Uri.parse('$baseUrl3030/alarmhistory/cctvlog');
 
     final body = {
       'camId': camId,
@@ -201,7 +204,7 @@ class AlarmHistoryController {
   }
   // ✅ 각 DeviceID별 최신 CCTV 알람 조회
   static Future<List<AlarmHistory>> fetchLatestCctvLogs() async {
-    final url = Uri.parse('$baseUrl/alarmhistory/cctv/latest');
+    final url = Uri.parse('$baseUrl3030/alarmhistory/cctv/latest');
 
     try {
       final response = await http.get(url);
@@ -226,27 +229,53 @@ class AlarmHistoryController {
     }
   }
 
-// ✅ 오늘 날짜의 CCTV 주의/경고 알람 조회
-  static Future<List<AlarmHistory>> fetchTodayCctvAlerts() async {
-    final url = Uri.parse('$baseUrl/alarmhistory/cctv/alert');
+
+  static Future<void> downloadCctvLogExcel(String camId) async {
+    final url = Uri.parse('$baseUrl3030/alarmhistory/download-excel-cctv?camId=$camId');
 
     try {
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
-        final decoded = jsonDecode(response.body);
-        final List<dynamic> records = decoded['data'];
-        return records.map((e) => AlarmHistory.fromJson(e)).toList();
+        final blob = html.Blob([response.bodyBytes]);
+        final urlObj = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement(href: urlObj)
+          ..setAttribute("download", "cctv_logs_$camId.xlsx")
+          ..click();
+        html.Url.revokeObjectUrl(urlObj);
+
+        print('✅ 엑셀 다운로드 성공');
       } else {
-        print('⚠️ CCTV 알람 조회 실패: ${response.body}');
-        return [];
+        print('⚠️ 엑셀 다운로드 실패: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ CCTV 알람 조회 예외 발생: $e');
-      return [];
+      print('❌ 엑셀 다운로드 예외 발생: $e');
     }
   }
 
+
+  static Future<void> downloadCctvLogCsv(String camId) async {
+    final url = Uri.parse('$baseUrl3030/alarmhistory/download-log?camId=$camId');
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final blob = html.Blob([response.bodyBytes]);
+        final urlObj = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement(href: urlObj)
+          ..setAttribute("download", "cctv_logs_$camId.csv")
+          ..click();
+        html.Url.revokeObjectUrl(urlObj);
+
+        print('✅ CSV 다운로드 성공');
+      } else {
+        print('⚠️ CSV 다운로드 실패: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ CSV 다운로드 예외 발생: $e');
+    }
+  }
 
 
 

@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../model/user_model.dart';
 import 'package:iot_dashboard/utils/auth_service.dart';
-
+import 'package:iot_dashboard/constants/global_constants.dart';
 class UserController {
   static UserModel? currentUser; // ✅ 로그인한 사용자 정보 보관
   static Future<String?> registerUser(UserModel user, BuildContext context) async {
     try {
       final response = await http.post(
-        Uri.parse('https://hanlimtwin.kr:3030/api/register'),
+        Uri.parse('$baseUrl3030/register'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(user.toJson()),
       );
@@ -28,7 +28,7 @@ class UserController {
   /// ✅ 아이디 중복 체크 메서드
   static Future<bool> checkDuplicateUserID(String userID) async {
     try {
-      final uri = Uri.parse('https://hanlimtwin.kr:3030/api/check-id?userID=$userID');
+      final uri = Uri.parse('$baseUrl3030/check-id?userID=$userID');
       final response = await http.get(uri);
 
       if (response.statusCode == 200) {
@@ -46,7 +46,7 @@ class UserController {
 
   static Future<String?> recoverPassword(String userID, String email) async {
     try {
-      final uri = Uri.parse('https://hanlimtwin.kr:3030/api/recover-password');
+      final uri = Uri.parse('$baseUrl3030/recover-password');
       final response = await http.post(
         uri,
         headers: {'Content-Type': 'application/json'},
@@ -70,7 +70,7 @@ class UserController {
   static Future<String?> login(String userID, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('https://hanlimtwin.kr:3030/api/login'),
+        Uri.parse('$baseUrl3030/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'userID': userID, 'password': password}),
       );
@@ -110,7 +110,7 @@ class UserController {
   static Future<void> logout(String userID) async {
     try {
       final response = await http.post(
-        Uri.parse('https://hanlimtwin.kr:3030/api/logout'),
+        Uri.parse('$baseUrl3030/logout'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'userID': userID}),
       );
@@ -128,7 +128,7 @@ class UserController {
   }
   static Future<List<String>> findUserIDsByName(String name) async {
     try {
-      final response = await http.get(Uri.parse('https://hanlimtwin.kr:3030/api/find-id?name=$name'));
+      final response = await http.get(Uri.parse('$baseUrl3030/find-id?name=$name'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -144,7 +144,7 @@ class UserController {
   }
 
   static Future<bool> changePassword(String userID, String currentPw, String newPw) async {
-    final uri = Uri.parse('https://hanlimtwin.kr:3030/api/change-password');
+    final uri = Uri.parse('$baseUrl3030/change-password');
 
     final response = await http.post(
       uri,
@@ -161,7 +161,7 @@ class UserController {
 
   static Future<Map<String, String>> getAllUsersAndRoles() async {
     try {
-      final response = await http.get(Uri.parse('https://hanlimtwin.kr:3030/api/users/all'));
+      final response = await http.get(Uri.parse('$baseUrl3030/users/all'));
       debugPrint('🌐 응답 상태: ${response.statusCode}');
       debugPrint('📦 응답 본문: ${response.body}');
 
@@ -194,7 +194,7 @@ class UserController {
   static Future<List<String>> getUsersByRole({List<String>? includeRoles, List<String>? excludeRoles}) async {
     try {
       final uri = Uri.parse(
-        'https://hanlimtwin.kr:3030/api/users/by-role'
+        '$baseUrl3030/users/by-role'
             '?includeRoles=${includeRoles?.join(',') ?? ''}&excludeRoles=${excludeRoles?.join(',') ?? ''}',
       );
 
@@ -214,7 +214,7 @@ class UserController {
   static Future<bool> updateUserRoles(List<String> userIDs, String newRole) async {
     try {
       final response = await http.post(
-        Uri.parse('https://hanlimtwin.kr:3030/api/users/update-role'),
+        Uri.parse('$baseUrl3030/users/update-role'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'userIDs': userIDs,

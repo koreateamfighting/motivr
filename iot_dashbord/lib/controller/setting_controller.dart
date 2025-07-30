@@ -6,11 +6,11 @@ import 'package:http_parser/http_parser.dart';
 import 'package:iot_dashboard/model/setting_model.dart'; // 위에서 만든 모델
 import 'dart:convert';
 import 'package:iot_dashboard/utils/setting_service.dart';
-
+import 'package:iot_dashboard/constants/global_constants.dart';
 class SettingController {
   static Future<SettingUploadResult> uploadTitleAndLogo(String title, html.File? logoFile) async {
     try {
-      final uri = Uri.parse('https://hanlimtwin.kr:3030/api/update-settings');
+      final uri = Uri.parse('${baseUrl3030}/update-settings');
       final request = http.MultipartRequest('POST', uri);
 
       // 기존 title 유지
@@ -56,7 +56,7 @@ class SettingController {
 
   static Future<SiteSetting?> fetchLatestSetting() async {
     try {
-      final uri = Uri.parse('https://hanlimtwin.kr:3030/api/get-settings');
+      final uri = Uri.parse('${baseUrl3030}/get-settings');
       final response = await http.get(uri);
 
       if (response.statusCode == 200) {

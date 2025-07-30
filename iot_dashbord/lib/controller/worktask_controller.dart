@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../model/worktask_model.dart';
-
+import 'package:iot_dashboard/constants/global_constants.dart';
 class WorkTaskController {
-  static const String _baseUrl = 'https://hanlimtwin.kr:3030/api';
+
 
   static Future<List<WorkTask>> fetchTasks() async {
-    final response = await http.get(Uri.parse('$_baseUrl/work-tasks'));
+    final response = await http.get(Uri.parse('$baseUrl3030/work-tasks'));
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonList = json.decode(response.body);
@@ -17,7 +17,7 @@ class WorkTaskController {
   }
 
   static Future<bool> updateTask(WorkTask task) async {
-    final url = Uri.parse('$_baseUrl/work-tasks/${task.id}');
+    final url = Uri.parse('$baseUrl3030/work-tasks/${task.id}');
     final body = {
       'title': task.title,
       'progress': task.progress,
@@ -39,7 +39,7 @@ class WorkTaskController {
     }
   }
   static Future<bool> updateTasks(List<WorkTask> tasks) async {
-    final url = Uri.parse('https://hanlimtwin.kr:3030/api/bulk-update');
+    final url = Uri.parse('$baseUrl3030/bulk-update');
 
     final response = await http.post(
       url,
@@ -56,7 +56,7 @@ class WorkTaskController {
 
   static Future<bool> deleteTasks(List<int> ids) async {
     final response = await http.post(
-      Uri.parse('https://hanlimtwin.kr:3030/api/delete-tasks'),
+      Uri.parse('$baseUrl3030/delete-tasks'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'ids': ids}),
     );

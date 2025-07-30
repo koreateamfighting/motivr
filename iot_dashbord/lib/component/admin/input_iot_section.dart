@@ -167,6 +167,7 @@ class _IotInputSectionState extends State<IotInputSection> {
         builder: (_) => const DialogForm(
           mainText: 'X, Y, Z 각도 중 하나의 절댓값이 5 이상으로 상태가 경고로 설정되었습니다.',
           btnText: '확인',
+          fontSize: 16,
         ),
       );
     } else if (isCaution && _selectedEventType != '주의') {
@@ -179,6 +180,7 @@ class _IotInputSectionState extends State<IotInputSection> {
         builder: (_) => const DialogForm(
           mainText: 'X, Y, Z 각도 중 하나의 절댓값이 3 이상 5 미만으로 상태가 주의로 설정되었습니다.',
           btnText: '확인',
+          fontSize: 16,
         ),
       );
     }

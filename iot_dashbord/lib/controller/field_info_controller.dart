@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../model/field_info_model.dart';
-
+import 'package:iot_dashboard/constants/global_constants.dart';
 class FieldInfoController {
-  static const String _baseUrl = 'https://hanlimtwin.kr:3030/api';
+
 
   // ✅ 최신 1건 조회
   static Future<FieldInfo?> fetchLatestFieldInfo() async {
-    final url = Uri.parse('$_baseUrl/fieldinfo');
+    final url = Uri.parse('$baseUrl3030/fieldinfo');
 
     try {
       final response = await http.get(url);
@@ -26,7 +26,7 @@ class FieldInfoController {
 
   // ✅ 등록
   static Future<bool> insertFieldInfo(FieldInfo info) async {
-    final url = Uri.parse('$_baseUrl/fieldinfo');
+    final url = Uri.parse('$baseUrl3030/fieldinfo');
 
     try {
       final response = await http.post(
