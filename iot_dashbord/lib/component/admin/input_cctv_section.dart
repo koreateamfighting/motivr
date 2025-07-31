@@ -12,7 +12,7 @@ import 'package:iot_dashboard/controller/cctv_controller.dart';
 import 'package:iot_dashboard/component/admin/labeled_dropdown_field.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import 'package:iot_dashboard/constants/global_constants.dart';
 
 
 
@@ -162,7 +162,7 @@ class _CCTVInputSectionState extends State<CCTVInputSection> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://hanlimtwin.kr:4040/api/cctvs'),
+        Uri.parse('${baseUrl4040}/api/cctvs'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode(body),
       );

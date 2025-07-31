@@ -9,7 +9,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
+import 'package:iot_dashboard/constants/global_constants.dart';
 
 class CctvMiniView extends StatefulWidget {
   const CctvMiniView({super.key});
@@ -54,7 +54,7 @@ class _CctvMiniViewState extends State<CctvMiniView> {
     final todayDate = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
 
     try {
-      final response = await http.get(Uri.parse('https://hanlimtwin.kr:3030/api/alarmhistory/cctv/alert'));
+      final response = await http.get(Uri.parse('${baseUrl3030}/api/alarmhistory/cctv/alert'));
       if (response.statusCode != 200) return;
 
       final data = jsonDecode(response.body)['data'];

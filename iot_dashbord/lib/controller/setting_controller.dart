@@ -10,7 +10,7 @@ import 'package:iot_dashboard/constants/global_constants.dart';
 class SettingController {
   static Future<SettingUploadResult> uploadTitleAndLogo(String title, html.File? logoFile) async {
     try {
-      final uri = Uri.parse('${baseUrl3030}/update-settings');
+      final uri = Uri.parse('${baseUrl3030}/api/update-settings');
       final request = http.MultipartRequest('POST', uri);
 
       // 기존 title 유지
@@ -56,7 +56,7 @@ class SettingController {
 
   static Future<SiteSetting?> fetchLatestSetting() async {
     try {
-      final uri = Uri.parse('${baseUrl3030}/get-settings');
+      final uri = Uri.parse('${baseUrl3030}/api/get-settings');
       final response = await http.get(uri);
 
       if (response.statusCode == 200) {

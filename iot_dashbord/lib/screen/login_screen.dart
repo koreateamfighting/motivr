@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iot_dashboard/component/login/register_view.dart';
+import 'package:iot_dashboard/constants/global_constants.dart';
 import 'package:iot_dashboard/theme/colors.dart'; // ✅ 추가
 import 'package:iot_dashboard/controller/user_controller.dart';
 import 'package:iot_dashboard/component/common/dialog_form.dart';
@@ -119,7 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Container(
                         width: 215.59.w,
                         height: 74.8.h,
-                        child: Text('버전:20250730',style: TextStyle(color: Colors.white,fontSize: 16.sp),),
+                        child: Text('버전:20250731',style: TextStyle(color: Colors.white,fontSize: 16.sp),),
                       ),
                       bottom: 0.2.h,
                       left: 80.w,
@@ -129,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         width: 215.59.w,
                         height: 74.8.h,
                         child: Image.network(
-                          'https://hanlimtwin.kr:3030${SettingService.setting?.logoUrl ?? ''}',
+                          '${baseUrl3030}${SettingService.setting?.logoUrl ?? ''}',
                           fit: BoxFit.contain,
                           errorBuilder: (context, error, stackTrace) {
                             return const Icon(Icons.image_not_supported);

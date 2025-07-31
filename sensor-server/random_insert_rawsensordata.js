@@ -51,11 +51,11 @@ async function insertAlarmHistoryFromSensorData(data, createAt, pool , transacti
 
   switch (parseInt(EventType)) {
     case 2:
-      event = '정보';
+      event = '정상';
       log = `${deviceId} : 정상 로그`;
       break;
     case 5:
-      event = '정보';
+      event = '정상';
       log = `${deviceId} : GPS 정상 수집`;
       break;
     case 67:
@@ -115,8 +115,8 @@ async function insertAlarmHistoryFromSensorData(data, createAt, pool , transacti
   try {
     const pool = await sql.connect(config);
     const sensorType = '변위';
-    const startDate = '2025-07-21';
-    const endDate = '2025-07-24';
+    const startDate = '2025-07-31';
+    const endDate = '2025-07-31';
     const dateList = getDateRange(startDate, endDate);
     const ridToLabelMap = {};
 

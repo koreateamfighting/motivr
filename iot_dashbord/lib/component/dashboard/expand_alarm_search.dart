@@ -31,7 +31,7 @@ class _ExpandAlarmSearchState extends State<ExpandAlarmSearch> {
   TextEditingController _searchController = TextEditingController();
   String currentSortField = '';
   bool isAscending = true;
-  final List<String> levelOptions = ['정보', '주의', '경고', '점검'];
+  final List<String> levelOptions = ['정상', '주의', '경고', '점검'];
 
   bool isEditing = false;
   Map<int, AlarmHistory> editedAlarms = {};

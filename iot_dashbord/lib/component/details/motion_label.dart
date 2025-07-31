@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
+import 'package:iot_dashboard/constants/global_constants.dart';
 class MotionLabelPanel extends StatefulWidget {
   final String camId;
   const MotionLabelPanel({super.key, required this.camId});
@@ -24,7 +24,7 @@ class _MotionLabelPanelState extends State<MotionLabelPanel> {
 
   void _startPolling() {
     _timer = Timer.periodic(Duration(milliseconds: 500), (_) async {
-      final url = Uri.parse('https://hanlimtwin.kr:5002/motion_status/${widget.camId}');
+      final url = Uri.parse('${baseUrl5002}/motion_status/${widget.camId}');
       try {
         final response = await http.get(url);
         if (response.statusCode == 200) {

@@ -6,7 +6,7 @@ class SpecialSensorController {
 
 
   static Future<bool> upsertSensorData(SpecialSensorData data) async {
-    final url = Uri.parse('$baseUrl3030/specialsensor');
+    final url = Uri.parse('$baseUrl3030/api/specialsensor');
     final body = json.encode(data.toJson());
 
     try {

@@ -6,7 +6,7 @@ class DutyController {
 
   // ✅ 가장 최근 Duty 1개 조회
   static Future<Duty?> fetchLatestDuty() async {
-    final response = await http.get(Uri.parse('$baseUrl3030/duties/latest'));
+    final response = await http.get(Uri.parse('$baseUrl3030/api/duties/latest'));
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -23,7 +23,7 @@ class DutyController {
   // ✅ 최근 항목을 수정하는 함수로 변경
   static Future<bool> updateLatestDuty(Duty duty) async {
     final response = await http.patch(
-      Uri.parse('$baseUrl3030/duties/latest'),
+      Uri.parse('$baseUrl3030/api/duties/latest'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'DutyName': duty.dutyName,

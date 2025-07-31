@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const fs = require('fs');
+const http = require('http');
 const https = require('https');
 const path = require('path');
 const cors = require('cors');
@@ -9,13 +10,19 @@ const { router: cctvRouter } = require('./routes/cctv'); // ✅ index.js에서 �
 const { startHlsProcess, startMotionDetect } = require('./routes/cctv/video'); // ✅ 함수는 video.js에서
 const { RTCPeerConnection, RTCVideoSource, RTCVideoFrame } = require('wrtc');
 const app = express();
+const isProd = process.env.NODE_ENV === 'production';
 
-// HTTPS 인증서
-const sslOptions = {
-  cert: fs.readFileSync('C:/Users/Administrator/fullchain.pem'),
-  key: fs.readFileSync('C:/Users/Administrator/privkey.pem'),
-};
+let server;
 
+if (isProd) {
+  const sslOptions = {
+    cert: fs.readFileSync(process.env.SSL_CERT_PATH || 'C:/Users/Administrator/fullchain.pem'),
+    key: fs.readFileSync(process.env.SSL_KEY_PATH || 'C:/Users/Administrator/privkey.pem'),
+  };
+  server = https.createServer(sslOptions, app);
+} else {
+  server = http.createServer(app);
+}
 // 공통 미들웨어
 app.use(express.json());
 app.use(cors());
@@ -68,7 +75,10 @@ startMotionDetect('cam2'); // ✅ cam2도 시작
 
 
 // HTTPS 서버 실행 (포트 4040)
-const server = https.createServer(sslOptions, app);
-server.listen(4040, () => {
-  console.log('🚀 CCTV 전용 서버 실행 중: https://0.0.0.0:4040');
+// ✅ 포트 지정
+const PORT = process.env.CCTV_PORT || 4040;
+
+server.listen(PORT, () => {
+  const protocol = isProd ? 'https' : 'http';
+  console.log(`🚀 CCTV 서버 실행 중: ${protocol}://0.0.0.0:${PORT}`);
 });

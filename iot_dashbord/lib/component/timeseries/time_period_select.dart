@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iot_dashboard/component/common/dialog_form.dart';
 import 'package:iot_dashboard/component/common/dialog_form2.dart';
 import 'package:intl/intl.dart';
+import 'package:iot_dashboard/constants/global_constants.dart';
 import 'package:iot_dashboard/utils/selectable_calendar.dart';
 import 'package:provider/provider.dart';
 import 'package:iot_dashboard/controller/iot_controller.dart';
@@ -478,7 +479,7 @@ class _TimePeriodSelectState extends State<TimePeriodSelect> {
                         final encodedEnd = Uri.encodeComponent(endStr);
 
                         final downloadUrl =
-                            'https://hanlimtwin.kr:3030/api/download-excel?startDate=$encodedStart&endDate=$encodedEnd&rids=$encodedRids';
+                            '${baseUrl3030}/api/download-excel?startDate=$encodedStart&endDate=$encodedEnd&rids=$encodedRids';
 
                         debugPrint('📁 다운로드 URL: $downloadUrl');
 

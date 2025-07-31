@@ -6,7 +6,7 @@ class NoticeController {
 
   /// ✅ 공지 목록 불러오기
   static Future<List<Notice>> fetchNotices() async {
-    final url = Uri.parse('$baseUrl3030/notices');
+    final url = Uri.parse('$baseUrl3030/api/notices');
 
     try {
       final response = await http.get(url);
@@ -24,7 +24,7 @@ class NoticeController {
   }
   /// ✅ 공지 수정
   static Future<bool> updateNotice(int id, String newContent) async {
-    final url = Uri.parse('$baseUrl3030/notices/$id');
+    final url = Uri.parse('$baseUrl3030/api/notices/$id');
 
     try {
       final response = await http.patch(
@@ -42,7 +42,7 @@ class NoticeController {
 
   /// ✅ 공지 추가
   static Future<bool> addNotice(String content, String createdAt) async {
-    final url = Uri.parse('$baseUrl3030/notices');
+    final url = Uri.parse('$baseUrl3030/api/notices');
 
     try {
       final response = await http.post(
@@ -64,7 +64,7 @@ class NoticeController {
 
   /// ✅ 공지 일괄 수정
   static Future<bool> updateNotices(List<Notice> notices) async {
-    final url = Uri.parse('$baseUrl3030/bulk-update-notices');
+    final url = Uri.parse('$baseUrl3030/api/bulk-update-notices');
 
     try {
       final response = await http.post(
@@ -91,7 +91,7 @@ class NoticeController {
 
   /// ✅ 공지 삭제 (여러 개 동시에)
   static Future<bool> deleteNotices(List<int> ids) async {
-    final url = Uri.parse('$baseUrl3030/delete-notices');
+    final url = Uri.parse('$baseUrl3030/api/delete-notices');
 
     try {
       final response = await http.post(

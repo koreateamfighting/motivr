@@ -79,7 +79,7 @@ class _EventInputSectionState extends State<EventInputSection> {
   late String? cctvHistoryMinute;
   late String? cctvHistorySecond;
   late TextEditingController cctvHistoryLogController;
-  String _selectedIotEvent = '정보';
+  String _selectedIotEvent = '정상';
   String _selectedCctvEvent = '정상';
   String _selectedLocation = '추진구';
 
@@ -168,7 +168,7 @@ class _EventInputSectionState extends State<EventInputSection> {
       iotHistoryHour = '00';
       iotHistoryMinute = '00';
       iotHistorySecond = '00';
-      _selectedIotEvent = '정보';
+      _selectedIotEvent = '정상';
       isIotDeviceIdEmpty = true;
     });
   }
@@ -334,7 +334,7 @@ class _EventInputSectionState extends State<EventInputSection> {
                       height: 85.h,
                       child: LabeledDropdownField(
                         title: '이벤트 :',
-                        items: ['정보', '경고', '위험', '점검필요'],
+                        items: ['정상', '경고', '위험', '점검필요'],
                         selectedValue: _selectedIotEvent,
                         onChanged: (val) =>
                             setState(() => _selectedIotEvent = val!),

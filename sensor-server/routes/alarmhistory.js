@@ -4,6 +4,8 @@ const sql = require('mssql');
 const dbConfig = require('../dbConfig');
 const { DateTime } = require('luxon');
 const { pool, poolConnect } = require('../db'); 
+const ExcelJS = require('exceljs');
+
 // 🔎 type = 'iot' 알람 조회
 router.get('/alarmhistory/iot', async (req, res) => {
   try {
@@ -41,6 +43,34 @@ router.get('/alarmhistory/cctv', async (req, res) => {
     res.status(500).json({ error: 'cctv 알람 DB 조회 실패' });
   }
 });
+
+// 🔎 CCTV 알람 중 '주의' 또는 '경고' 이벤트만 조회 (DeviceID,so Timestamp, Event 포함)
+router.get('/alarmhistory/cctv/alert', async (req, res) => {
+  try {
+    const pool = await poolConnect;
+
+    const result = await pool.request().query(`
+      SELECT DeviceID, Timestamp, Event
+      FROM AlarmHistory
+      WHERE Type = 'cctv'
+        AND Event IN (N'주의', N'경고')
+        AND CONVERT(date, DATEADD(hour, 9, Timestamp)) = CONVERT(date, DATEADD(hour, 9, GETDATE()))
+      ORDER BY Timestamp DESC
+    `);
+
+    const rows = result.recordset.map(row => ({
+      DeviceID: row.DeviceID,
+      Event: row.Event,
+      Timestamp: new Date(`${row.Timestamp}+09:00`).toISOString()
+    }));
+
+    res.status(200).json({ message: '주의/경고 CCTV 알람 조회 성공', data: rows });
+  } catch (err) {
+    console.error('❌ 주의/경고 CCTV 알람 조회 실패:', err);
+    res.status(500).json({ error: '주의/경고 CCTV 알람 조회 실패' });
+  }
+});
+
 
 
 // // ✅ 알람 히스토리 추가 또는 업데이트
@@ -129,7 +159,7 @@ router.post('/alarmhistory/iot', async (req, res) => {
     Longitude
   } = req.body;
 
-  const combinedDeviceId = `${Label} #${DeviceID}`; // ✅ 조합된 DeviceID
+  const combinedDeviceId = `${Label} #${DeviceID}`;
   const formattedTime = Timestamp
     ? DateTime.fromISO(Timestamp, { zone: 'Asia/Seoul' }).toFormat('yyyy-LL-dd HH:mm:ss')
     : DateTime.now().setZone('Asia/Seoul').toFormat('yyyy-LL-dd HH:mm:ss');
@@ -137,7 +167,7 @@ router.post('/alarmhistory/iot', async (req, res) => {
   try {
     const pool = await poolConnect;
 
-    await pool.request()
+    const insertResult = await pool.request()
       .input('DeviceID', sql.NVarChar, combinedDeviceId)
       .input('Timestamp', sql.VarChar, formattedTime)
       .input('Event', sql.NVarChar, Event)
@@ -148,8 +178,32 @@ router.post('/alarmhistory/iot', async (req, res) => {
       .input('Type', sql.NVarChar, 'iot')
       .query(`
         INSERT INTO AlarmHistory (DeviceID, Timestamp, Event, Log, Location, Latitude, Longitude, Type)
+        OUTPUT INSERTED.*
         VALUES (@DeviceID, @Timestamp, @Event, @Log, @Location, @Latitude, @Longitude, @Type)
       `);
+
+    const insertedRow = insertResult.recordset[0];
+
+    // ✅ WebSocket 브로드캐스트 조건
+    if (['주의', '경고', '점검필요'].includes(Event)) {
+      const wss = req.app.get('wss');
+      if (wss && wss.clients) {
+        const message = {
+          type: 'iot-alert',
+          data: {
+            ...insertedRow,
+            Timestamp: new Date(`${insertedRow.Timestamp}+09:00`).toISOString()
+          }
+        };
+
+        // 모든 클라이언트에게 전송
+        wss.clients.forEach(client => {
+          if (client.readyState === 1) { // OPEN
+            client.send(JSON.stringify(message));
+          }
+        });
+      }
+    }
 
     res.status(200).json({ message: 'IoT 알람 추가 완료' });
   } catch (err) {
@@ -157,6 +211,7 @@ router.post('/alarmhistory/iot', async (req, res) => {
     res.status(500).json({ error: 'IoT 알람 저장 실패' });
   }
 });
+
 
 
 // ✅ CCTV 알람 히스토리 추가 전용
@@ -260,6 +315,51 @@ router.post('/alarmhistory/delete', async (req, res) => {
     res.status(500).json({ error: '알람 삭제 중 오류 발생' });
   }
 });
+
+router.get('/alarmhistory/download-excel-cctv', async (req, res) => {
+  const { camId } = req.query;
+
+  if (!camId) return res.status(400).json({ error: 'camId는 필수입니다.' });
+
+  try {
+    const pool = await poolConnect; // ✅ 명시적으로 pool 선언 추가
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('AlarmHistory');
+
+    const result = await pool.request()
+      .input('DeviceID', sql.NVarChar, camId)
+      .query(`
+        SELECT DeviceID, Timestamp, Event, Log, Location
+        FROM AlarmHistory
+        WHERE DeviceID = @DeviceID
+          AND Type = 'cctv'
+          AND Timestamp >= DATEADD(DAY, -7, GETDATE())
+        ORDER BY Timestamp DESC
+      `);
+
+    sheet.columns = [
+      { header: 'DeviceID', key: 'DeviceID' },
+      { header: 'Timestamp', key: 'Timestamp', style: { numFmt: 'yyyy-mm-dd hh:mm:ss' } },
+      { header: 'Event', key: 'Event' },
+      { header: 'Log', key: 'Log' },
+      { header: 'Location', key: 'Location' },
+    ];
+
+    result.recordset.forEach(row => {
+      sheet.addRow(row);
+    });
+
+    const filename = `alarm_logs_${camId}_${new Date().toISOString().slice(0,10)}.xlsx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (err) {
+    console.error('❌ 알람 히스토리 엑셀 다운로드 실패:', err);
+    res.status(500).json({ error: '서버 오류' });
+  }
+});
+
 
 // ✅ CCTV 로그 저장용 API
 router.post('/alarmhistory/cctvlog', async (req, res) => {

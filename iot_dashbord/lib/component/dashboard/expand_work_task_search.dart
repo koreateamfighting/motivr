@@ -15,6 +15,7 @@ import 'package:iot_dashboard/component/common/dialog_form.dart';
 import 'package:iot_dashboard/theme/colors.dart';
 import 'dart:convert';
 import 'package:iot_dashboard/utils/auth_service.dart';
+import 'package:iot_dashboard/constants/global_constants.dart';
 class ExpandWorkTaskSearch extends StatefulWidget {
   final VoidCallback? onDataUploaded; // ✅ 콜백 추가
 
@@ -219,7 +220,7 @@ class _ExpandWorkTaskSearchState extends State<ExpandWorkTaskSearch> {
 
       if (fileBytes == null) return;
 
-      final uri = Uri.parse('https://hanlimtwin.kr:3030/api/upload-csv');
+      final uri = Uri.parse('${baseUrl3030}/api/upload-csv');
       final request = http.MultipartRequest('POST', uri)
         ..files.add(http.MultipartFile.fromBytes(
           'file',

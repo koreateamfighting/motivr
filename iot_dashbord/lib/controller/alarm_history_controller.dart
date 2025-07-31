@@ -20,7 +20,7 @@ class AlarmHistoryController {
     double? latitude,
     double? longitude,
   }) async {
-    final url = Uri.parse('$baseUrl3030/alarmhistory/iot');
+    final url = Uri.parse('$baseUrl3030/api/alarmhistory/iot');
 
     final body = {
       'DeviceID': rid,
@@ -60,7 +60,7 @@ class AlarmHistoryController {
     required String log,
     required String location,
   }) async {
-    final url = Uri.parse('$baseUrl3030/alarmhistory/cctv');
+    final url = Uri.parse('$baseUrl3030/api/alarmhistory/cctv');
 
     final body = {
       'DeviceID': deviceId,
@@ -92,7 +92,7 @@ class AlarmHistoryController {
 
   // ✅ 알람 히스토리 조회 - IOT 전용
   static Future<List<AlarmHistory>> fetchIotAlarmHistory() async {
-    final response = await http.get(Uri.parse('$baseUrl3030/alarmhistory/iot'));
+    final response = await http.get(Uri.parse('$baseUrl3030/api/alarmhistory/iot'));
 
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
@@ -105,7 +105,7 @@ class AlarmHistoryController {
 
   // ✅ 알람 히스토리 조회 - CCTV 전용
   static Future<List<AlarmHistory>> fetchCctvAlarmHistory() async {
-    final response = await http.get(Uri.parse('$baseUrl3030/alarmhistory/cctv'));
+    final response = await http.get(Uri.parse('$baseUrl3030/api/alarmhistory/cctv'));
 
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
@@ -116,7 +116,7 @@ class AlarmHistoryController {
     }
   }// 알람 수정
   static Future<bool> updateAlarms(List<AlarmHistory> alarms) async {
-    final url = Uri.parse('$baseUrl3030/alarmhistory/update');
+    final url = Uri.parse('$baseUrl3030/api/alarmhistory/update');
 
     final body = alarms.map((a) => {
       'Id': a.id,
@@ -147,7 +147,7 @@ class AlarmHistoryController {
 
 // 알람 삭제
   static Future<bool> deleteAlarms(List<int> ids) async {
-    final url = Uri.parse('$baseUrl3030/alarmhistory/delete');
+    final url = Uri.parse('$baseUrl3030/api/alarmhistory/delete');
 
     try {
       final response = await http.post(
@@ -176,7 +176,7 @@ class AlarmHistoryController {
     required bool isConnected,
     AlarmHistoryState? alarmState, // 💡 optional 전달
   }) async {
-    final url = Uri.parse('$baseUrl3030/alarmhistory/cctvlog');
+    final url = Uri.parse('$baseUrl3030/api/alarmhistory/cctvlog');
 
     final body = {
       'camId': camId,
@@ -204,7 +204,7 @@ class AlarmHistoryController {
   }
   // ✅ 각 DeviceID별 최신 CCTV 알람 조회
   static Future<List<AlarmHistory>> fetchLatestCctvLogs() async {
-    final url = Uri.parse('$baseUrl3030/alarmhistory/cctv/latest');
+    final url = Uri.parse('$baseUrl3030/api/alarmhistory/cctv/latest');
 
     try {
       final response = await http.get(url);
@@ -231,7 +231,7 @@ class AlarmHistoryController {
 
 
   static Future<void> downloadCctvLogExcel(String camId) async {
-    final url = Uri.parse('$baseUrl3030/alarmhistory/download-excel-cctv?camId=$camId');
+    final url = Uri.parse('$baseUrl3030/api/alarmhistory/download-excel-cctv?camId=$camId');
 
     try {
       final response = await http.get(url);
@@ -255,7 +255,7 @@ class AlarmHistoryController {
 
 
   static Future<void> downloadCctvLogCsv(String camId) async {
-    final url = Uri.parse('$baseUrl3030/alarmhistory/download-log?camId=$camId');
+    final url = Uri.parse('$baseUrl3030/api/alarmhistory/download-log?camId=$camId');
 
     try {
       final response = await http.get(url);

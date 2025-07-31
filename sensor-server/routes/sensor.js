@@ -20,11 +20,11 @@ async function insertAlarmHistoryFromSensorData(data, createAt, transaction = nu
 
   switch (parseInt(EventType)) {
     case 2:
-      event = '정보';
+      event = '정상';
       log = `${deviceId} : 정상 로그`;
       break;
     case 5:
-      event = '정보';
+      event = '정상';
       log = `${deviceId} : GPS 정상 수집`;
       break;
     case 67:
@@ -37,7 +37,11 @@ async function insertAlarmHistoryFromSensorData(data, createAt, transaction = nu
       break;
   }
 
-  // ❗ 이전 값 유지 (Latitude, Longitude 없을 경우)
+  // ✅ 연결 보장
+  await poolConnect;
+  const poolRequest = transaction ? transaction.request() : pool.request();
+
+  // 이전 값 유지 로직
   const lastGeoQuery = `
     SELECT TOP 1 Latitude, Longitude
     FROM AlarmHistory
@@ -45,8 +49,6 @@ async function insertAlarmHistoryFromSensorData(data, createAt, transaction = nu
       AND Type = 'iot'
     ORDER BY Timestamp DESC
   `;
-
-  const poolRequest = transaction ? transaction.request() : pool.request();
 
   let lat = Latitude;
   let lon = Longitude;
@@ -59,7 +61,10 @@ async function insertAlarmHistoryFromSensorData(data, createAt, transaction = nu
     if (lon == null) lon = prev.recordset[0]?.Longitude ?? null;
   }
 
-  await poolRequest
+  // 새 poolRequest 사용 (중복 제거 필요 시 새로 선언)
+  const insertRequest = transaction ? transaction.request() : pool.request();
+
+  await insertRequest
     .input('DeviceID', sql.NVarChar(100), deviceId)
     .input('Timestamp', sql.DateTime, timestamp)
     .input('Event', sql.NVarChar(255), event)
@@ -77,11 +82,12 @@ async function insertAlarmHistoryFromSensorData(data, createAt, transaction = nu
 }
 
 
+
 // 헬스 체크
 router.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', time: new Date().toISOString() });
+  const currentTime = DateTime.now().setZone('Asia/Seoul').toISO(); // 서울 시간대로 설정
+  res.status(200).json({ status: 'ok', time: currentTime });
 });
-
 // 모든 센서 데이터 조회 (옵션: ?limit=1000)
 router.get('/sensor-data', async (req, res) => {
   const limit = parseInt(req.query.limit || '1000'); // 기본 1000건 제한
@@ -106,7 +112,7 @@ router.get('/sensor-data', async (req, res) => {
 });
 
 
-// 센서 데이터 수신 후 유니티 클라
+// 센서 데이터 수신 후 유니티 클라이언트 
 router.post('/sensor', async (req, res) => {
   const data = req.body;
   const createAt = typeof data.CreateAt === 'string'
@@ -138,7 +144,7 @@ router.post('/sensor', async (req, res) => {
       .input('Longitude', sql.Float, data.Longitude ?? null)
       .input('Location', sql.NVarChar(255),data.Location ?? null)
       .input('SensorType', sql.NVarChar(100), data.SensorType ?? null)
-      .input('EventType', sql.NVarChar(100), data.EventType ?? null)   
+      .input('EventType', sql.NVarChar(100), String(data.EventType) ?? null)   
       .input('CreateAt', sql.VarChar, createAt)
       .query(`
         INSERT INTO master.dbo.SenSorInfo
@@ -214,7 +220,7 @@ console.log('⏳ diffMinutes:', diffMinutes);
         .input('Latitude', sql.Float, data.Latitude ?? null)
         .input('Longitude', sql.Float, data.Longitude ?? null)
         .input('SensorType', sql.NVarChar(100), data.SensorType ?? null)
-        .input('EventType', sql.NVarChar(100), data.EventType ?? null)
+        .input('EventType', sql.NVarChar(100), String(data.EventType) ?? null)
         .query(`
           UPDATE master.dbo.SenSorInfo
           SET Latitude = @Latitude,
@@ -258,34 +264,34 @@ router.post('/test_submit_data', (req, res) => {
   return res.status(200).json({ message: 'WebSocket broadcast 성공', data });
 });
 
-router.get('/progress', async (req, res) => {
-  try {
-     await poolConnect; // ✅ 추가
-    const result = await pool.request().query(`
-      SELECT TOP 1 progress FROM WorkProgress ORDER BY updated_at DESC
-    `);
-    res.json({ progress: result.recordset[0]?.progress || 0 });
-  } catch (err) {
-    console.error('❌ Progress fetch error:', err); // ✅ 에러 로깅도 추가
-    res.status(500).send('DB Error');
-  }
-});
+// router.get('/progress', async (req, res) => {
+//   try {
+//      await poolConnect; // ✅ 추가
+//     const result = await pool.request().query(`
+//       SELECT TOP 1 progress FROM WorkProgress ORDER BY updated_at DESC
+//     `);
+//     res.json({ progress: result.recordset[0]?.progress || 0 });
+//   } catch (err) {
+//     console.error('❌ Progress fetch error:', err); // ✅ 에러 로깅도 추가
+//     res.status(500).send('DB Error');
+//   }
+// });
 
-router.post('/progress', async (req, res) => {
-  const { progress } = req.body;
-  try {
-     await poolConnect; // ❗이 줄이 없으면 에러!
-    await pool.request()
-      .input('progress', sql.Float, progress)
-      .query(`
-        INSERT INTO WorkProgress (progress, updated_at) VALUES (@progress, GETDATE())
-      `);
-    res.sendStatus(200);
-  } catch (err) {
-    console.error('❌ DB 저장 실패:', err); // 디버깅 출력 추가
-    res.status(500).send('DB Error');
-  }
-});
+// router.post('/progress', async (req, res) => {
+//   const { progress } = req.body;
+//   try {
+//      await poolConnect; // ❗이 줄이 없으면 에러!
+//     await pool.request()
+//       .input('progress', sql.Float, progress)
+//       .query(`
+//         INSERT INTO WorkProgress (progress, updated_at) VALUES (@progress, GETDATE())
+//       `);
+//     res.sendStatus(200);
+//   } catch (err) {
+//     console.error('❌ DB 저장 실패:', err); // 디버깅 출력 추가
+//     res.status(500).send('DB Error');
+//   }
+// });
 
 router.put('/sensor', async (req, res) => {
   const data = req.body;
@@ -658,6 +664,49 @@ router.get('/download-excel-rid-only', async (req, res) => {
 
 
 
+// webgl측에서 모든 센서 정보 조회를 하기 위한 목적으로 만든 api (SenSorInfo 테이블 전체)
+router.get('/sensor-info', async (req, res) => {
+  try {
+    await poolConnect;
+
+    const result = await pool.request().query(`
+      SELECT 
+        IndexKey, RID, Label, Latitude, Longitude,
+        Location, SensorType, EventType, CreateAt
+      FROM master.dbo.SenSorInfo
+      ORDER BY CreateAt DESC
+    `);
+
+    res.status(200).json({ message: '센서 정보 조회 성공', data: result.recordset });
+  } catch (err) {
+    console.error('❌ SenSorInfo 조회 실패:', err);
+    res.status(500).json({ error: '센서 정보 조회 실패' });
+  }
+});
+
+//RID+LABEL별로 각각 최신의 데이터를 유니티에서 받게끔 해주는 api
+router.get('/sensor-latest-by-group', async (req, res) => {
+  try {
+    await poolConnect;
+
+    const result = await pool.request().query(`
+      WITH RankedSensorData AS (
+        SELECT *,
+               ROW_NUMBER() OVER (PARTITION BY RID, Label ORDER BY CreateAt DESC) AS rn
+        FROM RawSensorData
+      )
+      SELECT *
+      FROM RankedSensorData
+      WHERE rn = 1
+      ORDER BY CreateAt DESC
+    `);
+
+    res.status(200).json({ message: 'RID+Label별 최신 센서 데이터', data: result.recordset });
+  } catch (err) {
+    console.error('❌ sensor-latest-by-group 조회 실패:', err);
+    res.status(500).json({ error: 'DB 조회 실패' });
+  }
+});
 
 
 

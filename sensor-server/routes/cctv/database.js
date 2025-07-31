@@ -11,6 +11,7 @@ const router = express.Router();
 
 
 
+
 router.get('/cctvs', async (req, res) => {
   try {
     const pool = await poolConnect;
@@ -96,6 +97,7 @@ router.post('/cctvs', async (req, res) => {
   }
 });
 
+
 module.exports = router;
 
 const hlsFolder = 'C:\\Users\\Administrator\\sensor-server\\public\\hls';
@@ -125,7 +127,8 @@ schedule.scheduleJob('56 * * * *', async () => {
   try {
     const now = new Date();
     now.setMinutes(56, 0, 0);
-    const formatted = now.toISOString().slice(0, 23);
+    const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+const formatted = kst.toISOString().slice(0, 23).replace('T', ' ');
 
     const pool = await poolConnect;
     await pool.request().query(`
@@ -138,12 +141,7 @@ schedule.scheduleJob('56 * * * *', async () => {
   }
 
   // 3. PM2 재시작
-  exec('pm2 restart motion-server2', (error2, stdout2, stderr2) => {
-    if (error2) {
-      console.error('❌ motion-server2 재시작 실패:', stderr2);
-      return;
-    }
-    console.log('✅ motion-server2 재시작 완료:', stdout2);
+
 
     exec('pm2 restart cctv-server', (error1, stdout1, stderr1) => {
       if (error1) {
@@ -152,5 +150,5 @@ schedule.scheduleJob('56 * * * *', async () => {
         console.log('✅ cctv-server 재시작 완료:', stdout1);
       }
     });
-  });
+  
 });

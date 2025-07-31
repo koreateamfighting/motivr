@@ -2,11 +2,14 @@
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
+const http = require('http');
 const https = require('https');
 const WebSocket = require('ws');
 const { spawn } = require('child_process'); // ✅ 추가
 const app = express();
-const path = require('path'); // ✅ 빠졌던 부분
+const path = require('path'); 
+
+const isProd = process.env.NODE_ENV === 'production';
 
 // ✅ CORS 허용
 app.use(cors());
@@ -15,12 +18,18 @@ app.use(cors());
 app.use(express.json({ limit: '20000mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20000mb' }));
 
-// HTTPS 인증서 설정
-const sslOptions = {
-  cert: fs.readFileSync('C:/Users/Administrator/fullchain.pem'),
-  key: fs.readFileSync('C:/Users/Administrator/privkey.pem'),
-};
-
+let server;
+if (isProd) {
+  // ✅ 운영 환경: HTTPS
+  const sslOptions = {
+    cert: fs.readFileSync('C:/Users/Administrator/fullchain.pem'),
+    key: fs.readFileSync('C:/Users/Administrator/privkey.pem'),
+  };
+  server = https.createServer(sslOptions, app);
+} else {
+  // ✅ 로컬 개발 환경: HTTP
+  server = http.createServer(app);
+}
 
 
 
@@ -54,8 +63,7 @@ app.use('/api', settingRouter);
 
 
 
-// HTTPS 서버 생성
-const server = https.createServer(sslOptions, app);
+
 
 const wss = new WebSocket.Server({ server });
 
@@ -78,6 +86,8 @@ wss.on('connection', (ws, req) => {
     console.log('🔴 Unity WebSocket 연결 종료');
   });
 });
+
+
 
 
 // 서버 실행

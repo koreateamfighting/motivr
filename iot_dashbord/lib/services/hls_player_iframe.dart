@@ -2,7 +2,7 @@ import 'dart:html' as html;
 import 'dart:ui' as ui;
 import 'dart:async';
 import 'package:flutter/material.dart';
-
+import 'package:iot_dashboard/constants/global_constants.dart';
 class HlsPlayerIframe extends StatefulWidget {
   final String cam;
   const HlsPlayerIframe({super.key, this.cam = 'cam1'});
@@ -30,7 +30,7 @@ class _HlsPlayerIframeState extends State<HlsPlayerIframe> {
 
   void _refreshIframe() {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    _iframeUrl = 'https://hanlimtwin.kr:3030/hls_player.html?cam=${widget.cam}&t=$timestamp';
+    _iframeUrl = '${baseUrl3030}/hls_player.html?cam=${widget.cam}&t=$timestamp';
     print('현재 cctv의 url :${_iframeUrl}');
     _viewId = 'hls-player-iframe-${widget.cam}-$timestamp';
 

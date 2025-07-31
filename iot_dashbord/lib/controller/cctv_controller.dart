@@ -13,7 +13,7 @@ class CctvController extends ChangeNotifier {
   Future<void> fetchCctvs() async {
     print('📡 fetchCctvs 호출됨');
     try {
-      final response = await http.get(Uri.parse('$baseUrl4040/cctvs'));
+      final response = await http.get(Uri.parse('$baseUrl4040/api/cctvs'));
       print('📥 응답 상태 코드: ${response.statusCode}');
       print('📦 응답 바디: ${response.body}');
 

@@ -9,7 +9,7 @@ import 'dart:html' as html;
 import 'package:iot_dashboard/utils/iframe_visibility.dart';
 import 'package:iot_dashboard/component/common/change_password_dialog.dart';
 import 'package:iot_dashboard/utils/setting_service.dart';
-
+import 'package:iot_dashboard/constants/global_constants.dart';
 class TopAppBar extends StatelessWidget {
   final VoidCallback? onMenuPressed;
   final bool isMenuVisible; // ✅ 추가
@@ -76,7 +76,7 @@ class TopAppBar extends StatelessWidget {
                   child: (SettingService.setting?.logoUrl != null &&
                       SettingService.setting!.logoUrl!.trim().isNotEmpty)
                       ? Image.network(
-                    'https://hanlimtwin.kr:3030${SettingService.setting!.logoUrl!}',
+                    '${baseUrl3030}${SettingService.setting!.logoUrl!}',
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) {
                       return const Icon(Icons.image_not_supported);

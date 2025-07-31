@@ -7,7 +7,7 @@ class FieldInfoController {
 
   // ✅ 최신 1건 조회
   static Future<FieldInfo?> fetchLatestFieldInfo() async {
-    final url = Uri.parse('$baseUrl3030/fieldinfo');
+    final url = Uri.parse('$baseUrl3030/api/fieldinfo');
 
     try {
       final response = await http.get(url);
@@ -26,7 +26,7 @@ class FieldInfoController {
 
   // ✅ 등록
   static Future<bool> insertFieldInfo(FieldInfo info) async {
-    final url = Uri.parse('$baseUrl3030/fieldinfo');
+    final url = Uri.parse('$baseUrl3030/api/fieldinfo');
 
     try {
       final response = await http.post(
