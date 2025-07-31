@@ -42,14 +42,12 @@ class _WorkTaskSectionState extends State<WorkTaskSection> {
 
   void _loadWorkTasks() async {
     try {
-      final data = await WorkTaskController.fetchTasks();
-      setState(() {
-        workTasks = data;
-      });
+      await context.read<WorkTaskState>().fetchTasks(); // ✅ 핵심 수정
     } catch (e) {
       print('❌ 작업 데이터 로드 실패: $e');
     }
   }
+
   @override
   void dispose() {
     _timer?.cancel();

@@ -1179,22 +1179,14 @@ class _ExpandWorkTaskSearchState extends State<ExpandWorkTaskSearch> {
                                                             child: TextField(
                                                               controller:
                                                                   progressController,
-                                                              onChanged:
-                                                                  (value) {
+                                                              onChanged: (value) {
+                                                                final parsed = int.tryParse(value) ?? 0;
                                                                 setState(() {
-                                                                  final parsed =
-                                                                      int.tryParse(
-                                                                              value) ??
-                                                                          0;
-                                                                  editedTasks[
-                                                                      index] = (editedTasks[
-                                                                              index] ??
-                                                                          workTask)
-                                                                      .copyWith(
-                                                                          progress:
-                                                                              parsed);
+                                                                  editedTasks[workTask.id] =
+                                                                      (editedTasks[workTask.id] ?? workTask).copyWith(progress: parsed);
                                                                 });
                                                               },
+
                                                               style: TextStyle(
                                                                 fontFamily:
                                                                     'PretendardGOV',
@@ -1245,15 +1237,10 @@ class _ExpandWorkTaskSearchState extends State<ExpandWorkTaskSearch> {
                                                                   startDateController,
                                                               onChanged:
                                                                   (value) {
-                                                                setState(() {
-                                                                  editedTasks[
-                                                                      index] = (editedTasks[
-                                                                              index] ??
-                                                                          workTask)
-                                                                      .copyWith(
-                                                                          startDate:
-                                                                              value);
-                                                                });
+                                                                    setState(() {
+                                                                      editedTasks[workTask.id] =
+                                                                          (editedTasks[workTask.id] ?? workTask).copyWith(startDate: value);
+                                                                    });
                                                               },
                                                               style: TextStyle(
                                                                 fontFamily:
@@ -1313,15 +1300,14 @@ class _ExpandWorkTaskSearchState extends State<ExpandWorkTaskSearch> {
                                                                         TextField(
                                                                       controller:
                                                                           endDateController,
-                                                                      onChanged:
-                                                                          (value) {
-                                                                        setState(
-                                                                            () {
-                                                                          editedTasks[index] =
-                                                                              (editedTasks[index] ?? workTask).copyWith(endDate: value);
-                                                                        });
-                                                                      },
-                                                                      style:
+                                                                          onChanged: (value) {
+                                                                            setState(() {
+                                                                              editedTasks[workTask.id] =
+                                                                                  (editedTasks[workTask.id] ?? workTask).copyWith(endDate: value);
+                                                                            });
+                                                                          },
+
+                                                                          style:
                                                                           TextStyle(
                                                                         fontFamily:
                                                                             'PretendardGOV',
