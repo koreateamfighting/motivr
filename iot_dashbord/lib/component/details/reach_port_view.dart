@@ -25,8 +25,8 @@ class ReachPortView extends StatelessWidget {
               width: 1251.w,
               height: 757.h,
               color: Colors.grey,
-              alignment: Alignment.center,
-              child: Image.asset('assets/images/reachport.png')), // 아래쪽 영역
+
+              child: Image.asset('assets/images/reachport.png',fit: BoxFit.fill,)),
         ],
       ),
     );
