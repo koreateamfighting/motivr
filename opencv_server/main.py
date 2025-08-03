@@ -34,10 +34,10 @@ def start_cam_thread(cam_id):
 
         cap = cv2.VideoCapture(rtsp_url)
         if not cap.isOpened():
-            print(f"❌ [{cam_id}] RTSP 연결 실패")
+            print(f" [{cam_id}] RTSP 연결 실패")
             return
 
-        # ✅ 그림자 제거에 강한 배경모델
+        #  그림자 제거에 강한 배경모델
         fgbg = cv2.createBackgroundSubtractorMOG2(history=500, varThreshold=50, detectShadows=True)
 
         while True:
@@ -47,7 +47,7 @@ def start_cam_thread(cam_id):
 
             frame_with_box = frame.copy()
 
-            # ✅ 배경 제거 및 그림자 필터링
+            #  배경 제거 및 그림자 필터링
             fgmask = fgbg.apply(frame)
             _, thresh = cv2.threshold(fgmask, 220, 255, cv2.THRESH_BINARY)
 
@@ -56,10 +56,10 @@ def start_cam_thread(cam_id):
             motion_labels = {}
             for i, c in enumerate(contours):
                 area = cv2.contourArea(c)
-                if area > 100000:  # ✅  설정한 감도 유지
+                if area > 100000:  #   설정한 감도 유지
                     x, y, w, h = cv2.boundingRect(c)
                     aspect_ratio = w / h if h != 0 else 0
-                    if 0.3 < aspect_ratio < 3.0:  # ✅ 줄같은 얇은 건 무시
+                    if 0.3 < aspect_ratio < 3.0:  #  줄같은 얇은 건 무시
                         label = f"Line_{i+1}"
                         motion_labels[label] = True
 
@@ -74,7 +74,7 @@ def start_cam_thread(cam_id):
                         cv2.putText(frame_with_box, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
                         insert_alarmhistory(cam_id, area)
 
-            # ✅ 사각형은컬러 유지, 배경은 흑백 처리
+            #  사각형은컬러 유지, 배경은 흑백 처리
             gray_img = cv2.cvtColor(frame_with_box, cv2.COLOR_BGR2GRAY)
             gray_3ch = cv2.cvtColor(gray_img, cv2.COLOR_GRAY2BGR)
                         
@@ -94,7 +94,7 @@ def start_cam_thread(cam_id):
             time.sleep(0.05)
 
         cap.release()
-        print(f"📴 [{cam_id}] 종료됨")
+        print(f" [{cam_id}] 종료됨")
 
     thread = threading.Thread(target=capture, daemon=True)
     streaming_threads[cam_id] = thread
@@ -124,9 +124,9 @@ def insert_alarmhistory(cam_id, area):
         conn.commit()
         cursor.close()
         conn.close()
-        print(f"✅ {cam_id} 알람 저장됨: {event}")
+        print(f" {cam_id} 알람 저장됨: {event}")
     except Exception as e:
-        print(f"❌ DB 저장 오류: {e}")
+        print(f" DB 저장 오류: {e}")
 
 @app.route('/stream/<cam_id>')
 def stream(cam_id):

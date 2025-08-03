@@ -18,12 +18,14 @@ if is_prod:
         keyfile=r'C:\Users\Administrator\cert\privkey.pem',
         certfile=r'C:\Users\Administrator\cert\fullchain.pem'
     )
-    print(f"✅ Secure motion server running on https://0.0.0.0:{PORT}")
+    print(f" Secure motion server running on https://0.0.0.0:{PORT}")
 else:
     # 로컬 환경: HTTP
     server = pywsgi.WSGIServer(
         ('0.0.0.0', PORT),
         app
     )
-    print(f"✅ Local motion server running on http://0.0.0.0:{PORT}")
+    # run_server.py
+print(f"Local motion server running on http://0.0.0.0:{PORT}")
+
 server.serve_forever()
