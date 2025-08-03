@@ -22,7 +22,7 @@ class PropulsionPortView extends StatelessWidget {
               height: 757.h,
               color: Colors.grey,
               alignment: Alignment.center,
-              child: Image.asset('assets/images/추진구.png')),
+              child: Image.asset('assets/images/propulsion.png')),
         ],
       ),
     );
