@@ -71,12 +71,12 @@ class _FindAccountScreenState extends State<FindAccountScreen> {
                       fit: BoxFit.cover,
                     ),
                   ),
-                  Positioned.fill(
-                    child: Image.asset(
-                      'assets/images/background_color.png',
-                      fit: BoxFit.cover,
-                    ),
-                  ),
+                  // Positioned.fill(
+                  //   child: Image.asset(
+                  //     'assets/images/background_color.png',
+                  //     fit: BoxFit.cover,
+                  //   ),
+                  // ),
                   Positioned(
                     child: Container(
                       width: 215.59.w,
