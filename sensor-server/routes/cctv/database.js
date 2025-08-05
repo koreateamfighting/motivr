@@ -98,6 +98,22 @@ router.post('/cctvs', async (req, res) => {
 });
 
 
+router.get('/cctvs/device-ids', async (req, res) => {
+  try {
+    const pool = await poolConnect;
+    const result = await pool.request().query(`
+      SELECT CamID FROM CctvStatus
+    `);
+    const camIds = result.recordset.map(row => row.CamID);
+    res.status(200).json({ data: camIds });
+  } catch (err) {
+    console.error('❌ CCTV DeviceID 목록 조회 실패:', err);
+    res.status(500).json({ error: 'CCTV DeviceID 목록 조회 실패' });
+  }
+});
+
+
+
 module.exports = router;
 
 const hlsFolder = 'C:\\Users\\Administrator\\sensor-server\\public\\hls';

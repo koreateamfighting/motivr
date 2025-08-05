@@ -177,7 +177,7 @@ router.post('/bulk-update', async (req, res) => {
 
       if (!id || !title || progress === undefined) continue;
 
-      await pool.request().request()
+      await pool.request()
         .input('id', sql.Int, id)
         .input('title', sql.NVarChar(100), title)
         .input('progress', sql.Int, progress)

@@ -115,8 +115,8 @@ async function insertAlarmHistoryFromSensorData(data, createAt, pool , transacti
   try {
     const pool = await sql.connect(config);
     const sensorType = '변위';
-    const startDate = '2025-07-31';
-    const endDate = '2025-07-31';
+    const startDate = '2025-08-05';
+    const endDate = '2025-08-05';
     const dateList = getDateRange(startDate, endDate);
     const ridToLabelMap = {};
 

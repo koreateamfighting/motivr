@@ -98,5 +98,176 @@ router.get('/load_twin', (req, res) => {
 });
 
 
+// 📤 POST: CSV 저장
+router.post('/save_info1', (req, res) => {
+  const { csv } = req.body;
+
+  if (!csv) {
+    return res.status(400).json({ error: 'CSV 데이터가 필요합니다.' });
+  }
+
+  try {
+    const now = new Date();
+    const timestamp = now.toISOString().slice(0, 19).replace(/[:T]/g, '-');
+    const filename = `info_${timestamp}.csv`;
+    const logDir = path.join(__dirname, '..', 'logs2');
+
+    if (!fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir, { recursive: true });
+    }
+
+    const filePath = path.join(logDir, filename);
+    fs.writeFileSync(filePath, csv, 'utf-8');
+
+    console.log(`✅ CSV 저장 완료: ${filePath}`);
+    res.status(200).json({ message: 'CSV 저장 성공', filename });
+  } catch (err) {
+    console.error('❌ CSV 저장 실패:', err);
+    res.status(500).json({ error: 'CSV 저장 실패' });
+  }
+});
+
+// 📥 GET: 최신 CSV 다운로드
+router.get('/load_info1', (req, res) => {
+  const logDir = path.join(__dirname, '..', 'logs2');
+
+  try {
+    const files = fs.readdirSync(logDir)
+      .filter(f => f.endsWith('.csv'))
+      .sort((a, b) => {
+        const timeA = fs.statSync(path.join(logDir, a)).mtime;
+        const timeB = fs.statSync(path.join(logDir, b)).mtime;
+        return timeB - timeA;
+      });
+
+    if (files.length === 0) {
+      return res.status(404).json({ error: 'CSV 파일이 없습니다.' });
+    }
+
+    const latestFile = files[0];
+    const filePath = path.join(logDir, latestFile);
+
+    res.setHeader('Content-Disposition', `attachment; filename=${latestFile}`);
+    res.setHeader('Content-Type', 'text/csv');
+    res.sendFile(filePath);
+  } catch (err) {
+    console.error('❌ CSV 로드 실패:', err);
+    res.status(500).json({ error: 'CSV 다운로드 실패' });
+  }
+});
+// 📤 POST: CSV 저장
+router.post('/save_info2', (req, res) => {
+  const { csv } = req.body;
+
+  if (!csv) {
+    return res.status(400).json({ error: 'CSV 데이터가 필요합니다.' });
+  }
+
+  try {
+    const now = new Date();
+    const timestamp = now.toISOString().slice(0, 19).replace(/[:T]/g, '-');
+    const filename = `info_${timestamp}.csv`;
+    const logDir = path.join(__dirname, '..', 'logs3');
+
+    if (!fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir, { recursive: true });
+    }
+
+    const filePath = path.join(logDir, filename);
+    fs.writeFileSync(filePath, csv, 'utf-8');
+
+    console.log(`✅ CSV 저장 완료: ${filePath}`);
+    res.status(200).json({ message: 'CSV 저장 성공', filename });
+  } catch (err) {
+    console.error('❌ CSV 저장 실패:', err);
+    res.status(500).json({ error: 'CSV 저장 실패' });
+  }
+});
+
+// 📥 GET: 최신 CSV 다운로드
+router.get('/load_info2', (req, res) => {
+  const logDir = path.join(__dirname, '..', 'logs3');
+
+  try {
+    const files = fs.readdirSync(logDir)
+      .filter(f => f.endsWith('.csv'))
+      .sort((a, b) => {
+        const timeA = fs.statSync(path.join(logDir, a)).mtime;
+        const timeB = fs.statSync(path.join(logDir, b)).mtime;
+        return timeB - timeA;
+      });
+
+    if (files.length === 0) {
+      return res.status(404).json({ error: 'CSV 파일이 없습니다.' });
+    }
+
+    const latestFile = files[0];
+    const filePath = path.join(logDir, latestFile);
+
+    res.setHeader('Content-Disposition', `attachment; filename=${latestFile}`);
+    res.setHeader('Content-Type', 'text/csv');
+    res.sendFile(filePath);
+  } catch (err) {
+    console.error('❌ CSV 로드 실패:', err);
+    res.status(500).json({ error: 'CSV 다운로드 실패' });
+  }
+});
+// 📤 POST: CSV 저장
+router.post('/save_info3', (req, res) => {
+  const { csv } = req.body;
+
+  if (!csv) {
+    return res.status(400).json({ error: 'CSV 데이터가 필요합니다.' });
+  }
+
+  try {
+    const now = new Date();
+    const timestamp = now.toISOString().slice(0, 19).replace(/[:T]/g, '-');
+    const filename = `info_${timestamp}.csv`;
+    const logDir = path.join(__dirname, '..', 'logs4');
+
+    if (!fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir, { recursive: true });
+    }
+
+    const filePath = path.join(logDir, filename);
+    fs.writeFileSync(filePath, csv, 'utf-8');
+
+    console.log(`✅ CSV 저장 완료: ${filePath}`);
+    res.status(200).json({ message: 'CSV 저장 성공', filename });
+  } catch (err) {
+    console.error('❌ CSV 저장 실패:', err);
+    res.status(500).json({ error: 'CSV 저장 실패' });
+  }
+});
+
+// 📥 GET: 최신 CSV 다운로드
+router.get('/load_info3', (req, res) => {
+  const logDir = path.join(__dirname, '..', 'logs4');
+
+  try {
+    const files = fs.readdirSync(logDir)
+      .filter(f => f.endsWith('.csv'))
+      .sort((a, b) => {
+        const timeA = fs.statSync(path.join(logDir, a)).mtime;
+        const timeB = fs.statSync(path.join(logDir, b)).mtime;
+        return timeB - timeA;
+      });
+
+    if (files.length === 0) {
+      return res.status(404).json({ error: 'CSV 파일이 없습니다.' });
+    }
+
+    const latestFile = files[0];
+    const filePath = path.join(logDir, latestFile);
+
+    res.setHeader('Content-Disposition', `attachment; filename=${latestFile}`);
+    res.setHeader('Content-Type', 'text/csv');
+    res.sendFile(filePath);
+  } catch (err) {
+    console.error('❌ CSV 로드 실패:', err);
+    res.status(500).json({ error: 'CSV 다운로드 실패' });
+  }
+});
 
 module.exports = router;

@@ -50,7 +50,7 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
   String selectedRid = '';
   String selectedCCTV = '';
   String selectedInterval = '30분';
-  int selectedTab = 1; // 0 = IoT, 1 = CCTV
+  int selectedTab = 0; // 0 = IoT, 1 = CCTV
   TimeRange _currentRange = TimeRange(
     start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
     end: DateTime.now().copyWith(hour: 23, minute: 59, second: 59),
