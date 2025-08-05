@@ -7,6 +7,10 @@ class CctvController extends ChangeNotifier {
   List<CctvItem> _items = [];
 
   List<CctvItem> get items => _items;
+  Set<String> getAllDeviceIds() {
+    return _items.map((e) => e.camId).toSet();
+  }
+
 
   // 기존 CCTV 리스트 조회
 // cctv_controller.dart
@@ -27,6 +31,25 @@ class CctvController extends ChangeNotifier {
       }
     } catch (e) {
       print('❌ CCTV 불러오기 실패: $e');
+    }
+  }
+
+  static Future<List<String>> fetchAllCctvDeviceIds() async {
+    final url = Uri.parse('$baseUrl3030/api/cctvs/device-ids');
+
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        final List<dynamic> ids = decoded['data'];
+        return ids.map((e) => e.toString()).toList();
+      } else {
+        print('⚠️ CCTV DeviceID 조회 실패: ${response.body}');
+        return [];
+      }
+    } catch (e) {
+      print('❌ CCTV DeviceID 조회 예외 발생: $e');
+      return [];
     }
   }
 

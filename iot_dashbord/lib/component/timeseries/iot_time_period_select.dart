@@ -12,17 +12,17 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart'; // kIsWeb
 import 'package:iot_dashboard/utils/auth_service.dart';
 
-class TimePeriodSelect extends StatefulWidget {
+class IotTimePeriodSelect extends StatefulWidget {
   final void Function(DateTime from, DateTime to)? onQuery;
   final ValueNotifier<Set<String>> selectedDownloadRids; // ✅ 추가
   final List<String> allRids; // ✅ 추가
-  const TimePeriodSelect({super.key, this.onQuery, required this.selectedDownloadRids,    required this.allRids, });
+  const IotTimePeriodSelect({super.key, this.onQuery, required this.selectedDownloadRids,    required this.allRids, });
 
   @override
-  State<TimePeriodSelect> createState() => _TimePeriodSelectState();
+  State<IotTimePeriodSelect> createState() => _IotTimePeriodSelectState();
 }
 
-class _TimePeriodSelectState extends State<TimePeriodSelect> {
+class _IotTimePeriodSelectState extends State<IotTimePeriodSelect> {
   String selectedPeriod = '';
   DateTime? startDate;
   DateTime? endDate;

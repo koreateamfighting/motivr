@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:iot_dashboard/model/iot_model.dart';
-import 'package:iot_dashboard/component/timeseries/graph_view.dart';
+import 'package:iot_dashboard/component/timeseries/iot_graph_view.dart';
 import 'package:intl/intl.dart';
 import 'dart:html' as html; // Flutter Web 전용
 import 'package:iot_dashboard/constants/global_constants.dart';

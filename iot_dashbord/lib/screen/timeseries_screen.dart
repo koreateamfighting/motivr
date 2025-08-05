@@ -2,14 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iot_dashboard/component/common/base_layout.dart';
 import 'package:iot_dashboard/component/common/dialog_form.dart';
-import 'package:iot_dashboard/component/timeseries/time_period_select.dart';
+import 'package:iot_dashboard/component/timeseries/iot_time_period_select.dart';
+import 'package:iot_dashboard/component/timeseries/cctv_time_period_select.dart';
 import 'package:iot_dashboard/controller/iot_controller.dart';
+import 'package:iot_dashboard/controller/cctv_controller.dart';
 import 'package:iot_dashboard/theme/colors.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
 import 'package:iot_dashboard/component/common/build_tab.dart';
-import 'package:iot_dashboard/component/timeseries/alarm_history.dart';
-import 'package:iot_dashboard/component/timeseries/graph_view.dart';
+import 'package:iot_dashboard/component/timeseries/iot_alarm_history.dart';
+import 'package:iot_dashboard/component/timeseries/iot_graph_view.dart';
+import 'package:iot_dashboard/component/timeseries/cctv_alarm_histroy.dart';
+import 'package:iot_dashboard/component/timeseries/cctv_graph_view.dart';
 import 'package:provider/provider.dart';
 
 class TimeRange {
@@ -17,6 +21,17 @@ class TimeRange {
   final DateTime end;
 
   TimeRange({required this.start, required this.end});
+}
+
+// ✅ interval 계산 함수 추가 (cctv 파트임)
+int calculateIntervalInMinutes(DateTime start, DateTime end) {
+  final diffMinutes = end.difference(start).inMinutes;
+  if (diffMinutes <= 24 * 60) return 10; // 하루 이하
+  if (diffMinutes <= 3 * 24 * 60) return 30; // 3일 이하
+  if (diffMinutes <= 7 * 24 * 60) return 60; // 7일 이하
+  if (diffMinutes <= 14 * 24 * 60) return 120; // 2주 이하
+  if (diffMinutes <= 31 * 24 * 60) return 180; // 1달 이하
+  return 360; // 그 외 (6시간)
 }
 
 
@@ -30,14 +45,25 @@ class TimeSeriesScreen extends StatefulWidget {
 
 class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
   final ValueNotifier<Set<String>> selectedDownloadRids = ValueNotifier({});
+  final ValueNotifier<Set<String>> selectedDownloadDevices = ValueNotifier({});
+
   String selectedRid = '';
+  String selectedCCTV = '';
   String selectedInterval = '30분';
-  int selectedTab = 0; // 0 = IoT, 1 = CCTV
+  int selectedTab = 1; // 0 = IoT, 1 = CCTV
   TimeRange _currentRange = TimeRange(
     start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
     end: DateTime.now().copyWith(hour: 23, minute: 59, second: 59),
   );
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CctvController>().fetchCctvs();
+    });
+
+  }
 
 
   void _onQuery(DateTime from, DateTime to) {
@@ -58,15 +84,17 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
         .getFilteredDisplacementGroups()
         .map((g) => g.rid)
         .toList();
-    return ChangeNotifierProvider(
-        create: (_) => IotController()..fetchAllSensorData,
-        child: ScreenUtilInit(
-          designSize: const Size(3812, 2144),
-          minTextAdapt: true,
-          splitScreenMode: true,
-          builder: (context, child) {
-            return BaseLayout(
-                child: Container(
+    final cctvAllDevices = context.watch<CctvController>().getAllDeviceIds().toList();
+
+    final cctvInterval = calculateIntervalInMinutes(_currentRange.start, _currentRange.end);
+
+    return ScreenUtilInit(
+      designSize: const Size(3812, 2144),
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) {
+        return BaseLayout(
+            child: Container(
               padding: EdgeInsets.only(
                 left: 70.w,
                 right: 72.w,
@@ -136,14 +164,14 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
                       Expanded(
                         child: GestureDetector(
                           onTap: () {
-                            // setState(() => selectedTab = 1); // CCTV 준비중
-                            showDialog(
+                            setState(() => selectedTab = 1); // CCTV 준비중
+                            /*         showDialog(
                               context: context,
                               builder: (_) => const DialogForm(
                                 mainText: 'CCTV 시계열 데이터 부분은 점검중입니다.',
                                 btnText: '확인',
                               ),
-                            );
+                            );*/
                           },
                           child: buildTab(
                               label: 'CCTV',
@@ -154,13 +182,13 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
                     ],
                   ),
                   Transform.translate(offset: Offset(0, -1),
-                  child:
-                  Container(
-                    width: double.infinity,
-                    height: 37.h,
-                    color: Color(0xff3182ce),
-                  ))
-                 ,
+                      child:
+                      Container(
+                        width: double.infinity,
+                        height: 37.h,
+                        color: Color(0xff3182ce),
+                      ))
+                  ,
                   SizedBox(
                     height: 4.h,
                   ),
@@ -174,7 +202,7 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
                         left: BorderSide(color: Color(0xff3182ce), width: 4.w),
                         right: BorderSide(color: Color(0xff3182ce), width: 4.w),
                         bottom:
-                            BorderSide(color: Color(0xff3182ce), width: 4.w),
+                        BorderSide(color: Color(0xff3182ce), width: 4.w),
                       ),
                       borderRadius: BorderRadius.only(
                         bottomLeft: Radius.circular(10.r),
@@ -183,10 +211,16 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
                     ),
                     child: Column(
                       children: [
-                        TimePeriodSelect(
-                          onQuery: _onQuery, // ✅ 날짜 변경 적용
-                          selectedDownloadRids: selectedDownloadRids, // ✅ 추가
+                        selectedTab == 0
+                            ? IotTimePeriodSelect(
+                          onQuery: _onQuery,
+                          selectedDownloadRids: selectedDownloadRids,
                           allRids: allRids,
+                        )
+                            : CCTVTimePeriodSelect(
+                          onQuery: _onQuery,
+                          selectedDownloadDevices: selectedDownloadDevices,
+                          allDevices: cctvAllDevices,
                         ),
                         SizedBox(
                           height: 16.h,
@@ -195,18 +229,27 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            AlarmHistory(
+                            selectedTab == 0?
+                            IotAlarmHistory(
                               selectedRid: selectedRid,
                               allItems: context.watch<IotController>().items,
                               startDate: _currentRange.start,
                               endDate: _currentRange.end,
+                            ):
+                            CCTVAlarmHistory(
+                              onDeviceSelected: (deviceId) {
+                                setState(() {
+                                  selectedRid = deviceId;
+                                });
+                              },
                             ),
 
 
                             SizedBox(
                               width: 4.w,
                             ),
-                            GraphView(
+                            selectedTab == 0?
+                            IotGraphView(
                               timeRange: _currentRange,
                               onRidTap: (rid) {
                                 setState(() {
@@ -214,7 +257,17 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
                                 });
                               },
                               selectedDownloadRids: selectedDownloadRids, // ✅ 추가
-                            ),
+                            ):
+                            CCTVGraphView(
+                              timeRange: _currentRange,
+                              intervalMinutes: cctvInterval,
+                              onDeviceTap: (cctv) {
+                                setState(() {
+                                  selectedCCTV = cctv;
+                                });
+                              },
+                              selectedDownloadDevices: selectedDownloadDevices, // ✅ 추가
+                            )
                           ],
 
 
@@ -226,8 +279,8 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
                 ],
               ),
             ));
-          },
-        ));
+      },
+    );
   }
 
 }

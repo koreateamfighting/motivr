@@ -4,20 +4,20 @@ import 'package:iot_dashboard/controller/iot_controller.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 
-class AlarmHistory extends StatefulWidget {
+class IotAlarmHistory extends StatefulWidget {
   final String selectedRid;
   final List<IotItem> allItems;
   final DateTime startDate;
   final DateTime endDate;
 
-  const AlarmHistory(
+  const IotAlarmHistory(
       {super.key, required this.selectedRid, required this.allItems,  required this.startDate,
         required this.endDate});
 
-  State<AlarmHistory> createState() => _AlarmHistoryState();
+  State<IotAlarmHistory> createState() => _IotAlarmHistoryState();
 }
 
-class _AlarmHistoryState extends State<AlarmHistory> {
+class _IotAlarmHistoryState extends State<IotAlarmHistory> {
   final ScrollController _scrollController = ScrollController();
   List<IotItem> filteredItems = [];
 
@@ -35,7 +35,7 @@ class _AlarmHistoryState extends State<AlarmHistory> {
   }
 
   @override
-  void didUpdateWidget(covariant AlarmHistory oldWidget) {
+  void didUpdateWidget(covariant IotAlarmHistory oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.selectedRid != oldWidget.selectedRid ||
         widget.allItems != oldWidget.allItems ||
@@ -153,10 +153,10 @@ class _AlarmHistoryState extends State<AlarmHistory> {
           ),
           SizedBox(width: 11.w),
           Container(
-            width: 241.w,
+
             height: 50.h,
             child: Text(
-              '알람 히스토리',
+              '센서 알람 히스토리',
               style: TextStyle(
                 fontSize: 36.sp,
                 fontFamily: 'PretendardGOV',
@@ -297,7 +297,7 @@ class _AlarmHistoryState extends State<AlarmHistory> {
       child: Row(
         children: [
           Container(
-            width: 260.w,
+
             child: Text(
               DateFormat('yyyy-MM-dd HH:mm:ss').format(item.createAt),
               style: TextStyle(
@@ -307,7 +307,7 @@ class _AlarmHistoryState extends State<AlarmHistory> {
               ),
             ),
           ),
-          SizedBox(width: 145.w),
+          SizedBox(width: 100.w),
           iconWidget,
           SizedBox(width: 20.w),
           Container(

@@ -5,7 +5,7 @@ import 'package:iot_dashboard/model/alarm_history_model.dart';
 import 'dart:html' as html; // 웹 전용
 import 'dart:typed_data';
 import 'package:iot_dashboard/constants/global_constants.dart';
-
+import 'package:intl/intl.dart';
 class AlarmHistoryController {
 
 
@@ -228,6 +228,27 @@ class AlarmHistoryController {
       return [];
     }
   }
+// ✅ 특정 DeviceID의 CCTV 경고/주의 알람 100건 조회
+  static Future<List<AlarmHistory>> fetchCctvAlertByDevice(String deviceId) async {
+    final url = Uri.parse('$baseUrl3030/api/alarmhistory/cctv/alert-by-device/$deviceId');
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        final List<dynamic> records = decoded['data'];
+
+        return records.map((e) => AlarmHistory.fromJson(e)).toList();
+      } else {
+        print('⚠️ CCTV 알람 조회 실패: ${response.body}');
+        return [];
+      }
+    } catch (e) {
+      print('❌ CCTV 알람 조회 예외 발생: $e');
+      return [];
+    }
+  }
 
 
   static Future<void> downloadCctvLogExcel(String camId) async {
@@ -277,7 +298,91 @@ class AlarmHistoryController {
     }
   }
 
+  static Future<void> downloadCctvLogExcelByPeriod({
+    required List<String> camIds,
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    if (camIds.isEmpty) {
+      print('❌ 다운로드 실패: 선택된 camId 없음');
+      return;
+    }
+
+    final startStr = Uri.encodeComponent(startDate.toIso8601String());
+    final endStr = Uri.encodeComponent(endDate.toIso8601String());
+
+    // 쉼표로 join 후 encode
+    final camIdParam = Uri.encodeComponent(camIds.join(','));
+
+    final url = Uri.parse(
+      '$baseUrl3030/api/alarmhistory/download-excel-cctv-period-multi?camId=$camIdParam&startDate=$startStr&endDate=$endStr',
+    );
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final blob = html.Blob([response.bodyBytes]);
+        final urlObj = html.Url.createObjectUrlFromBlob(blob);
+
+        // 파일 이름: 단일이면 cam1_2025-08-05.xlsx / 다중이면 cam1~cam3_2025-08-05.xlsx
+        final first = camIds.first;
+        final last = camIds.length > 1 ? '~${camIds.last}' : '';
+        final dateStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+        final filename = 'cctv_logs_${first}${last}_$dateStr.xlsx';
+
+        final anchor = html.AnchorElement(href: urlObj)
+          ..setAttribute("download", filename)
+          ..click();
+        html.Url.revokeObjectUrl(urlObj);
+
+        print('✅ CCTV 엑셀 다운로드 성공: $filename');
+      } else {
+        print('⚠️ CCTV 엑셀 다운로드 실패: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ CCTV 엑셀 다운로드 예외 발생: $e');
+    }
+  }
 
 
+
+
+  static Future<List<Map<String, dynamic>>> fetchCctvGraphData({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    final url = Uri.parse(
+        '$baseUrl3030/api/alarmhistory/cctv/graph-data?startDate=${startDate.toIso8601String()}&endDate=${endDate.toIso8601String()}'
+    );
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        final List<dynamic> records = decoded['data'];
+
+        return records.map((e) {
+          final event = e['Event'];
+          int value = 0;
+          if (event == '주의') value = 1;
+          else if (event == '경고') value = 2;
+
+          return {
+            'deviceId': e['DeviceID'],
+            'timestamp': DateTime.parse(e['Timestamp']),
+            'value': value,
+          };
+        }).toList();
+      } else {
+        print('⚠️ CCTV 그래프 데이터 조회 실패: ${response.body}');
+        return [];
+      }
+    } catch (e) {
+      print('❌ CCTV 그래프 데이터 조회 예외 발생: $e');
+      return [];
+    }
+  }
 
 }

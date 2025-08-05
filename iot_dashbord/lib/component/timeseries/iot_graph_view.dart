@@ -1,4 +1,4 @@
-// ✅ 최종 리팩토링된 graph_view.dart 20250704
+// ✅ 최종 리팩토링된 iot_graph_view.dart 20250704
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -8,22 +8,22 @@ import 'package:provider/provider.dart';
 import 'package:iot_dashboard/controller/iot_controller.dart';
 import 'package:iot_dashboard/screen/timeseries_screen.dart';
 
-class GraphView extends StatefulWidget {
+class IotGraphView extends StatefulWidget {
   final TimeRange timeRange;
   final void Function(String rid) onRidTap;
   final ValueNotifier<Set<String>> selectedDownloadRids;
 
-  const GraphView(
+  const IotGraphView(
       {super.key,
       required this.timeRange,
       required this.onRidTap,
       required this.selectedDownloadRids});
 
   @override
-  State<GraphView> createState() => _GraphViewState();
+  State<IotGraphView> createState() => _IotGraphViewState();
 }
 
-class _GraphViewState extends State<GraphView> {
+class _IotGraphViewState extends State<IotGraphView> {
   late TooltipBehavior _tooltipBehavior;
   String selectedInterval = '30분';
   List<DisplacementGroup> groups = [];
@@ -43,7 +43,7 @@ class _GraphViewState extends State<GraphView> {
   }
 
   @override
-  void didUpdateWidget(covariant GraphView oldWidget) {
+  void didUpdateWidget(covariant IotGraphView oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (!_isSameTimeRange(widget.timeRange, oldWidget.timeRange)) {
