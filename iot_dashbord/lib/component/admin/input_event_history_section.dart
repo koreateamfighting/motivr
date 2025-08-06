@@ -334,7 +334,7 @@ class _EventInputSectionState extends State<EventInputSection> {
                       height: 85.h,
                       child: LabeledDropdownField(
                         title: '이벤트 :',
-                        items: ['정상', '경고', '위험', '점검필요'],
+                        items: ['정상', '주의', '경고', '점검필요'],
                         selectedValue: _selectedIotEvent,
                         onChanged: (val) =>
                             setState(() => _selectedIotEvent = val!),
@@ -495,7 +495,7 @@ class _EventInputSectionState extends State<EventInputSection> {
                       height: 85.h,
                       child: LabeledDropdownField(
                         title: '이벤트 :',
-                        items: ['정상', '경고', '위험', '점검필요'],
+                        items: ['정상', '주의', '경고', '점검필요'],
                         selectedValue: _selectedCctvEvent,
                         onChanged: (val) =>
                             setState(() => _selectedCctvEvent = val!),

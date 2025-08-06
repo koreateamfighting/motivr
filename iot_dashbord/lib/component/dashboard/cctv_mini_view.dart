@@ -64,12 +64,23 @@ class _CctvMiniViewState extends State<CctvMiniView> {
       for (var item in data) {
         final deviceId = item['DeviceID'];
         final event = item['Event'];
+
+        // ✅ 타임존 보정을 하지 않음 → 타임존 포함된 ISO8601 처리 안전
         final timestamp = DateTime.parse(item['Timestamp']);
+
+        // ✅ 'HH:mm' 키 생성
         final key = '${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}';
+
+
+
         final value = event == '주의' ? 1.0 : (event == '경고' ? 2.0 : 0.0);
 
-        if (deviceId == 'cam1') cam1Map[key] = value;
-        if (deviceId == 'cam2') cam2Map[key] = value;
+        if (deviceId == 'cam1') {
+          cam1Map[key] = value > (cam1Map[key] ?? 0.0) ? value : cam1Map[key]!;
+        }
+        if (deviceId == 'cam2') {
+          cam2Map[key] = value > (cam2Map[key] ?? 0.0) ? value : cam2Map[key]!;
+        }
       }
 
       List<FlSpot> cam1 = [], cam2 = [];
@@ -81,6 +92,7 @@ class _CctvMiniViewState extends State<CctvMiniView> {
       for (var key in cam1Map.keys) {
         final y1 = cam1Map[key]!;
         final y2 = cam2Map[key]!;
+
         cam1.add(FlSpot(i.toDouble(), y1));
         cam2.add(FlSpot(i.toDouble(), y2));
 
@@ -94,18 +106,19 @@ class _CctvMiniViewState extends State<CctvMiniView> {
       }
 
       setState(() {
-        cam1Spots = List<FlSpot>.from(cam1); // 👈 강제 갱신용 복제
+        cam1Spots = List<FlSpot>.from(cam1);
         cam2Spots = List<FlSpot>.from(cam2);
         cam1Avg = cam1Cnt > 0 ? (cam1Sum / cam1Cnt) : 0.0;
         cam2Avg = cam2Cnt > 0 ? (cam2Sum / cam2Cnt) : 0.0;
         today = todayDate;
         _lastUpdatedTime = DateFormat('HH:mm:ss').format(DateTime.now());
-        print('cctv 모션 값 재갱신 :${_lastUpdatedTime}');
+        print('📈 CCTV 그래프 재갱신 : $_lastUpdatedTime');
       });
     } catch (e) {
       print("❌ CCTV 알람 로딩 실패: $e");
     }
   }
+
 
   Map<String, double> _initializeDayMap() {
     final map = <String, double>{};

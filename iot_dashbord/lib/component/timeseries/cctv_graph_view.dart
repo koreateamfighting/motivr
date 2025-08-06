@@ -107,29 +107,25 @@ class _CCTVGraphViewState extends State<CCTVGraphView> {
           existing.first.value = value;
         }
       }
-      // ✅ 여기부터 보간 시작
       for (final deviceId in deviceMap.keys) {
         final rawList = deviceMap[deviceId]!;
-        final filledList = <CctvEventData>[];
 
-        if (rawList.isEmpty) continue;
-
-        rawList.sort((a, b) => a.time.compareTo(b.time));
-        final startTime = widget.timeRange.start;
-        final endTime = widget.timeRange.end;
-        final interval = Duration(minutes: widget.intervalMinutes);
+        // 👉 시간-값 매핑 생성 (rawList가 비어 있어도 문제 없음)
         final timeToValue = <DateTime, double>{};
         for (final e in rawList) {
           timeToValue[e.time] = e.value;
         }
 
+        final filledList = <CctvEventData>[];
+        final startTime = widget.timeRange.start;
+        final endTime = widget.timeRange.end;
+        final interval = Duration(minutes: widget.intervalMinutes);
+
         DateTime t = roundToInterval(startTime, widget.intervalMinutes);
         while (t.isBefore(endTime)) {
-          final value = timeToValue[t] ?? 0;
+          final value = timeToValue[t] ?? 0; // 👉 없는 값은 정상 상태 0으로 보간
           filledList.add(CctvEventData(t, value));
-          t = roundToInterval(t.add(interval),
-              widget.intervalMinutes); // ✅ 반드시 roundToInterval로 다시 감싸
-          //t = t.add(interval);
+          t = roundToInterval(t.add(interval), widget.intervalMinutes); // ✅ 간격 보장
         }
 
         deviceMap[deviceId] = filledList;
