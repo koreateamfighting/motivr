@@ -431,17 +431,17 @@ router.get('/sensor-status-summary', async (req, res) => {
     await poolConnect;
 
     const result = await pool.request().query(`
-WITH Latest AS (
-  SELECT
-    RID, EventType, X_Deg, Y_Deg, Z_Deg, CreateAt,
-    ROW_NUMBER() OVER (PARTITION BY RID ORDER BY CreateAt DESC) AS rn
-  FROM RawSensorData WITH (INDEX=IDX_RawSensorData_Latest)
-)
-SELECT 
-  *,
-  DATEDIFF(MINUTE, CreateAt, GETDATE()) AS MinutesAgo
-FROM Latest
-WHERE rn = 1
+      WITH Latest AS (
+        SELECT
+          RID, EventType, X_Deg, Y_Deg, Z_Deg, CreateAt,
+          ROW_NUMBER() OVER (PARTITION BY RID ORDER BY CreateAt DESC) AS rn
+        FROM RawSensorData WITH (INDEX=IDX_RawSensorData_Latest)
+      )
+      SELECT 
+        RID, EventType, X_Deg, Y_Deg, Z_Deg, CreateAt,
+        DATEDIFF(MINUTE, CreateAt, GETDATE()) AS MinutesAgo
+      FROM Latest
+      WHERE rn = 1
     `);
 
     const statusCount = { normal: 0, caution: 0, danger: 0, needInspection: 0 };
@@ -452,13 +452,20 @@ WHERE rn = 1
       const maxDeg = Math.max(...degs);
       const eventType = parseInt(row.EventType);
 
-      if (minutesAgo > 30) {
+      if (minutesAgo > 60) {
         statusCount.needInspection++;
-      } else if (eventType === 4) {
-        if (maxDeg >= 5) statusCount.danger++;
-        else if (maxDeg >= 3) statusCount.caution++;
-      } else if ([2, 5].includes(eventType) && degs.every(d => d <= 3)) {
-        statusCount.normal++;
+      } else if (eventType === 68) {
+        if (maxDeg >= 5) {
+          statusCount.danger++;
+        } else {
+          statusCount.normal++;
+        }
+      } else if (eventType === 67) {
+        if (maxDeg >= 3) {
+          statusCount.caution++;
+        } else {
+          statusCount.normal++;
+        }
       } else {
         statusCount.normal++;
       }

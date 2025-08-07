@@ -46,11 +46,6 @@ class _DashBoardState extends State<DashBoard> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    if (!_fetchTriggered) {
-      _fetchTriggered = true;
-      final controller = context.read<IotController>();
-      controller.fetchSensorStatusSummary();
-    }
   }
   @override
   void dispose() {
