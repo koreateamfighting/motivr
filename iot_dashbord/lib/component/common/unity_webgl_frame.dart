@@ -1,5 +1,5 @@
 import 'dart:html' as html;
-import 'dart:ui' as ui;
+import 'dart:ui_web' as ui_web;
 import 'package:flutter/material.dart';
 
 class UnityWebGLFrame extends StatefulWidget {
@@ -32,7 +32,7 @@ class _UnityWebGLFrameState extends State<UnityWebGLFrame> {
       ..allowFullscreen = true;
 
     // ignore: undefined_prefixed_name
-    ui.platformViewRegistry.registerViewFactory(
+    ui_web.platformViewRegistry.registerViewFactory(
       'unity-webgl-iframe',
           (int viewId) => _iframe,
     );

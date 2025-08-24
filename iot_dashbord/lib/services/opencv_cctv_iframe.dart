@@ -1,5 +1,5 @@
 import 'dart:html' as html;
-import 'dart:ui' as ui;
+import 'dart:ui_web' as ui_web;
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:iot_dashboard/constants/global_constants.dart';
@@ -27,7 +27,7 @@ class _OpencvCctvIframeState extends State<OpencvCctvIframe> {
       ..alt = 'CCTV 감지 영상';
 
     // ignore: undefined_prefixed_name
-    ui.platformViewRegistry.registerViewFactory(_viewId, (int viewId) => _imgElement);
+    ui_web.platformViewRegistry.registerViewFactory(_viewId, (int viewId) => _imgElement);
 
     // 초기 이미지 + 타이머 시작
     _updateImage();

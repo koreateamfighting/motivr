@@ -1,5 +1,5 @@
 import 'dart:html' as html;
-import 'dart:ui' as ui;
+import 'dart:ui_web' as ui_web;
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:iot_dashboard/constants/global_constants.dart';
@@ -36,7 +36,7 @@ class _HlsPlayerIframeState extends State<HlsPlayerIframe> {
 
     // re-register with a new viewId
     // ignore: undefined_prefixed_name
-    ui.platformViewRegistry.registerViewFactory(_viewId, (int viewId) {
+    ui_web.platformViewRegistry.registerViewFactory(_viewId, (int viewId) {
       final iframe = html.IFrameElement()
         ..src = _iframeUrl
         ..style.border = 'none'
