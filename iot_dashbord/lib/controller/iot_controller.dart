@@ -100,38 +100,35 @@ class IotController extends ChangeNotifier {
 
 
   List<DisplacementGroup> getFilteredDisplacementGroups() {
+    double _clamp(double v) => v > 5 ? 5 : (v < -5 ? -5 : v);
+
     final grouped = <String, List<IotItem>>{};
 
     debugPrint('📋 전체 _items 개수: ${_items.length}');
 
     for (final item in _items) {
-      final eventType = item.eventtype.trim();
-      final minute = item.createAt.minute;
-
-      if (eventType != '2') continue;
-      if (minute != 9 && minute != 39) continue;
-
       grouped.putIfAbsent(item.id, () => []).add(item);
     }
 
-    debugPrint('✅ 필터링 후 그룹 개수: ${grouped.length}');
-    for (final entry in grouped.entries) {
-      debugPrint('📌 RID=${entry.key}, 데이터 개수: ${entry.value.length}');
-      for (final i in entry.value) {
-        //debugPrint('  ↳ time=${i.createAt}, X=${i.X_Deg}, Y=${i.Y_Deg}, Z=${i.Z_Deg}');
-      }
-    }
+    debugPrint('✅ 그룹 개수: ${grouped.length}');
 
     return grouped.entries.map((entry) {
       final x = <DisplacementData>[];
       final y = <DisplacementData>[];
       final z = <DisplacementData>[];
 
+      entry.value.sort((a, b) => a.createAt.compareTo(b.createAt));
+
       for (final i in entry.value) {
-        final time = i.createAt;
-        x.add(DisplacementData(time, double.tryParse(i.X_Deg) ?? 0.0));
-        y.add(DisplacementData(time, double.tryParse(i.Y_Deg) ?? 0.0));
-        z.add(DisplacementData(time, double.tryParse(i.Z_Deg) ?? 0.0));
+        final t = i.createAt;
+
+        final xRaw = double.tryParse(i.X_Deg) ?? 0.0;
+        final yRaw = double.tryParse(i.Y_Deg) ?? 0.0;
+        final zRaw = double.tryParse(i.Z_Deg) ?? 0.0;
+
+        x.add(DisplacementData(t, _clamp(xRaw), xRaw));
+        y.add(DisplacementData(t, _clamp(yRaw), yRaw));
+        z.add(DisplacementData(t, _clamp(zRaw), zRaw));
       }
 
       return DisplacementGroup(rid: entry.key, x: x, y: y, z: z);
