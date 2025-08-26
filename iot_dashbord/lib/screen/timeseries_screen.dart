@@ -242,6 +242,7 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
                                   selectedRid = deviceId;
                                 });
                               },
+                              selectedDeviceId: selectedCCTV,
                             ),
 
 

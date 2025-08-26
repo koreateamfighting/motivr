@@ -115,13 +115,13 @@ async function insertAlarmHistoryFromSensorData(data, createAt, pool , transacti
   try {
     const pool = await sql.connect(config);
     const sensorType = '변위';
-    const startDate = '2025-08-05';
-    const endDate = '2025-08-05';
+    const startDate = '2025-08-26';
+    const endDate = '2025-08-26';
     const dateList = getDateRange(startDate, endDate);
     const ridToLabelMap = {};
 
     // 1. RID 별로 label 등록 및 캐싱
-    for (let i = 1; i <= 20; i++) {
+    for (let i = 1; i <= 2; i++) {
       const rid = `S1_${String(i).padStart(3, '0')}`;
       const label = `label_${rid}`;
 
@@ -150,7 +150,7 @@ async function insertAlarmHistoryFromSensorData(data, createAt, pool , transacti
 
     // 2. 날짜별 데이터 삽입
     for (const date of dateList) {
-      for (let i = 1; i <= 20; i++) {
+      for (let i = 1; i <= 2; i++) {
         const rid = `S1_${String(i).padStart(3, '0')}`;
         const label = ridToLabelMap[rid];
 

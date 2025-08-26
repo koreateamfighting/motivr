@@ -13,7 +13,13 @@ const ExcelJS = require('exceljs');
 async function insertAlarmHistoryFromSensorData(data, createAt, transaction = null) {
   const { RID, Label, EventType, Latitude, Longitude } = data;
   const deviceId = `${Label} #${RID}`;
-  const timestamp = createAt;
+    const kst = (() => {
+      const tryISO = DateTime.fromISO(createAt, { setZone: true });
+        if (tryISO.isValid) return tryISO.setZone('Asia/Seoul');
+        const tryFmt = DateTime.fromFormat(createAt, 'yyyy-LL-dd HH:mm:ss', { zone: 'Asia/Seoul' });
+        return tryFmt.isValid ? tryFmt : DateTime.now().setZone('Asia/Seoul');
+      })();
+      const timestampKST = kst.toFormat('yyyy-LL-dd HH:mm:ss'); // DB 저장용 문자열(타임존 없는 KST)
 
   let event = '점검필요';
   let log = `${deviceId} : 알려지지 않은 로그`;
@@ -66,7 +72,7 @@ async function insertAlarmHistoryFromSensorData(data, createAt, transaction = nu
 
   await insertRequest
     .input('DeviceID', sql.NVarChar(100), deviceId)
-    .input('Timestamp', sql.DateTime, timestamp)
+    .input('TimestampKST', sql.VarChar(19), timestampKST)
     .input('Event', sql.NVarChar(255), event)
     .input('Log', sql.NVarChar(1000), log)
     .input('Location', sql.NVarChar(255), Label)
@@ -77,7 +83,7 @@ async function insertAlarmHistoryFromSensorData(data, createAt, transaction = nu
       INSERT INTO AlarmHistory
       (DeviceID, Timestamp, Event, Log, Location, Latitude, Longitude, Type)
       VALUES
-      (@DeviceID, @Timestamp, @Event, @Log, @Location, @Latitude, @Longitude, @Type)
+     (@DeviceID, CONVERT(datetime, @TimestampKST, 120), @Event, @Log, @Location, @Latitude, @Longitude, @Type)
     `);
 }
 

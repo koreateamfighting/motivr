@@ -7,8 +7,12 @@ import 'package:intl/intl.dart';
 
 class CCTVAlarmHistory extends StatefulWidget {
   final void Function(String) onDeviceSelected;
+  final String selectedDeviceId;
 
-  const CCTVAlarmHistory({super.key, required this.onDeviceSelected});
+  const CCTVAlarmHistory(
+      {super.key,
+      required this.onDeviceSelected,
+      required this.selectedDeviceId});
 
   @override
   State<CCTVAlarmHistory> createState() => _CCTVAlarmHistoryState();
@@ -29,9 +33,9 @@ class _CCTVAlarmHistoryState extends State<CCTVAlarmHistory> {
     final result = await AlarmHistoryController.fetchCctvAlarmHistory();
     setState(() {
       alarms = result;
-      if (alarms.isNotEmpty) {
-        selectedDeviceId = alarms.first.deviceId;
-        widget.onDeviceSelected(selectedDeviceId);
+      if (alarms.isNotEmpty && (widget.selectedDeviceId.isEmpty)) {
+        // 부모가 아직 선택 안 했으면 첫 번째로 초기화
+        widget.onDeviceSelected(alarms.first.deviceId);
       }
     });
   }
@@ -81,7 +85,8 @@ class _CCTVAlarmHistoryState extends State<CCTVAlarmHistory> {
                       Padding(
                         padding: EdgeInsets.all(30.h),
                         child: Text('CCTV 알람 데이터가 없습니다.',
-                            style: TextStyle(fontSize: 28.sp, color: Colors.white70)),
+                            style: TextStyle(
+                                fontSize: 28.sp, color: Colors.white70)),
                       )
                     else
                       ...alarms.map(_buildRow).toList(),
@@ -117,7 +122,6 @@ class _CCTVAlarmHistoryState extends State<CCTVAlarmHistory> {
           ),
           SizedBox(width: 11.w),
           Container(
-
             height: 50.h,
             child: Text(
               'CCTV 알람 히스토리',
@@ -147,11 +151,15 @@ class _CCTVAlarmHistoryState extends State<CCTVAlarmHistory> {
         ),
       ),
       child: Center(
-         child:    Text('[${selectedDeviceId}]',
-         style: TextStyle(fontSize: 36.sp, color: Colors.white, fontWeight: FontWeight.w500)),
+        child: Text('[${widget.selectedDeviceId ?? ''}]',
+            style: TextStyle(
+                fontSize: 36.sp,
+                color: Colors.white,
+                fontWeight: FontWeight.w500)),
       ),
     );
   }
+
   Widget _buildColumnTitles() {
     return Container(
       width: double.infinity,
@@ -202,14 +210,16 @@ class _CCTVAlarmHistoryState extends State<CCTVAlarmHistory> {
     );
   }
 
-
   Widget _buildRow(AlarmHistory alarm) {
     final iconWidget = alarm.event == '경고'
-        ? Image.asset('assets/icons/alert_warning.png', width: 60.w, height: 60.h)
-        : Image.asset('assets/icons/alert_caution.png', width: 60.w, height: 60.h);
+        ? Image.asset('assets/icons/alert_warning.png',
+            width: 60.w, height: 60.h)
+        : Image.asset('assets/icons/alert_caution.png',
+            width: 60.w, height: 60.h);
     final textColor = alarm.event == '경고' ? Colors.red : Colors.yellow;
 
-    return Container( // ✅ return 추가
+    return Container(
+      // ✅ return 추가
       width: double.infinity,
       height: 100.h,
       decoration: BoxDecoration(
@@ -247,5 +257,4 @@ class _CCTVAlarmHistoryState extends State<CCTVAlarmHistory> {
       ),
     );
   }
-
 }
