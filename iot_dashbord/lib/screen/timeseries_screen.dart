@@ -51,11 +51,16 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
   String selectedCCTV = '';
   String selectedInterval = '30분';
   int selectedTab = 0; // 0 = IoT, 1 = CCTV
-  TimeRange _currentRange = TimeRange(
-    start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
-    end: DateTime.now().copyWith(hour: 23, minute: 59, second: 59),
-  );
 
+
+  TimeRange _iotRange = TimeRange(
+    start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
+    end:   DateTime.now().copyWith(hour: 23, minute: 59, second: 59),
+  );
+  TimeRange _cctvRange = TimeRange(
+    start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
+    end:   DateTime.now().copyWith(hour: 23, minute: 59, second: 59),
+  );
   @override
   void initState() {
     super.initState();
@@ -66,16 +71,18 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
   }
 
 
-  void _onQuery(DateTime from, DateTime to) {
-    // 항상 새로운 인스턴스를 생성해 강제 업데이트 유도
-    final newRange = TimeRange(start: from, end: to);
-
-    // 이전 range와 다르지 않더라도 새로 갱신되도록 setState
+  void _onQueryIot(DateTime from, DateTime to) {
     setState(() {
-      _currentRange = TimeRange(start: newRange.start, end: newRange.end);
+      _iotRange = TimeRange(start: from, end: to);
     });
   }
 
+  // ✅ CCTV 전용 조회 콜백
+  void _onQueryCctv(DateTime from, DateTime to) {
+    setState(() {
+      _cctvRange = TimeRange(start: from, end: to);
+    });
+  }
 
 
   @override
@@ -86,7 +93,7 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
         .toList();
     final cctvAllDevices = context.watch<CctvController>().getAllDeviceIds().toList();
 
-    final cctvInterval = calculateIntervalInMinutes(_currentRange.start, _currentRange.end);
+    final cctvInterval = calculateIntervalInMinutes(_cctvRange.start, _cctvRange.end);
 
     return ScreenUtilInit(
       designSize: const Size(3812, 2144),
@@ -213,12 +220,14 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
                       children: [
                         selectedTab == 0
                             ? IotTimePeriodSelect(
-                          onQuery: _onQuery,
+                          key: const ValueKey('IOT_SELECT'),
+                          onQuery: _onQueryIot,
                           selectedDownloadRids: selectedDownloadRids,
                           allRids: allRids,
                         )
                             : CCTVTimePeriodSelect(
-                          onQuery: _onQuery,
+                          key: const ValueKey('CCTV_SELECT'),
+                          onQuery: _onQueryCctv,
                           selectedDownloadDevices: selectedDownloadDevices,
                           allDevices: cctvAllDevices,
                         ),
@@ -233,14 +242,12 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
                             IotAlarmHistory(
                               selectedRid: selectedRid,
                               allItems: context.watch<IotController>().items,
-                              startDate: _currentRange.start,
-                              endDate: _currentRange.end,
-                            ):
-                            CCTVAlarmHistory(
+                              startDate: _iotRange.start,   // ✅ IoT 범위
+                              endDate:   _iotRange.end,
+                            )
+                                : CCTVAlarmHistory(
                               onDeviceSelected: (deviceId) {
-                                setState(() {
-                                  selectedRid = deviceId;
-                                });
+                                setState(() { selectedRid = deviceId; });
                               },
                               selectedDeviceId: selectedCCTV,
                             ),
@@ -251,23 +258,19 @@ class _TimeSeriesScreenState extends State<TimeSeriesScreen> {
                             ),
                             selectedTab == 0?
                             IotGraphView(
-                              timeRange: _currentRange,
+                              timeRange: _iotRange,          // ✅ IoT 범위
                               onRidTap: (rid) {
-                                setState(() {
-                                  selectedRid = rid;
-                                });
+                                setState(() { selectedRid = rid; });
                               },
-                              selectedDownloadRids: selectedDownloadRids, // ✅ 추가
+                              selectedDownloadRids: selectedDownloadRids,
                             ):
                             CCTVGraphView(
-                              timeRange: _currentRange,
+                              timeRange: _cctvRange,         // ✅ CCTV 범위
                               intervalMinutes: cctvInterval,
                               onDeviceTap: (cctv) {
-                                setState(() {
-                                  selectedCCTV = cctv;
-                                });
+                                setState(() { selectedCCTV = cctv; });
                               },
-                              selectedDownloadDevices: selectedDownloadDevices, // ✅ 추가
+                              selectedDownloadDevices: selectedDownloadDevices,
                             )
                           ],
 

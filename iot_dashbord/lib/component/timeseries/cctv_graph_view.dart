@@ -51,6 +51,18 @@ class _CCTVGraphViewState extends State<CCTVGraphView> {
     return DateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute, 0, 0, 0);
   }
 
+  DateTime _floorToInterval(DateTime dt, int minutes) {
+    final m = (dt.minute ~/ minutes) * minutes;
+    return DateTime(dt.year, dt.month, dt.day, dt.hour, m);
+  }
+
+  DateTime _ceilToInterval(DateTime dt, int minutes) {
+    final f = _floorToInterval(dt, minutes);
+    if (f.isAtSameMomentAs(dt)) return dt;
+    return f.add(Duration(minutes: minutes));
+  }
+
+
   bool _isSelected(String deviceId) {
     final selected = widget.selectedDownloadDevices.value;
     return selected.contains('ALL') || selected.contains(deviceId);
@@ -58,7 +70,7 @@ class _CCTVGraphViewState extends State<CCTVGraphView> {
 
   DateTime roundToInterval(DateTime dt, int intervalMinutes) {
     final normalized =
-        DateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute, 0, 0, 0);
+    DateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute, 0, 0, 0);
     final flooredMinute =
         normalized.minute - normalized.minute % intervalMinutes;
     return DateTime(normalized.year, normalized.month, normalized.day,
@@ -133,10 +145,10 @@ class _CCTVGraphViewState extends State<CCTVGraphView> {
 
       groups = deviceMap.entries
           .map((e) => CctvEventGroup(
-                deviceId: e.key,
-                data: e.value,
-                rawAlarms: deviceMapRaw[e.key] ?? [],
-              ))
+        deviceId: e.key,
+        data: e.value,
+        rawAlarms: deviceMapRaw[e.key] ?? [],
+      ))
           .toList()
         ..sort((a, b) =>
             int.parse(RegExp(r'\d+').stringMatch(a.deviceId) ?? '0').compareTo(
@@ -187,7 +199,7 @@ class _CCTVGraphViewState extends State<CCTVGraphView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: groups
                     .map((group) =>
-                        _buildChart(group, _isSelected(group.deviceId)))
+                    _buildChart(group, _isSelected(group.deviceId)))
                     .toList(),
               ),
             ),
@@ -198,15 +210,12 @@ class _CCTVGraphViewState extends State<CCTVGraphView> {
   }
 
   Widget _buildChart(CctvEventGroup group, bool isSelected) {
-    final times = group.data.map((e) => e.time).toList();
-    final now = DateTime.now();
-    final xMin =
-        times.isNotEmpty ? times.reduce((a, b) => a.isBefore(b) ? a : b) : now;
+    final from = widget.timeRange.start;
+    final to   = widget.timeRange.end;
 
-// ✅ xMax는 현재 시간과 비교하여 작은 쪽으로 자름
-    final dataMax =
-        times.isNotEmpty ? times.reduce((a, b) => a.isAfter(b) ? a : b) : now;
-    final xMax = dataMax.isAfter(now) ? now : dataMax;
+    // 눈금 앵커: intervalMinutes에 맞춰 정시로 정렬
+    final anchorMin = _floorToInterval(from, widget.intervalMinutes);
+    final anchorMax = _ceilToInterval(to, widget.intervalMinutes);
 
     _tooltipBehavior = TooltipBehavior(
       enable: true,
@@ -317,8 +326,9 @@ class _CCTVGraphViewState extends State<CCTVGraphView> {
                 labelRotation: 45,
                 labelStyle: TextStyle(fontSize: 18.sp, color: Colors.white),
                 majorGridLines: const MajorGridLines(width: 0),
-                minimum: xMin.subtract(const Duration(minutes: 10)),
-                maximum: xMax.add(const Duration(minutes: 10)),
+                minimum: anchorMin,
+                maximum: anchorMax,
+
               ),
               primaryYAxis: NumericAxis(
                 minimum: 0,

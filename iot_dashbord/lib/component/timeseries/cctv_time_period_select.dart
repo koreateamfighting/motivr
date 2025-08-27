@@ -430,15 +430,23 @@ class _CCTVTimePeriodSelectState extends State<CCTVTimePeriodSelect> {
           height: 60.h,
           alignment: Alignment.center,
           child: ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               if (startDate != null && endDate != null) {
-                final from = DateTime(
-                    startDate!.year, startDate!.month, startDate!.day, startHour, startMinute);
-                final to = DateTime(
-                    endDate!.year, endDate!.month, endDate!.day, endHour, endMinute);
+                final from = DateTime(startDate!.year, startDate!.month, startDate!.day, startHour, startMinute);
+                final to   = DateTime(endDate!.year, endDate!.month, endDate!.day, endHour, endMinute);
+
+                if (from.isAfter(to)) {
+                  await showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (_) => const DialogForm(mainText: '시작 시간이 종료 시간보다 늦습니다.', btnText: '확인'),
+                  );
+                  return;
+                }
                 widget.onQuery?.call(from, to);
               }
             },
+
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xff3182ce),
               // 파란색

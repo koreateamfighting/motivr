@@ -38,6 +38,32 @@ class _IotGraphViewState extends State<IotGraphView> {
     return selected.contains('ALL') || selected.contains(rid);
   }
 
+  // ✅ x축 눈금 타입/값을 selected interval과 동기화
+  DateTimeIntervalType _getXAxisIntervalType(String label) {
+    // 30분은 minutes, 나머지는 hours 단위로
+    return (label == '30분') ? DateTimeIntervalType.minutes : DateTimeIntervalType.hours;
+  }
+
+  double _getXAxisIntervalValue(String label) {
+    switch (label) {
+      case '30분': return 30; // 30분
+      case '1시간': return 1;  // 1시간
+      case '2시간': return 2;  // 2시간
+      case '3시간': return 3;  // 3시간
+      default: return 30;
+    }
+  }
+  Duration _windowFromLabel(String label) {
+    switch (label) {
+      case '30분': return const Duration(minutes: 30);
+      case '1시간': return const Duration(hours: 1);
+      case '2시간': return const Duration(hours: 2);
+      case '3시간': return const Duration(hours: 3);
+      default: return const Duration(minutes: 30);
+    }
+  }
+
+
   @override
   void initState() {
     super.initState();
@@ -67,19 +93,19 @@ class _IotGraphViewState extends State<IotGraphView> {
     final rawStart = widget.timeRange.start;
     final rawEnd   = widget.timeRange.end;
 
-    // 자정 스냅
-    DateTime dayStart = DateTime(rawStart.year, rawStart.month, rawStart.day); // 00:00
-    DateTime dayEnd   = DateTime(rawEnd.year, rawEnd.month, rawEnd.day);
-    if (dayEnd.isAtSameMomentAs(dayStart)) {
-      dayEnd = dayStart.add(const Duration(days: 1));
-    } else {
-      final endIsMidnight = rawEnd.hour == 0 && rawEnd.minute == 0 && rawEnd.second == 0;
-      dayEnd = endIsMidnight ? dayEnd : dayEnd.add(const Duration(days: 1));
-    }
+    // // 자정 스냅
+    // DateTime dayStart = DateTime(rawStart.year, rawStart.month, rawStart.day); // 00:00
+    // DateTime dayEnd   = DateTime(rawEnd.year, rawEnd.month, rawEnd.day);
+    // if (dayEnd.isAtSameMomentAs(dayStart)) {
+    //   dayEnd = dayStart.add(const Duration(days: 1));
+    // } else {
+    //   final endIsMidnight = rawEnd.hour == 0 && rawEnd.minute == 0 && rawEnd.second == 0;
+    //   dayEnd = endIsMidnight ? dayEnd : dayEnd.add(const Duration(days: 1));
+    // }
 
     // ⬇️ 상태에 저장 (여기서 정의하면 build에서 접근 가능)
-    _axisStart = dayStart;
-    _axisEnd   = dayEnd;
+    _axisStart = rawStart;
+    _axisEnd   = rawEnd;
 
     // 데이터 로드
     final iot = context.read<IotController>();
@@ -163,13 +189,12 @@ class _IotGraphViewState extends State<IotGraphView> {
 
   Widget _buildSensorChart(DisplacementGroup group) {
     final interval = selectedIntervals[group.rid] ?? '30분';
-    final allTimes = [...group.x, ...group.y, ...group.z].map((e) => e.time);
-    final xMin = allTimes.isNotEmpty
-        ? allTimes.reduce((a, b) => a.isBefore(b) ? a : b)
-        : DateTime.now();
-    final xMax = allTimes.isNotEmpty
-        ? allTimes.reduce((a, b) => a.isAfter(b) ? a : b)
-        : DateTime.now();
+    // final allTimes = [...group.x, ...group.y, ...group.z].map((e) => e.time);
+    final xAxisIntervalType = _getXAxisIntervalType(interval);
+    final xAxisIntervalValue = _getXAxisIntervalValue(interval);
+    final window = _windowFromLabel(interval);
+    final anchorMin = _floorToWindow(_axisStart!, window);
+    final anchorMax = _ceilToWindow(_axisEnd!, window);
 
     _tooltipBehavior = TooltipBehavior(
       enable: true,
@@ -381,13 +406,13 @@ class _IotGraphViewState extends State<IotGraphView> {
               ),
 
               primaryXAxis: DateTimeAxis(
-                intervalType: DateTimeIntervalType.minutes,
-                interval: 30,                           // 눈금 30분 간격
+                intervalType: xAxisIntervalType,      // ✅ minutes or hours
+                interval: xAxisIntervalValue,                      // 눈금 30분 간격
                 dateFormat: DateFormat('HH:mm'),
                 labelRotation: 45,
                 majorGridLines: const MajorGridLines(width: 0),
-                minimum: _axisStart,
-                maximum: _axisEnd,
+                minimum: anchorMin,
+                maximum: anchorMax,
                 labelStyle: TextStyle(fontSize: 18.sp, color: Colors.white),
               ),
               primaryYAxis: NumericAxis(

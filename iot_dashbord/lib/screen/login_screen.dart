@@ -120,7 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Container(
                         width: 215.59.w,
                         height: 74.8.h,
-                        child: Text('버전:20250825',style: TextStyle(color: Colors.black,fontSize: 16.sp),),
+                        child: Text('버전:20250827',style: TextStyle(color: Colors.black,fontSize: 16.sp),),
                       ),
                       bottom: 0.2.h,
                       left: 80.w,
