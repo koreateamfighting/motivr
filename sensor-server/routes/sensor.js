@@ -7,19 +7,133 @@ const dbConfig = require('../dbConfig');
 const { DateTime } = require('luxon');
 const ExcelJS = require('exceljs');
 
+/** ✅ 공통 유틸: 'yyyy-LL-dd HH:mm:ss' or ISO → JS Date(KST 기준) */
+/** ✅ UTC/ISO 문자열 → JS Date (KST +9 적용) */
+function toKstDate(value) {
+  if (value instanceof Date) return DateTime.fromJSDate(value).plus({ hours: 9 }).toJSDate();
+
+  if (typeof value === 'string') {
+    // ISO (예: 2025-08-27T23:28:24.163)
+    const tryISO = DateTime.fromISO(value, { setZone: true });
+    if (tryISO.isValid) {
+      return tryISO.plus({ hours: 9 }).toJSDate(); // ✅ 9시간 추가
+    }
+
+    // 'yyyy-LL-dd HH:mm:ss'
+    const tryFmt = DateTime.fromFormat(value, 'yyyy-LL-dd HH:mm:ss');
+    if (tryFmt.isValid) {
+      return tryFmt.plus({ hours: 9 }).toJSDate(); // ✅ 9시간 추가
+    }
+  }
+
+  // fallback: now
+  return DateTime.now().plus({ hours: 9 }).toJSDate();
+}
+
+
+/** ✅ SensorInfo 업서트 + Raw 라벨 전파 (RID 단일행 유지) */
+async function upsertSensorInfoAndPropagateLabel({
+  rid,
+  label,
+  lat,
+  lon,
+  sensorType,
+  eventType,
+  createAt,        // ← JS Date 로 받음
+  transaction
+}) {
+  const normRid = String(rid).trim();
+  const normLabel = (label ?? 'unknown').trim();
+  const req = transaction ? transaction.request() : pool.request();
+
+  // 1) UPDATE 먼저 (RID 기준)
+  const upd = await req
+    .input('RID', sql.NVarChar(100), normRid)
+    .input('Label', sql.NVarChar(100), normLabel)
+    .input('Latitude', sql.Float, lat ?? null)
+    .input('Longitude', sql.Float, lon ?? null)
+    .input('Location', sql.NVarChar(255), null)
+    .input('SensorType', sql.NVarChar(100), sensorType != null ? String(sensorType).trim() : null)
+    .input('EventType', sql.NVarChar(100), eventType != null ? String(eventType).trim() : null)
+    .input('CreateAt', sql.DateTime2, createAt)     // ✅ DateTime2
+    .query(`
+      UPDATE master.dbo.SenSorInfo
+      SET Label = @Label,
+          Latitude = @Latitude,
+          Longitude = @Longitude,
+          Location = @Location,
+          SensorType = @SensorType,
+          EventType = @EventType,
+          CreateAt = @CreateAt
+      WHERE RID = @RID
+    `);
+
+  if (upd.rowsAffected[0] === 0) {
+    // 2) INSERT, 동시성 유니크 충돌 시 UPDATE로 보정
+    try {
+      await (transaction ? transaction.request() : pool.request())
+        .input('RID', sql.NVarChar(100), normRid)
+        .input('Label', sql.NVarChar(100), normLabel)
+        .input('Latitude', sql.Float, lat ?? null)
+        .input('Longitude', sql.Float, lon ?? null)
+        .input('Location', sql.NVarChar(255), null)
+        .input('SensorType', sql.NVarChar(100), sensorType != null ? String(sensorType).trim() : null)
+        .input('EventType', sql.NVarChar(100), eventType != null ? String(eventType).trim() : null)
+        .input('CreateAt', sql.DateTime2, createAt) // ✅ DateTime2
+        .query(`
+          INSERT INTO master.dbo.SenSorInfo
+          (RID, Label, Latitude, Longitude, Location, SensorType, EventType, CreateAt)
+          VALUES
+          (@RID, @Label, @Latitude, @Longitude, @Location, @SensorType, @EventType, @CreateAt)
+        `);
+    } catch (e) {
+      if (e && (e.number === 2601 || e.number === 2627)) {
+        await (transaction ? transaction.request() : pool.request())
+          .input('RID', sql.NVarChar(100), normRid)
+          .input('Label', sql.NVarChar(100), normLabel)
+          .input('Latitude', sql.Float, lat ?? null)
+          .input('Longitude', sql.Float, lon ?? null)
+          .input('Location', sql.NVarChar(255), null)
+          .input('SensorType', sql.NVarChar(100), sensorType != null ? String(sensorType).trim() : null)
+          .input('EventType', sql.NVarChar(100), eventType != null ? String(eventType).trim() : null)
+          .input('CreateAt', sql.DateTime2, createAt) // ✅ DateTime2
+          .query(`
+            UPDATE master.dbo.SenSorInfo
+            SET Label = @Label,
+                Latitude = @Latitude,
+                Longitude = @Longitude,
+                Location = @Location,
+                SensorType = @SensorType,
+                EventType = @EventType,
+                CreateAt = @CreateAt
+            WHERE RID = @RID
+          `);
+      } else {
+        throw e;
+      }
+    }
+  }
+
+  // 3) RawSensorData 라벨 전파 (RID 전체)
+  await (transaction ? transaction.request() : pool.request())
+    .input('RID', sql.NVarChar(100), normRid)
+    .input('Label', sql.NVarChar(100), normLabel)
+    .query(`
+      UPDATE dbo.RawSensorData
+      SET Label = @Label
+      WHERE RID = @RID AND (Label IS NULL OR Label <> @Label);
+    `);
+}
 
 
 
+/** ✅ AlarmHistory 삽입: Timestamp를 DateTime2로 직접 삽입(변환 X) */
 async function insertAlarmHistoryFromSensorData(data, createAt, transaction = null) {
   const { RID, Label, EventType, Latitude, Longitude } = data;
   const deviceId = `${Label} #${RID}`;
-    const kst = (() => {
-      const tryISO = DateTime.fromISO(createAt, { setZone: true });
-        if (tryISO.isValid) return tryISO.setZone('Asia/Seoul');
-        const tryFmt = DateTime.fromFormat(createAt, 'yyyy-LL-dd HH:mm:ss', { zone: 'Asia/Seoul' });
-        return tryFmt.isValid ? tryFmt : DateTime.now().setZone('Asia/Seoul');
-      })();
-      const timestampKST = kst.toFormat('yyyy-LL-dd HH:mm:ss'); // DB 저장용 문자열(타임존 없는 KST)
+
+  // createAt이 문자열 or Date → KST Date로 정규화
+  const tsDate = toKstDate(createAt);
 
   let event = '점검필요';
   let log = `${deviceId} : 알려지지 않은 로그`;
@@ -43,7 +157,6 @@ async function insertAlarmHistoryFromSensorData(data, createAt, transaction = nu
       break;
   }
 
-  // ✅ 연결 보장
   await poolConnect;
   const poolRequest = transaction ? transaction.request() : pool.request();
 
@@ -67,12 +180,11 @@ async function insertAlarmHistoryFromSensorData(data, createAt, transaction = nu
     if (lon == null) lon = prev.recordset[0]?.Longitude ?? null;
   }
 
-  // 새 poolRequest 사용 (중복 제거 필요 시 새로 선언)
+  // INSERT (CONVERT 제거, DateTime2 직입력)
   const insertRequest = transaction ? transaction.request() : pool.request();
-
   await insertRequest
     .input('DeviceID', sql.NVarChar(100), deviceId)
-    .input('TimestampKST', sql.VarChar(19), timestampKST)
+    .input('TimestampKST', sql.DateTime2, tsDate)         // ✅ DateTime2
     .input('Event', sql.NVarChar(255), event)
     .input('Log', sql.NVarChar(1000), log)
     .input('Location', sql.NVarChar(255), Label)
@@ -83,10 +195,9 @@ async function insertAlarmHistoryFromSensorData(data, createAt, transaction = nu
       INSERT INTO AlarmHistory
       (DeviceID, Timestamp, Event, Log, Location, Latitude, Longitude, Type)
       VALUES
-     (@DeviceID, CONVERT(datetime, @TimestampKST, 120), @Event, @Log, @Location, @Latitude, @Longitude, @Type)
+      (@DeviceID, @TimestampKST, @Event, @Log, @Location, @Latitude, @Longitude, @Type)
     `);
 }
-
 
 
 // 헬스 체크
@@ -118,54 +229,25 @@ router.get('/sensor-data', async (req, res) => {
 });
 
 
-// 센서 데이터 수신 후 유니티 클라이언트 
+
+// 센서 데이터 수신 후 유니티 클라이언트
 router.post('/sensor', async (req, res) => {
   const data = req.body;
-  const createAt = typeof data.CreateAt === 'string'
-  ? data.CreateAt
-  : DateTime.now().setZone('Asia/Seoul').toFormat('yyyy-LL-dd HH:mm:ss');
+
   const label = data.Label ?? 'unknown';
+  const createAtDate = toKstDate(data.CreateAt); // ✅ JS Date
+  if (!data.RID) return res.status(400).json({ error: 'RID 누락' });
+
+  const t = new sql.Transaction(pool);
   try {
-     await poolConnect;
-       // ✅ 1. SensorInfo 존재 여부 확인
-    const checkSensor = await pool.request()
-    .input('RID', sql.NVarChar(100), String(data.RID))
-    .input('Label', sql.NVarChar(100), label)
-    .query(`
-      SELECT COUNT(*) AS cnt
-      FROM master.dbo.SenSorInfo
-      WHERE RID = @RID AND Label = @Label
-    `);
-    
+    await poolConnect;
+    await t.begin();
 
-  const exists = checkSensor.recordset[0].cnt > 0;
-  
-
-  // ✅ 2. 존재하지 않으면 신규로 SensorInfo 등록
-  if (!exists) {
-    await pool.request()
+    // 1) RawSensorData INSERT
+    await t.request()
       .input('RID', sql.NVarChar(100), String(data.RID))
-      .input('Label', sql.NVarChar(100), label) 
-      .input('Latitude', sql.Float, data.Latitude ?? null)
-      .input('Longitude', sql.Float, data.Longitude ?? null)
-      .input('Location', sql.NVarChar(255),data.Location ?? null)
-      .input('SensorType', sql.NVarChar(100), data.SensorType ?? null)
-      .input('EventType', sql.NVarChar(100), String(data.EventType) ?? null)   
-      .input('CreateAt', sql.VarChar, createAt)
-      .query(`
-        INSERT INTO master.dbo.SenSorInfo
-        (RID, Label, Latitude, Longitude, Location, SensorType, EventType, CreateAt)
-        VALUES
-        (@RID, @Label, @Latitude, @Longitude, @Location, @SensorType, @EventType, @CreateAt)
-      `);
-
-    console.log(`🆕 신규 센서 등록: ${data.RID}`);
-  }
-  // ✅ 3. RawSensorData 저장
-    await pool.request()
-      .input('RID', sql.VarChar(100), String(data.RID))
-      .input('SensorType', sql.NVarChar, String(data.SensorType))
-      .input('EventType', sql.NVarChar, String(data.EventType))
+      .input('SensorType', sql.NVarChar(100), data.SensorType != null ? String(data.SensorType) : null)
+      .input('EventType', sql.NVarChar(100), data.EventType != null ? String(data.EventType) : null)
       .input('X_Deg', sql.Float, data.X_Deg)
       .input('Y_Deg', sql.Float, data.Y_Deg)
       .input('Z_Deg', sql.Float, data.Z_Deg)
@@ -175,12 +257,9 @@ router.post('/sensor', async (req, res) => {
       .input('BatteryVoltage', sql.Float, data.BatteryVoltage)
       .input('BatteryLevel', sql.Float, data.BatteryLevel)
       .input('Latitude', sql.Float, data.Latitude)
-      .input('Longitude', sql.Float, data.Longitude)      
-      .input('Label', sql.NVarChar(100), label) 
-      .input('CreateAt', sql.VarChar, createAt)
-      
-      
-      
+      .input('Longitude', sql.Float, data.Longitude)
+      .input('Label', sql.NVarChar(100), label)
+      .input('CreateAt', sql.DateTime2, createAtDate)   // ✅ DateTime2
       .query(`
         INSERT INTO dbo.RawSensorData
         (RID, SensorType, EventType, X_Deg, Y_Deg, Z_Deg, X_MM, Y_MM, Z_MM,
@@ -189,10 +268,53 @@ router.post('/sensor', async (req, res) => {
         (@RID, @SensorType, @EventType, @X_Deg, @Y_Deg, @Z_Deg, @X_MM, @Y_MM, @Z_MM,
          @BatteryVoltage, @BatteryLevel, @Latitude, @Longitude, @Label, @CreateAt)
       `);
-      await insertAlarmHistoryFromSensorData(data, createAt); // alrarmhistory에도 정제 데이터 삽입
+
+    // 2) SenSorInfo 업서트 (RID 기준)
+    await t.request()
+      .input('RID', sql.NVarChar(100), String(data.RID))
+      .input('Label', sql.NVarChar(100), label)
+      .input('Latitude', sql.Float, data.Latitude ?? null)
+      .input('Longitude', sql.Float, data.Longitude ?? null)
+      .input('Location', sql.NVarChar(255), data.Location ?? null)
+      .input('SensorType', sql.NVarChar(100), data.SensorType != null ? String(data.SensorType) : null)
+      .input('EventType', sql.NVarChar(100), data.EventType != null ? String(data.EventType) : null)
+      .input('CreateAt', sql.DateTime2, createAtDate)   // ✅ DateTime2
+      .query(`
+        MERGE master.dbo.SenSorInfo AS tgt
+        USING (SELECT @RID AS RID) AS src
+        ON (tgt.RID = src.RID)
+        WHEN MATCHED THEN
+          UPDATE SET
+            Label = @Label,
+            Latitude = @Latitude,
+            Longitude = @Longitude,
+            Location = @Location,
+            SensorType = @SensorType,
+            EventType = @EventType,
+            CreateAt = @CreateAt
+        WHEN NOT MATCHED THEN
+          INSERT (RID, Label, Latitude, Longitude, Location, SensorType, EventType, CreateAt)
+          VALUES (@RID, @Label, @Latitude, @Longitude, @Location, @SensorType, @EventType, @CreateAt);
+      `);
+
+    // 3) 라벨 전파
+    await t.request()
+      .input('RID', sql.NVarChar(100), String(data.RID))
+      .input('Label', sql.NVarChar(100), label)
+      .query(`
+        UPDATE dbo.RawSensorData
+        SET Label = @Label
+        WHERE RID = @RID AND (Label IS NULL OR Label <> @Label);
+      `);
+
+    // 4) AlarmHistory 삽입 (동일 트랜잭션)
+    await insertAlarmHistoryFromSensorData(data, createAtDate, t);
+
+    await t.commit();
+
     console.log('✅ 센서 데이터 수신:', JSON.stringify(data, null, 2));
 
-    // ✅ WebSocket 전송
+    // WebSocket 브로드캐스트
     const wss = req.app.get('wss');
     if (wss && wss.clients) {
       const payload = {
@@ -203,47 +325,37 @@ router.post('/sensor', async (req, res) => {
           CreateAt: data.CreateAt
         }
       };
-
       wss.clients.forEach(client => {
-        if (client.readyState === 1) {
-          client.send(JSON.stringify(payload));
-        }
+        if (client.readyState === 1) client.send(JSON.stringify(payload));
       });
     }
-    // ✅ 4. 최근 데이터면 SenSorInfo 갱신 (30분 이내만)
-    const luxonCreateAt = DateTime.fromISO(createAt, { zone: 'Asia/Seoul' });
-    const now = DateTime.now().setZone('Asia/Seoul');
-    const diffMinutes = now.diff(luxonCreateAt, 'minutes').minutes;
-    console.log('🕒 CreateAt:', createAt);
-console.log('📌 luxonCreateAt:', luxonCreateAt.toISO());
-console.log('⏳ diffMinutes:', diffMinutes);
+
+    // (선택) 최근 데이터면 SenSorInfo 가벼운 갱신
+    const diffMinutes = DateTime.now().setZone('Asia/Seoul')
+      .diff(DateTime.fromJSDate(createAtDate), 'minutes').minutes;
 
     if (diffMinutes <= 30) {
-      console.log(`🔄 30분 이내 데이터 → SenSorInfo 갱신: ${data.RID}, Label=${label}`);
       await pool.request()
         .input('RID', sql.NVarChar(100), String(data.RID))
-        .input('Label', sql.NVarChar(100), label)
         .input('Latitude', sql.Float, data.Latitude ?? null)
         .input('Longitude', sql.Float, data.Longitude ?? null)
         .input('SensorType', sql.NVarChar(100), data.SensorType ?? null)
-        .input('EventType', sql.NVarChar(100), String(data.EventType) ?? null)
+        .input('EventType', sql.NVarChar(100), data.EventType != null ? String(data.EventType) : null)
         .query(`
           UPDATE master.dbo.SenSorInfo
           SET Latitude = @Latitude,
               Longitude = @Longitude,
               SensorType = @SensorType,
               EventType = @EventType
-          WHERE RID = @RID AND Label = @Label
+          WHERE RID = @RID;
         `);
     }
-    res.status(200).json({ message: '저장 성공', data });
 
-
-
-
+    return res.status(200).json({ message: '저장 성공', data });
   } catch (err) {
+    try { if (t._aborted !== true) await t.rollback(); } catch (_) {}
     console.error('❌ DB 오류:', err);
-    res.status(500).json({ error: 'DB 저장 실패' });
+    return res.status(500).json({ error: 'DB 저장 실패' });
   }
 });
 
@@ -301,37 +413,25 @@ router.post('/test_submit_data', (req, res) => {
 
 router.put('/sensor', async (req, res) => {
   const data = req.body;
-  const rawTime = data.CreateAt;
+  if (!data.IndexKey) return res.status(400).json({ error: 'IndexKey 누락' });
+  if (!data.RID)      return res.status(400).json({ error: 'RID 누락' });
 
-  if (!rawTime) {
-    console.error('❌ CreateAt이 req.body에 없음:', data);
-    return res.status(400).json({ error: 'CreateAt 누락' });
-  }
+  // ✅ JS Date로 정규화
+  const createAtDate = toKstDate(data.CreateAt);
+  const label = data.Label ?? 'unknown';
 
-  // ✅ fromISO로 자동 파싱 (Z 또는 타임존 포함 가능)
-  const luxonCreateAt = DateTime.fromISO(rawTime); // ← 이거면 충분함
-
-  if (!luxonCreateAt.isValid) {
-    console.error('❌ Luxon ISO 파싱 실패:', rawTime, luxonCreateAt.invalidExplanation);
-    return res.status(400).json({ error: 'CreateAt 포맷이 유효하지 않습니다.' });
-  }
-
-  const parsedCreateAt = luxonCreateAt.setZone('Asia/Seoul').toFormat('yyyy-LL-dd HH:mm:ss');
-
-  // ✅ 필수 필드 검증
-  if (!data.RID) {
-    return res.status(400).json({ error: 'RID 누락' });
-  }
-
+  const t = new sql.Transaction(pool);
   try {
     await poolConnect;
+    await t.begin();
 
-    const result = await pool.request()
+    // 1) 대상 행 업데이트
+    const result = await t.request()
       .input('IndexKey', sql.UniqueIdentifier, data.IndexKey)
-      .input('RID', sql.VarChar(100), String(data.RID))
-      .input('Label', sql.NVarChar(100), data.Label ? String(data.Label) : null)
-      .input('SensorType', sql.NVarChar, String(data.SensorType))
-      .input('EventType', sql.NVarChar, String(data.EventType))
+      .input('RID', sql.NVarChar(100), String(data.RID))
+      .input('Label', sql.NVarChar(100), label)
+      .input('SensorType', sql.NVarChar(100), data.SensorType != null ? String(data.SensorType) : null)
+      .input('EventType', sql.NVarChar(100), data.EventType != null ? String(data.EventType) : null)
       .input('X_Deg', sql.Float, data.X_Deg)
       .input('Y_Deg', sql.Float, data.Y_Deg)
       .input('Z_Deg', sql.Float, data.Z_Deg)
@@ -342,80 +442,71 @@ router.put('/sensor', async (req, res) => {
       .input('BatteryLevel', sql.Float, data.BatteryLevel)
       .input('Latitude', sql.Float, data.Latitude)
       .input('Longitude', sql.Float, data.Longitude)
-      .input('CreateAt', sql.VarChar, parsedCreateAt)
+      .input('CreateAt', sql.DateTime2, createAtDate)   // ✅ DateTime2
       .query(`
-        UPDATE RawSensorData
-        SET
-          Label = @Label,
-          SensorType = @SensorType,
-          EventType = @EventType,
-          X_Deg = @X_Deg,
-          Y_Deg = @Y_Deg,
-          Z_Deg = @Z_Deg,
-          X_MM = @X_MM,
-          Y_MM = @Y_MM,
-          Z_MM = @Z_MM,
-          BatteryVoltage = @BatteryVoltage,
-          BatteryLevel = @BatteryLevel,
-          Latitude = @Latitude,
-          Longitude = @Longitude,
-          CreateAt = @CreateAt
-        WHERE IndexKey = @IndexKey
+        UPDATE dbo.RawSensorData
+        SET Label=@Label, SensorType=@SensorType, EventType=@EventType,
+            X_Deg=@X_Deg, Y_Deg=@Y_Deg, Z_Deg=@Z_Deg,
+            X_MM=@X_MM, Y_MM=@Y_MM, Z_MM=@Z_MM,
+            BatteryVoltage=@BatteryVoltage, BatteryLevel=@BatteryLevel,
+            Latitude=@Latitude, Longitude=@Longitude, CreateAt=@CreateAt
+        WHERE IndexKey=@IndexKey
       `);
 
     if (result.rowsAffected[0] === 0) {
+      await t.rollback();
       return res.status(404).json({ error: '일치하는 센서 데이터가 없습니다' });
     }
 
-    await insertAlarmHistoryFromSensorData(data, parsedCreateAt);
-    
-    console.log('✅ 센서 데이터 업데이트 성공:', data);
-    res.status(200).json({ message: '센서 데이터 업데이트 완료', data });
+    // 2) SenSorInfo 업서트 + Raw 라벨 전파
+    await upsertSensorInfoAndPropagateLabel({
+      rid: data.RID,
+      label,
+      lat: data.Latitude,
+      lon: data.Longitude,
+      sensorType: data.SensorType,
+      eventType: data.EventType,
+      createAt: createAtDate,   // ✅ JS Date 전달
+      transaction: t
+    });
 
+    // 3) AlarmHistory도 갱신
+    await insertAlarmHistoryFromSensorData(data, createAtDate, t);
+
+    await t.commit();
+    res.status(200).json({ message: '센서 데이터 업데이트 완료', data });
   } catch (err) {
+    if (t._aborted !== true) { try { await t.rollback(); } catch {} }
     console.error('❌ 센서 데이터 업데이트 실패:', err);
     res.status(500).json({ error: 'DB 업데이트 실패' });
   }
 });
 
-
 router.post('/sensor/delete', async (req, res) => {
-  console.log('📥 요청 수신 - req.body:', req.body); // 🔍 여기 필수
   const { indexKey } = req.body;
-
-  if (!indexKey) {
-    return res.status(400).json({ error: 'indexKey는 필수입니다.' });
-  }
+  if (!indexKey) return res.status(400).json({ error: 'indexKey는 필수입니다.' });
 
   try {
     await poolConnect;
-
     const result = await pool.request()
       .input('IndexKey', sql.VarChar(100), indexKey)
       .query(`
         DELETE FROM RawSensorData
         WHERE IndexKey = @IndexKey
       `);
-
     if (result.rowsAffected[0] === 0) {
       return res.status(404).json({ error: '삭제할 데이터가 없습니다.' });
     }
-
-    console.log(`🗑️ 센서 데이터 삭제 성공: ${indexKey}`);
     return res.status(200).json({ message: '삭제 완료' });
-
   } catch (err) {
     console.error('❌ 센서 데이터 삭제 실패:', err);
     return res.status(500).json({ error: 'DB 삭제 실패' });
   }
 });
 
-
-
 router.get('/rid-count', async (req, res) => {
   try {
     await poolConnect;
-
     const result = await pool.request().query(`
       SELECT COUNT(*) AS count
       FROM (
@@ -423,19 +514,16 @@ router.get('/rid-count', async (req, res) => {
         FROM RawSensorData
       ) AS UniqueRIDLabel
     `);
-
     res.status(200).json({ count: result.recordset[0].count });
   } catch (err) {
     console.error('❌ RID+Label 카운트 조회 실패:', err);
     res.status(500).json({ error: 'DB 조회 실패' });
   }
-});
-
+})
 
 router.get('/sensor-status-summary', async (req, res) => {
   try {
     await poolConnect;
-
     const result = await pool.request().query(`
       WITH Latest AS (
         SELECT
@@ -450,41 +538,31 @@ router.get('/sensor-status-summary', async (req, res) => {
       WHERE rn = 1
     `);
 
-    const statusCount = { normal: 0, caution: 0, danger: 0, needInspection: 0 };
+  const statusCount = { normal: 0, caution: 0, danger: 0, needInspection: 0 };
 
-    for (const row of result.recordset) {
-      const minutesAgo = row.MinutesAgo;
-      const degs = [row.X_Deg, row.Y_Deg, row.Z_Deg].map(d => Math.abs(d ?? 0));
-      const maxDeg = Math.max(...degs);
-      const eventType = parseInt(row.EventType);
+  for (const row of result.recordset) {
+    const minutesAgo = row.MinutesAgo;
+    const degs = [row.X_Deg, row.Y_Deg, row.Z_Deg].map(d => Math.abs(d ?? 0));
+    const maxDeg = Math.max(...degs);
+    const eventType = parseInt(row.EventType);
 
-      if (minutesAgo > 60) {
-        statusCount.needInspection++;
-      } else if (eventType === 68) {
-        if (maxDeg >= 5) {
-          statusCount.danger++;
-        } else {
-          statusCount.normal++;
-        }
-      } else if (eventType === 67) {
-        if (maxDeg >= 3) {
-          statusCount.caution++;
-        } else {
-          statusCount.normal++;
-        }
-      } else {
-        statusCount.normal++;
-      }
+    if (minutesAgo > 60) {
+      statusCount.needInspection++;
+    } else if (eventType === 68) {
+      if (maxDeg >= 5) statusCount.danger++; else statusCount.normal++;
+    } else if (eventType === 67) {
+      if (maxDeg >= 3) statusCount.caution++; else statusCount.normal++;
+    } else {
+      statusCount.normal++;
     }
+  }
 
-    res.json({ ...statusCount, total: result.recordset.length });
-
+  res.json({ ...statusCount, total: result.recordset.length });
   } catch (err) {
     console.error('❌ 센서 상태 요약 오류:', err);
     res.status(500).json({ error: 'DB 오류' });
   }
 });
-
 
 
 router.get('/sensor-data-by-period', async (req, res) => {
@@ -500,8 +578,8 @@ router.get('/sensor-data-by-period', async (req, res) => {
   try {
      await poolConnect;
     const result = await pool.request()
-      .input('startDate', sql.VarChar, startDate)
-      .input('endDate', sql.VarChar, endDate)
+    .input('startDate', sql.VarChar(19), startDate)
+    .input('endDate',   sql.VarChar(19), endDate)
       .query(`
         SELECT *
         FROM RawSensorData

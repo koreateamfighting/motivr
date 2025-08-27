@@ -239,7 +239,7 @@ class _CCTVInputSectionState extends State<CCTVInputSection> {
             children: [
               SizedBox(width: 41.w),
               Text(
-                'CCTV 정보 입력',
+                'CCTV 정보 입력/수정',
                 style: TextStyle(
                   fontFamily: 'PretendardGOV',
                   fontSize: 36.sp,

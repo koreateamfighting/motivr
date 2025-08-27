@@ -166,5 +166,17 @@ const formatted = kst.toISOString().slice(0, 23).replace('T', ' ');
         console.log('✅ cctv-server 재시작 완료:', stdout1);
       }
     });
+
+    // 🔹 새 스케줄 (매일 07:00 motion-server 재시작)
+schedule.scheduleJob('0 7 * * *', () => {
+  console.log('⏰ [스케줄러] 매일 07:00 - motion-server 재시작');
+  exec('pm2 restart motion-server', (error, stdout, stderr) => {
+    if (error) {
+      console.error('❌ motion-server 재시작 실패:', stderr);
+    } else {
+      console.log('✅ motion-server 재시작 완료:', stdout);
+    }
+  });
+});
   
 });

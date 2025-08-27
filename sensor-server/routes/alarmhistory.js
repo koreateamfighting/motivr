@@ -70,39 +70,10 @@ router.get('/alarmhistory/cctv/alert', async (req, res) => {
     res.status(500).json({ error: '주의/경고 CCTV 알람 조회 실패' });
   }
 });
- // CCTV 알람 장비별 최신 1건 조회
-router.get('/alarmhistory/cctv/latest', async (req, res) => {
-  try {
-    const pool = await poolConnect;
 
-    const result = await pool.request().query(`
-      SELECT ah.*
-      FROM AlarmHistory ah
-      JOIN (
-        SELECT DeviceID, MAX(Timestamp) AS LatestTime
-        FROM AlarmHistory
-        WHERE Type = 'cctv'
-        GROUP BY DeviceID
-      ) latest
-      ON ah.DeviceID = latest.DeviceID AND ah.Timestamp = latest.LatestTime
-      WHERE ah.Type = 'cctv'
-      ORDER BY ah.Timestamp DESC;
-    `);
 
-    // ⏰ KST → ISO 8601 (with UTC offset)
-    const rows = result.recordset.map(row => ({
-      ...row,
-      Timestamp: new Date(`${row.Timestamp}+09:00`).toISOString()
-    }));
 
-    res.status(200).json({ message: '최신 CCTV 알람 조회 성공', data: rows });
-  } catch (err) {
-    console.error('❌ 최신 CCTV 알람 조회 실패:', err);
-    res.status(500).json({ error: '최신 CCTV 알람 조회 실패' });
-  }
-});
-
-// ✅ IoT 알람 히스토리 추가 전용 
+// ✅ IoT 알람 히스토리 추가 전용
 router.post('/alarmhistory/iot', async (req, res) => {
   const {
     DeviceID,   // RID
@@ -167,6 +138,8 @@ router.post('/alarmhistory/iot', async (req, res) => {
   }
 });
 
+
+
 // ✅ CCTV 알람 히스토리 추가 전용
 router.post('/alarmhistory/cctv', async (req, res) => {
   const {
@@ -205,45 +178,6 @@ router.post('/alarmhistory/cctv', async (req, res) => {
   }
 });
 
-// ✅ CCTV 로그 저장용 API
-router.post('/alarmhistory/cctvlog', async (req, res) => {
-  const { camId, isConnected } = req.body;
-
-  if (!camId || typeof isConnected !== 'boolean') {
-    return res.status(400).json({ error: 'camId 또는 isConnected 누락됨' });
-  }
-
-  const event = isConnected ? '점검필요' : '정상';
-  const log = isConnected
-    ? `[${camId}]영상 이미지 수집 실패`
-    : `[${camId}]영상 이미지 수집 성공`;
-  const timestamp = DateTime.now().setZone('Asia/Seoul').toFormat('yyyy-LL-dd HH:mm:ss');
-
-  try {
-    const pool = await poolConnect;
-
-    await pool.request()
-      .input('DeviceID', sql.NVarChar, camId)
-      .input('Timestamp', sql.VarChar, timestamp)
-      .input('Event', sql.NVarChar, event)
-      .input('Log', sql.NVarChar, log)
-      .input('Location', sql.NVarChar, null)
-      .input('Latitude', sql.Float, null)
-      .input('Longitude', sql.Float, null)
-      .input('Type', sql.NVarChar, 'cctv')
-      .query(`
-        INSERT INTO AlarmHistory (DeviceID, Timestamp, Event, Log, Location, Latitude, Longitude, Type)
-        VALUES (@DeviceID, @Timestamp, @Event, @Log, @Location, @Latitude, @Longitude, @Type)
-      `);
-
-    res.status(200).json({ message: 'CCTV 알람 저장 완료' });
-  } catch (err) {
-    console.error('❌ CCTV 로그 저장 실패:', err);
-    res.status(500).json({ error: 'CCTV 로그 저장 실패' });
-  }
-});
-
-
 
 
 // 알람 히스토리 수정 전용 API
@@ -269,8 +203,7 @@ router.put('/alarmhistory/update', async (req, res) => {
       await pool.request()
         .query(`
           UPDATE AlarmHistory
-          SET 
-            Timestamp = '${formattedTime}',
+          SET             
             Event = N'${Event.replace(/'/g, "''")}',
             Log = N'${(Log || '').replace(/'/g, "''")}'
           WHERE Id = ${Id}
@@ -307,7 +240,6 @@ router.post('/alarmhistory/delete', async (req, res) => {
     res.status(500).json({ error: '알람 삭제 중 오류 발생' });
   }
 });
-
 //최근 7일내 의 cctv 주의,경고 로드 엑셀 파일 다운로드
 router.get('/alarmhistory/download-excel-cctv', async (req, res) => {
   const { camId } = req.query;
@@ -352,7 +284,7 @@ router.get('/alarmhistory/download-excel-cctv', async (req, res) => {
     res.status(500).json({ error: '서버 오류' });
   }
 });
-//멀티디바이스 다운로드 가능, 특정 기간을 설정하여 cctv 주의,경고 로드 엑셀 파일 다운로드 (default는 당일) !
+//멀티디바이스 다운로드 가능, 특정 기간을 설정하여 cctv 주의,경고 로드 엑셀 파일 다운로드 (default는 당일)
 router.get('/alarmhistory/download-excel-cctv-period-multi', async (req, res) => {
   const { camId, startDate, endDate } = req.query;
 
@@ -415,11 +347,76 @@ router.get('/alarmhistory/download-excel-cctv-period-multi', async (req, res) =>
 
 
 
+// ✅ CCTV 로그 저장용 API
+router.post('/alarmhistory/cctvlog', async (req, res) => {
+  const { camId, isConnected } = req.body;
 
+  if (!camId || typeof isConnected !== 'boolean') {
+    return res.status(400).json({ error: 'camId 또는 isConnected 누락됨' });
+  }
 
+  const event = isConnected ? '점검필요' : '정상';
+  const log = isConnected
+    ? `[${camId}]영상 이미지 수집 실패`
+    : `[${camId}]영상 이미지 수집 성공`;
+  const timestamp = DateTime.now().setZone('Asia/Seoul').toFormat('yyyy-LL-dd HH:mm:ss');
 
+  try {
+    const pool = await poolConnect;
 
-// 🔎 CCTV 알람 중 특정 DeviceID + '주의' 또는 '경고' 최신순 100건 !
+    await pool.request()
+      .input('DeviceID', sql.NVarChar, camId)
+      .input('Timestamp', sql.VarChar, timestamp)
+      .input('Event', sql.NVarChar, event)
+      .input('Log', sql.NVarChar, log)
+      .input('Location', sql.NVarChar, null)
+      .input('Latitude', sql.Float, null)
+      .input('Longitude', sql.Float, null)
+      .input('Type', sql.NVarChar, 'cctv')
+      .query(`
+        INSERT INTO AlarmHistory (DeviceID, Timestamp, Event, Log, Location, Latitude, Longitude, Type)
+        VALUES (@DeviceID, @Timestamp, @Event, @Log, @Location, @Latitude, @Longitude, @Type)
+      `);
+
+    res.status(200).json({ message: 'CCTV 알람 저장 완료' });
+  } catch (err) {
+    console.error('❌ CCTV 로그 저장 실패:', err);
+    res.status(500).json({ error: 'CCTV 로그 저장 실패' });
+  }
+});
+
+router.get('/alarmhistory/cctv/latest', async (req, res) => {
+  try {
+    const pool = await poolConnect;
+
+    const result = await pool.request().query(`
+      SELECT ah.*
+      FROM AlarmHistory ah
+      JOIN (
+        SELECT DeviceID, MAX(Timestamp) AS LatestTime
+        FROM AlarmHistory
+        WHERE Type = 'cctv'
+        GROUP BY DeviceID
+      ) latest
+      ON ah.DeviceID = latest.DeviceID AND ah.Timestamp = latest.LatestTime
+      WHERE ah.Type = 'cctv'
+      ORDER BY ah.Timestamp DESC;
+    `);
+
+    // ⏰ KST → ISO 8601 (with UTC offset)
+    const rows = result.recordset.map(row => ({
+      ...row,
+      Timestamp: new Date(`${row.Timestamp}+09:00`).toISOString()
+    }));
+
+    res.status(200).json({ message: '최신 CCTV 알람 조회 성공', data: rows });
+  } catch (err) {
+    console.error('❌ 최신 CCTV 알람 조회 실패:', err);
+    res.status(500).json({ error: '최신 CCTV 알람 조회 실패' });
+  }
+});
+
+// 🔎 CCTV 알람 중 특정 DeviceID + '주의' 또는 '경고' 최신순 100건
 router.get('/alarmhistory/cctv/alert-by-device/:deviceId', async (req, res) => {
   const deviceId = req.params.deviceId;
 
@@ -454,7 +451,7 @@ router.get('/alarmhistory/cctv/alert-by-device/:deviceId', async (req, res) => {
   }
 });
 
-// 🔎 CCTV 그래프 시각화용: 시간 범위에 따라 '주의', '경고' 알람 조회 !
+// 🔎 CCTV 그래프 시각화용: 시간 범위에 따라 '주의', '경고' 알람 조회
 router.get('/alarmhistory/cctv/graph-data', async (req, res) => {
   const { startDate, endDate } = req.query;
 
@@ -494,7 +491,7 @@ router.get('/alarmhistory/cctv/graph-data', async (req, res) => {
 });
 
 
-// // ✅ 알람 히스토리 추가 또는 업데이트 (이전 버전에 쓰였음. 일단 주석 처리)
+// // ✅ 알람 히스토리 추가 또는 업데이트
 // router.post('/alarmhistory', async (req, res) => {
 //   const {
 //     DeviceID,

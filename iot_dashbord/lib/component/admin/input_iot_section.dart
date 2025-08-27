@@ -285,7 +285,7 @@ class _IotInputSectionState extends State<IotInputSection> {
             children: [
               SizedBox(width: 41.w),
               Text(
-                'IoT 정보 입력',
+                'IoT 정보 입력/수정',
                 style: TextStyle(
                   fontFamily: 'PretendardGOV',
                   fontSize: 36.sp,
