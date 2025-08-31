@@ -116,7 +116,7 @@ class _DialogFormState extends State<DialogForm> {
                                 color: Colors.white),
                           ),
                           SizedBox(
-                            height: 62.h,
+                            height: 56.h,
                           ),
                           InkWell(
                             onTap: () {

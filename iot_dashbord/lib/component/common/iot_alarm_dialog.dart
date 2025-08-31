@@ -59,15 +59,13 @@ class _IotAlarmDialogState extends State<IotAlarmDialog> {
 
   @override
   void dispose() {
-    // 2) 어떠한 방식으로든 닫힐 때 항상 복원 (세이프가드)
-    try { showIframes(); } catch (_) {}
+    try { showIframes(); } catch (_) {} // ✅ 복원은 여기서만
     _focusNode.dispose();
     super.dispose();
   }
 
   void _closeDialog() {
-    // 닫기 동작 공통 함수: 먼저 iframe 복원 -> pop
-    try { showIframes(); } catch (_) {}
+    // ❌ 여기의 showIframes()는 제거해도 OK (dispose에서 복원됨)
     if (mounted) Navigator.of(context).pop();
   }
 

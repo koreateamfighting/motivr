@@ -9,7 +9,7 @@ import 'package:iot_dashboard/component/admin/custom_divider.dart';
 import 'package:iot_dashboard/controller/field_info_controller.dart';
 import 'package:iot_dashboard/model/field_info_model.dart';
 import 'package:iot_dashboard/component/common/dialog_form.dart';
-import 'package:intl/intl.dart';  // DateFormat 임포트 추가
+import 'package:intl/intl.dart'; // DateFormat 임포트 추가
 
 class FieldInfoSection extends StatefulWidget {
   final TextEditingController? constructionTypeController;
@@ -37,7 +37,6 @@ class FieldInfoSection extends StatefulWidget {
     this.longtitudeController,
   }) : super(key: key);
 
-
   @override
   State<FieldInfoSection> createState() => _FieldInfoSectionState();
 }
@@ -63,17 +62,25 @@ class _FieldInfoSectionState extends State<FieldInfoSection> {
     super.initState();
 
     // 컨트롤러 초기화: 위젯에서 넘어온 게 있으면 사용, 없으면 새로 생성
-    constructionTypeController = widget.constructionTypeController ?? TextEditingController();
-    constructionNameController = widget.constructionNameController ?? TextEditingController();
-    constructionAddressController = widget.constructionAddressController ?? TextEditingController();
-    constructionCompanyController = widget.constructionCompanyController ?? TextEditingController();
-    constructionOrdererController = widget.constructionOrdererController ?? TextEditingController();
-    constructionLocationController = widget.constructionLocationController ?? TextEditingController();
+    constructionTypeController =
+        widget.constructionTypeController ?? TextEditingController();
+    constructionNameController =
+        widget.constructionNameController ?? TextEditingController();
+    constructionAddressController =
+        widget.constructionAddressController ?? TextEditingController();
+    constructionCompanyController =
+        widget.constructionCompanyController ?? TextEditingController();
+    constructionOrdererController =
+        widget.constructionOrdererController ?? TextEditingController();
+    constructionLocationController =
+        widget.constructionLocationController ?? TextEditingController();
     latitudeController = widget.latitudeController ?? TextEditingController();
-    longtitudeController = widget.longtitudeController ?? TextEditingController();
+    longtitudeController =
+        widget.longtitudeController ?? TextEditingController();
 
     _fetchLatestFieldInfo();
   }
+
   void _onAnyFieldChanged() {
     if (!isEditing) {
       setState(() {
@@ -81,6 +88,7 @@ class _FieldInfoSectionState extends State<FieldInfoSection> {
       });
     }
   }
+
   Future<void> _fetchLatestFieldInfo() async {
     try {
       final fieldInfo = await FieldInfoController.fetchLatestFieldInfo();
@@ -120,8 +128,12 @@ class _FieldInfoSectionState extends State<FieldInfoSection> {
         company: constructionCompanyController.text,
         orderer: constructionOrdererController.text,
         location: constructionLocationController.text,
-        startDate: constructStartDate != null ? DateFormat('yyyy-MM-dd').format(constructStartDate!) : '',
-        endDate: constructEndDate != null ? DateFormat('yyyy-MM-dd').format(constructEndDate!) : '',
+        startDate: constructStartDate != null
+            ? DateFormat('yyyy-MM-dd').format(constructStartDate!)
+            : '',
+        endDate: constructEndDate != null
+            ? DateFormat('yyyy-MM-dd').format(constructEndDate!)
+            : '',
         latitude: latitudeController.text,
         longitude: longtitudeController.text,
       ),
@@ -147,6 +159,7 @@ class _FieldInfoSectionState extends State<FieldInfoSection> {
       );
     }
   }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -187,8 +200,8 @@ class _FieldInfoSectionState extends State<FieldInfoSection> {
                   isExpanded
                       ? 'assets/icons/arrow_down.png'
                       : 'assets/icons/arrow_right2.png',
-                  width: isExpanded?40.w:50.w,
-                  height: isExpanded?20.h:30.h,
+                  width: isExpanded ? 40.w : 50.w,
+                  height: isExpanded ? 20.h : 30.h,
                 ),
               ),
               SizedBox(width: 55.w),
@@ -224,7 +237,7 @@ class _FieldInfoSectionState extends State<FieldInfoSection> {
                     enabled: isEditing,
                   ),
                 ),
-           CustomDivider(),
+                CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -237,10 +250,10 @@ class _FieldInfoSectionState extends State<FieldInfoSection> {
                     textBoxHeight: 50,
                     controller: constructionNameController,
                     onChanged: (_) => _onAnyFieldChanged(),
-                      enabled: isEditing,
+                    enabled: isEditing,
                   ),
                 ),
-           CustomDivider(),
+                CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -256,7 +269,7 @@ class _FieldInfoSectionState extends State<FieldInfoSection> {
                     enabled: isEditing,
                   ),
                 ),
-           CustomDivider(),
+                CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -272,7 +285,7 @@ class _FieldInfoSectionState extends State<FieldInfoSection> {
                     enabled: isEditing,
                   ),
                 ),
-           CustomDivider(),
+                CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -288,7 +301,7 @@ class _FieldInfoSectionState extends State<FieldInfoSection> {
                     enabled: isEditing,
                   ),
                 ),
-           CustomDivider(),
+                CustomDivider(),
                 SizedBox(
                   width: 2880.w,
                   height: 85.h,
@@ -304,7 +317,7 @@ class _FieldInfoSectionState extends State<FieldInfoSection> {
                     enabled: isEditing,
                   ),
                 ),
-           CustomDivider(),
+                CustomDivider(),
                 Row(
                   children: [
                     DatePickerField(
@@ -318,7 +331,6 @@ class _FieldInfoSectionState extends State<FieldInfoSection> {
                       },
                       enabled: isEditing,
                     ),
-
                     SizedBox(width: 89.29.w),
                     DatePickerField(
                       label: '준공일  :',
@@ -333,13 +345,11 @@ class _FieldInfoSectionState extends State<FieldInfoSection> {
                     ),
                   ],
                 ),
-
-
-           CustomDivider(),
+                CustomDivider(),
                 Row(
                   children: [
                     SizedBox(
-width: 875.w,
+                      width: 875.w,
                       height: 85.h,
                       child: labeledTextField(
                         title: '기준 위도 :',
@@ -353,7 +363,9 @@ width: 875.w,
                         enabled: isEditing,
                       ),
                     ),
-                    SizedBox(width: 200.w,),
+                    SizedBox(
+                      width: 200.w,
+                    ),
                     SizedBox(
                       width: 875.w,
                       height: 85.h,
@@ -371,11 +383,9 @@ width: 875.w,
                     ),
                   ],
                 ),
-
               ],
             ),
           ),
-
         ],
         SizedBox(height: 5.h),
         Row(

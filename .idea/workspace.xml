@@ -5,9 +5,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c319d521-135c-4428-bc87-b7ddd4c5a053" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/admin/input_iot_register_section.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/iot_dashbord/lib/controller/sensorinfo_controller.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/iot_dashbord/lib/model/sensorinfo_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/component/common/realtime_iot_alert.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/common/realtime_iot_alert.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/component/admin/input_field_info_section.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/admin/input_field_info_section.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/component/common/dialog_form.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/common/dialog_form.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/component/common/iot_alarm_dialog.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/common/iot_alarm_dialog.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/screen/admin_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/screen/admin_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/screen/login_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/screen/login_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/utils/iframe_visibility.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/utils/iframe_visibility.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iot_dashbord/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/pubspec.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iot_dashbord/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -87,6 +97,31 @@
         <line-breakpoint enabled="true" type="Dart">
           <url>file://$PROJECT_DIR$/iot_dashbord/lib/screen/timeseries_screen.dart</url>
           <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="Dart">
+          <url>file://$PROJECT_DIR$/iot_dashbord/lib/component/admin/input_field_info_section.dart</url>
+          <line>172</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="Dart">
+          <url>file://$PROJECT_DIR$/iot_dashbord/lib/component/admin/input_iot_register_section.dart</url>
+          <line>508</line>
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="Dart">
+          <url>file://$PROJECT_DIR$/iot_dashbord/lib/component/admin/input_iot_register_section.dart</url>
+          <line>546</line>
+          <option name="timeStamp" value="8" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="Dart">
+          <url>file://$PROJECT_DIR$/iot_dashbord/lib/component/admin/input_iot_register_section.dart</url>
+          <line>635</line>
+          <option name="timeStamp" value="9" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="Dart">
+          <url>file://$PROJECT_DIR$/iot_dashbord/lib/component/admin/input_iot_register_section.dart</url>
+          <line>568</line>
+          <option name="timeStamp" value="10" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

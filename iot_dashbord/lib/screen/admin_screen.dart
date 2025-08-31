@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:iot_dashboard/component/admin/input_duty_section.dart';
 import 'package:iot_dashboard/component/admin/input_field_info_section.dart';
+import 'package:iot_dashboard/component/admin/input_iot_register_section.dart';
 import 'package:iot_dashboard/component/admin/input_iot_section.dart';
 import 'package:iot_dashboard/component/admin/input_title_logo_section.dart';
 import 'package:iot_dashboard/component/common/base_layout.dart';
@@ -35,6 +36,7 @@ class _AdminScreenState extends State<AdminScreen> {
     final hostPort = u.hasPort ? '${u.host}:${u.port}' : u.host;
     return '$scheme://$hostPort';
   }
+
   // 전체 타이틀 변수
   final _titleController = TextEditingController();
   html.File? selectedLogoFile;
@@ -67,6 +69,16 @@ class _AdminScreenState extends State<AdminScreen> {
   String? constructEndDate;
   final _latitudeController = TextEditingController();
   final _longtitudeController = TextEditingController();
+
+  //iot 장비 관리 입력 변수
+
+  final _iotRestigerRidController = TextEditingController();
+  final _iotRegisterLabelController = TextEditingController();
+  final _iotRegisterSensorTypeController = TextEditingController();
+  final _iotRegisterEventTypeController = TextEditingController();
+  final _iotRegisterLocationController = TextEditingController();
+  final _iotRegisterLatitudeController = TextEditingController();
+  final _iotRegisterLongitudeController = TextEditingController();
 
 //iot 정보 입력 변수
   final iotProductIDController = TextEditingController();
@@ -109,7 +121,6 @@ class _AdminScreenState extends State<AdminScreen> {
   final iotHistoryLogController = TextEditingController();
 
   final cctvHistoryProductIDController = TextEditingController();
-
 
   String? cctvHistoryDate;
   String? cctvHistoryHour;
@@ -191,7 +202,6 @@ class _AdminScreenState extends State<AdminScreen> {
       return const Scaffold(body: SizedBox());
     }
 
-
     return MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => UserRoleState()..fetchRoles()),
@@ -204,280 +214,298 @@ class _AdminScreenState extends State<AdminScreen> {
             builder: (context, child) {
               return BaseLayout(
                   child: Stack(
-                    children: [
-                      RealtimeIotAlert(
-                        wsUrl: _wsUrl3030,
-                        ignorePastOnStartup: false, // 테스트 시 과거 필터 해제
-                        allowedSkewMs: 60000, // 타임스큐 허용치
-                      ),
-                      Container(
-                        padding: EdgeInsets.only(left: 64.w, right: 68.w),
-                        color: Color(0xffE7EAF4),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              height: 100.h,
-                              color: Color(0xffE7EAF4),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    width: 60.w,
-                                    height: 60.h,
-                                    child: Image.asset(
-                                      'assets/icons/color_setting2.png',
+                children: [
+                  RealtimeIotAlert(
+                    wsUrl: _wsUrl3030,
+                    ignorePastOnStartup: false, // 테스트 시 과거 필터 해제
+                    allowedSkewMs: 60000, // 타임스큐 허용치
+                  ),
+                  Container(
+                    padding: EdgeInsets.only(left: 64.w, right: 68.w),
+                    color: Color(0xffE7EAF4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          height: 100.h,
+                          color: Color(0xffE7EAF4),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 60.w,
+                                height: 60.h,
+                                child: Image.asset(
+                                  'assets/icons/color_setting2.png',
+                                ),
+                              ),
+                              SizedBox(width: 18.w),
+                              Container(
+                                  width: 200.w,
+                                  child: Text(
+                                    '관리자',
+                                    style: TextStyle(
+                                      fontFamily: 'PretendardGOV',
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 48.sp,
+                                      color: Colors.white,
                                     ),
-                                  ),
-                                  SizedBox(width: 18.w),
-                                  Container(
-                                      width: 200.w,
-                                      child: Text(
-                                        '관리자',
-                                        style: TextStyle(
-                                          fontFamily: 'PretendardGOV',
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 48.sp,
-                                          color: Colors.white,
-                                        ),
-                                      )),
-                                  SizedBox(width: 125.w),
-                                  Container(
-                                    width: 2880.w,
-                                    height: 72.h,
-                                    decoration: BoxDecoration(
-                                      color: Color(0xff414767),
-                                      borderRadius: BorderRadius.circular(5.r),
+                                  )),
+                              SizedBox(width: 125.w),
+                              Container(
+                                width: 2880.w,
+                                height: 72.h,
+                                decoration: BoxDecoration(
+                                  color: Color(0xff414767),
+                                  borderRadius: BorderRadius.circular(5.r),
+                                ),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 11.w,
                                     ),
-                                    child: Row(
-                                      children: [
-                                        SizedBox(
-                                          width: 11.w,
-                                        ),
-                                        Container(
-                                          width: 50.w,
-                                          height: 50.h,
-                                          child:
-                                          Image.asset('assets/icons/profile.png'),
-                                        ),
-                                        SizedBox(
-                                          width: 45.w,
-                                        ),
-                                        Container(
-                                            width: 261.w,
-                                            height: 50.h,
-                                            child: Text(
-                                              '관리자 설정 입력',
-                                              style: TextStyle(
-                                                fontFamily: 'PretendardGOV',
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 36.sp,
-                                                color: Colors.white,
-                                              ),
-                                            )),
-                                        SizedBox(
-                                          width: 2155.w,
-                                        ),
+                                    Container(
+                                      width: 50.w,
+                                      height: 50.h,
+                                      child: Image.asset(
+                                          'assets/icons/profile.png'),
+                                    ),
+                                    SizedBox(
+                                      width: 45.w,
+                                    ),
+                                    Container(
+                                        width: 261.w,
+                                        height: 50.h,
+                                        child: Text(
+                                          '관리자 설정 입력',
+                                          style: TextStyle(
+                                            fontFamily: 'PretendardGOV',
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 36.sp,
+                                            color: Colors.white,
+                                          ),
+                                        )),
+                                    SizedBox(
+                                      width: 2155.w,
+                                    ),
+                                  ],
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                        // ✅ 헤더 하단 선
+                        Container(
+                          width: double.infinity,
+                          height: 2.h,
+                          color: Color(0xff3182ce),
+                        ),
 
-                                      ],
-                                    ),
+                        SizedBox(height: 65.h),
+
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: Center(
+                              child: Column(
+                                children: [
+                                  TitleLogoSection(
+                                    titleController: _titleController,
+                                    onLogoSelected: (file) {
+                                      selectedLogoFile =
+                                          file; // ✅ AdminScreen의 상태에 저장
+                                    },
+                                  ),
+                                  DutySection(
+                                    dutyNameController: _dutyNameController,
+                                    dutyStartDate: dutyStartDate,
+                                    dutyEndDate: dutyEndDate,
+                                    progressController: _progressNameController,
+                                  ),
+                                  // EventAlarmSection(
+                                  //   alarmDate: alarmDate,
+                                  //   alarmHour: alarmHour,
+                                  //   alarmMinute: alarmMinute,
+                                  //   alarmSecond: alarmSecond,
+                                  //   alarmMessageController: _alarmMessageController,
+                                  // ),
+                                  NoticeInputSection(
+                                      noticeContentController:
+                                          _noticeContentController),
+                                  FieldInfoSection(
+                                    constructionTypeController:
+                                        _constructionTypeController,
+                                    constructionNameController:
+                                        _constructionNameController,
+                                    constructionAddressController:
+                                        _constructionAddressController,
+                                    constructionCompanyController:
+                                        _constructionCompanyController,
+                                    constructionOrdererController:
+                                        _constructionOrdererController,
+                                    constructionLocationController:
+                                        _constructionLocationController,
+                                    constructStartDate: constructStartDate,
+                                    constructEndDate: constructEndDate,
+                                    latitudeController: _latitudeController,
+                                    longtitudeController: _longtitudeController,
+                                  ),
+
+                                  InputIotRegisterSection(
+                                      // iotRegisterRidController =
+                                      //     _iotRestigerRidController,
+                                      // iotRegisterLabelController =
+                                      //     _iotRegisterLabelController,
+                                      // iotRegisterSensorTypeController =
+                                      //     _iotRegisterSensorTypeController,
+                                      // iotRegisterEventTypeController =
+                                      //  _iotRegisterEventTypeController,
+                                      // iotRegisterLocationController =
+                                      //     _iotRegisterLocationController,
+                                      // iotRegisterLatitudeController =
+                                      //     _iotRegisterLatitudeController,
+                                      // iotRegisterLongitudeController =
+                                      //     _iotRegisterLongitudeController),
+                                  ),
+
+                                  IotInputSection(
+                                    iotProductIDController:
+                                        iotProductIDController,
+                                    labelController: labelController,
+                                    latitudeController: latitudeController,
+                                    longitudeController: longitudeController,
+                                    x_MMController: x_MMController,
+                                    y_MMController: y_MMController,
+                                    z_MMController: z_MMController,
+                                    x_DegController: x_DegController,
+                                    y_DegController: y_DegController,
+                                    z_DegController: z_DegController,
+                                    createdAtDate: createdAtDate,
+                                    createdAtHour: createdAtHour,
+                                    createdAtMinute: createdAtMinute,
+                                    createdAtSecond: createdAtSecond,
+                                    batteryVoltageController:
+                                        batteryVoltageController,
+                                    batteryInfoController:
+                                        batteryInfoController,
+                                  ),
+                                  CCTVInputSection(
+                                    cctvProductIDController:
+                                        cctvProductIDController,
+                                    imageAnalysisController:
+                                        imageAnalysisController,
+                                    cctvAddressController:
+                                        cctvAddressController,
+                                    lastReceiveDate: lastReceiveDate,
+                                    lastReceiveHour: lastReceiveHour,
+                                    lastReceiveMinute: lastReceiveMinute,
+                                  ),
+                                  EventInputSection(
+                                    iotHistoryProductIDController:
+                                        iotHistoryProductIDController,
+                                    iotHistoryProductLabelController:
+                                        iotHistoryProductLabelController,
+                                    iotHistoryLatitudeController:
+                                        iotHistoryLatitudeController,
+                                    iotHistoryLongitudeController:
+                                        iotHistoryLongitudeController,
+
+                                    iotHistoryDate: iotHistoryDate,
+                                    iotHistoryHour: iotHistoryHour,
+                                    iotHistoryMinute: iotHistoryMinute,
+                                    // iotHistorySecond: iotHistorySecond,
+                                    iotHistoryLogController:
+                                        iotHistoryLogController,
+                                    cctvHistoryProductIDController:
+                                        cctvHistoryProductIDController,
+
+                                    cctvHistoryDate: cctvHistoryDate,
+                                    cctvHistoryHour: cctvHistoryHour,
+                                    cctvHistoryMinute: cctvHistoryMinute,
+                                    cctvHistoryLogController:
+                                        cctvHistoryLogController,
+                                  ),
+                                  SizedBox(
+                                    height: 80.h,
+                                  ),
+                                  InputSpecialSensorSection(
+                                    // 지중경사계
+                                    inclinometerIdController:
+                                        inclinometerIdController,
+                                    inclinometerDate: inclinometerDate,
+
+                                    inclinometerDepthValues:
+                                        inclinometerDepthValues,
+
+                                    // 지하수위계
+                                    piezometerIdController:
+                                        piezometerIdController,
+                                    piezometerDate: piezometerDate,
+                                    piezometerDryDaysController:
+                                        piezometerDryDaysController,
+                                    piezometerCurrentWaterLevelController:
+                                        piezometerCurrentWaterLevelController,
+                                    piezometerGroundLevelController:
+                                        piezometerGroundLevelController,
+                                    piezometerChangeAmountController:
+                                        piezometerChangeAmountController,
+                                    piezometerCumulativeChangeController:
+                                        piezometerCumulativeChangeController,
+
+                                    // 변형률계
+                                    strainGaugeIdController:
+                                        strainGaugeIdController,
+                                    strainGaugeDate: strainGaugeDate,
+                                    strainGaugeReadingController:
+                                        strainGaugeReadingController,
+                                    strainGaugeStressController:
+                                        strainGaugeStressController,
+                                    strainGaugeDepthController:
+                                        strainGaugeDepthController,
+
+                                    // 지표침하계
+                                    settlementGaugeIdController:
+                                        settlementGaugeIdController,
+                                    settlementGaugeDate: settlementGaugeDate,
+                                    settlementGaugeDryDaysController:
+                                        settlementGaugeDryDaysController,
+                                    settlementGaugeAbsoluteValues1:
+                                        settlementGaugeAbsoluteValues1,
+                                    settlementGaugeAbsoluteValues2:
+                                        settlementGaugeAbsoluteValues2,
+                                    settlementGaugeAbsoluteValues3:
+                                        settlementGaugeAbsoluteValues3,
+                                    settlementGaugeSubsidenceValues1:
+                                        settlementGaugeSubsidenceValues1,
+                                    settlementGaugeSubsidenceValues2:
+                                        settlementGaugeSubsidenceValues2,
+                                    settlementGaugeSubsidenceValues3:
+                                        settlementGaugeSubsidenceValues3,
+                                  ),
+                                  SizedBox(
+                                    height: 80.h,
+                                  ),
+                                  AuthSection(
+                                    idController: idController,
+                                    pwController: pwController,
+                                    emailController: emailController,
+                                    nameController: nameController,
+                                    phoneController: phoneController,
+                                    companyController: companyController,
+                                    deptController: deptController,
+                                    positionController: positionController,
+                                    responsibilitiesController:
+                                        responsibilitiesController,
                                   )
                                 ],
                               ),
                             ),
-                            // ✅ 헤더 하단 선
-                            Container(
-                              width: double.infinity,
-                              height: 2.h,
-                              color: Color(0xff3182ce),
-                            ),
-
-                            SizedBox(height: 65.h),
-
-                            Expanded(
-                              child: SingleChildScrollView(
-                                child: Center(
-                                  child: Column(
-                                    children: [
-                                      TitleLogoSection(
-                                        titleController: _titleController,
-                                        onLogoSelected: (file) {
-                                          selectedLogoFile =
-                                              file; // ✅ AdminScreen의 상태에 저장
-                                        },
-                                      ),
-                                      DutySection(
-                                        dutyNameController: _dutyNameController,
-                                        dutyStartDate: dutyStartDate,
-                                        dutyEndDate: dutyEndDate,
-                                        progressController: _progressNameController,
-                                      ),
-                                      // EventAlarmSection(
-                                      //   alarmDate: alarmDate,
-                                      //   alarmHour: alarmHour,
-                                      //   alarmMinute: alarmMinute,
-                                      //   alarmSecond: alarmSecond,
-                                      //   alarmMessageController: _alarmMessageController,
-                                      // ),
-                                      NoticeInputSection(
-                                          noticeContentController:
-                                          _noticeContentController),
-                                      FieldInfoSection(
-                                        constructionTypeController:
-                                        _constructionTypeController,
-                                        constructionNameController:
-                                        _constructionNameController,
-                                        constructionAddressController:
-                                        _constructionAddressController,
-                                        constructionCompanyController:
-                                        _constructionCompanyController,
-                                        constructionOrdererController:
-                                        _constructionOrdererController,
-                                        constructionLocationController:
-                                        _constructionLocationController,
-                                        constructStartDate: constructStartDate,
-                                        constructEndDate: constructEndDate,
-                                        latitudeController: _latitudeController,
-                                        longtitudeController: _longtitudeController,
-                                      ),
-
-
-                                      IotInputSection(
-                                        iotProductIDController: iotProductIDController,
-
-                                        labelController: labelController,
-                                        latitudeController: latitudeController,
-                                        longitudeController: longitudeController,
-                                        x_MMController: x_MMController,
-                                        y_MMController: y_MMController,
-                                        z_MMController: z_MMController,
-                                        x_DegController: x_DegController,
-                                        y_DegController: y_DegController,
-                                        z_DegController: z_DegController,
-                                        createdAtDate: createdAtDate,
-                                        createdAtHour: createdAtHour,
-                                        createdAtMinute: createdAtMinute,
-                                        createdAtSecond: createdAtSecond,
-                                        batteryVoltageController : batteryVoltageController,
-                                        batteryInfoController: batteryInfoController,
-                                      ),
-                                      CCTVInputSection(
-                                        cctvProductIDController:
-                                        cctvProductIDController,
-                                        imageAnalysisController:
-                                        imageAnalysisController,
-                                        cctvAddressController: cctvAddressController,
-                                        lastReceiveDate: lastReceiveDate,
-                                        lastReceiveHour: lastReceiveHour,
-                                        lastReceiveMinute: lastReceiveMinute,
-                                      ),
-                                      EventInputSection(
-                                        iotHistoryProductIDController:
-                                        iotHistoryProductIDController,
-                                        iotHistoryProductLabelController: iotHistoryProductLabelController,
-                                        iotHistoryLatitudeController:
-                                        iotHistoryLatitudeController,
-                                        iotHistoryLongitudeController:
-                                        iotHistoryLongitudeController,
-
-                                        iotHistoryDate: iotHistoryDate,
-                                        iotHistoryHour: iotHistoryHour,
-                                        iotHistoryMinute: iotHistoryMinute,
-                                        // iotHistorySecond: iotHistorySecond,
-                                        iotHistoryLogController:
-                                        iotHistoryLogController,
-                                        cctvHistoryProductIDController:
-                                        cctvHistoryProductIDController,
-
-
-                                        cctvHistoryDate: cctvHistoryDate,
-                                        cctvHistoryHour: cctvHistoryHour,
-                                        cctvHistoryMinute: cctvHistoryMinute,
-                                        cctvHistoryLogController:
-                                        cctvHistoryLogController,
-                                      ),
-                                      SizedBox(
-                                        height: 80.h,
-                                      ),
-                                      InputSpecialSensorSection(
-                                        // 지중경사계
-                                        inclinometerIdController:
-                                        inclinometerIdController,
-                                        inclinometerDate: inclinometerDate,
-
-                                        inclinometerDepthValues:
-                                        inclinometerDepthValues,
-
-                                        // 지하수위계
-                                        piezometerIdController: piezometerIdController,
-                                        piezometerDate: piezometerDate,
-                                        piezometerDryDaysController:
-                                        piezometerDryDaysController,
-                                        piezometerCurrentWaterLevelController:
-                                        piezometerCurrentWaterLevelController,
-                                        piezometerGroundLevelController:
-                                        piezometerGroundLevelController,
-                                        piezometerChangeAmountController:
-                                        piezometerChangeAmountController,
-                                        piezometerCumulativeChangeController:
-                                        piezometerCumulativeChangeController,
-
-                                        // 변형률계
-                                        strainGaugeIdController:
-                                        strainGaugeIdController,
-                                        strainGaugeDate: strainGaugeDate,
-                                        strainGaugeReadingController:
-                                        strainGaugeReadingController,
-                                        strainGaugeStressController:
-                                        strainGaugeStressController,
-                                        strainGaugeDepthController:
-                                        strainGaugeDepthController,
-
-                                        // 지표침하계
-                                        settlementGaugeIdController:
-                                        settlementGaugeIdController,
-                                        settlementGaugeDate: settlementGaugeDate,
-                                        settlementGaugeDryDaysController:
-                                        settlementGaugeDryDaysController,
-                                        settlementGaugeAbsoluteValues1:
-                                        settlementGaugeAbsoluteValues1,
-                                        settlementGaugeAbsoluteValues2:
-                                        settlementGaugeAbsoluteValues2,
-                                        settlementGaugeAbsoluteValues3:
-                                        settlementGaugeAbsoluteValues3,
-                                        settlementGaugeSubsidenceValues1:
-                                        settlementGaugeSubsidenceValues1,
-                                        settlementGaugeSubsidenceValues2:
-                                        settlementGaugeSubsidenceValues2,
-                                        settlementGaugeSubsidenceValues3:
-                                        settlementGaugeSubsidenceValues3,
-                                      ),
-                                      SizedBox(
-                                        height: 80.h,
-                                      ),
-                                      AuthSection(
-                                        idController: idController,
-                                        pwController: pwController,
-                                        emailController: emailController,
-                                        nameController: nameController,
-                                        phoneController: phoneController,
-                                        companyController: companyController,
-                                        deptController: deptController,
-                                        positionController: positionController,
-                                        responsibilitiesController:
-                                        responsibilitiesController,
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            )
-                          ],
-                        ),
-                      )
-                    ],
+                          ),
+                        )
+                      ],
+                    ),
                   )
-                 );
+                ],
+              ));
             }));
   }
 }
