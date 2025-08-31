@@ -4,7 +4,7 @@ class AlarmHistory {
   final DateTime timestamp;
   final String event;
   final String? log;
-  final String? location;
+  final String? label;
   final double? latitude;
   final double? longitude;
   final String type; // 'iot' 또는 'cctv'
@@ -15,7 +15,7 @@ class AlarmHistory {
     required this.timestamp,
     required this.event,
     this.log,
-    this.location,
+    this.label,
     this.latitude,
     this.longitude,
     required this.type,
@@ -28,7 +28,7 @@ class AlarmHistory {
       timestamp: DateTime.parse(json['Timestamp']),
       event: json['Event'] ?? '',
       log: json['Log'],
-      location: json['Location'],
+      label: json['Label'],
       latitude: (json['Latitude'] is num) ? (json['Latitude'] as num).toDouble() : null,
       longitude: (json['Longitude'] is num) ? (json['Longitude'] as num).toDouble() : null,
       type: json['Type'] ?? '',
@@ -42,7 +42,7 @@ class AlarmHistory {
       'Timestamp': timestamp.toIso8601String(),
       'Event': event,
       'Log': log,
-      'Location': location,
+      'Label': label,
       'Latitude': latitude,
       'Longitude': longitude,
       'Type': type,
@@ -54,7 +54,7 @@ class AlarmHistory {
     DateTime? timestamp,
     String? event,
     String? log,
-    String? location,
+    String? label,
     double? latitude,
     double? longitude,
     String? type,
@@ -65,7 +65,7 @@ class AlarmHistory {
       timestamp: timestamp ?? this.timestamp,
       event: event ?? this.event,
       log: log ?? this.log,
-      location: location ?? this.location,
+      label: label ?? this.label,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       type: type ?? this.type,

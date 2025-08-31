@@ -32,7 +32,7 @@ class _NoticeSectionState extends State<NoticeSection> {
     Future.microtask(() {
       context.read<NoticeState>().fetchAndNotify();
     });
-    _timer = Timer.periodic(Duration(minutes: 1), (_) {
+    _timer = Timer.periodic(Duration(seconds: 10), (_) {
       context.read<NoticeState>().fetchAndNotify();
     });
   }

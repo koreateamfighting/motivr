@@ -220,7 +220,7 @@ class _AlarmListViewState extends State<AlarmListView> {
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return const Expanded(
                     child: Center(
-                        child: Text('📭 알람 없음',
+                        child: Text('알람 없음',
                             style: TextStyle(color: Colors.white))));
               }
 

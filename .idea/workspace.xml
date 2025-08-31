@@ -5,10 +5,22 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c319d521-135c-4428-bc87-b7ddd4c5a053" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/common/iot_alarm_dialog.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/common/realtime_iot_alert.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/component/admin/input_cctv_section.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/admin/input_cctv_section.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/component/admin/input_iot_section.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/admin/input_iot_section.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/component/admin/input_event_history_section.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/admin/input_event_history_section.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/component/dashboard/cctv_mini_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/dashboard/cctv_mini_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/component/dashboard/iot_control_status.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/dashboard/iot_control_status.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/component/dashboard/notice_section.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/dashboard/notice_section.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/component/dashboard/recent_alarm_section.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/dashboard/recent_alarm_section.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/component/dashboard/work_task_section.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/dashboard/work_task_section.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/controller/alarm_history_controller.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/controller/alarm_history_controller.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/model/alarm_history_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/model/alarm_history_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/screen/admin_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/screen/admin_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/screen/dashboard_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/screen/dashboard_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/screen/detail_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/screen/detail_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/screen/digitaltwin_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/screen/digitaltwin_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/screen/timeseries_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/screen/timeseries_screen.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -17,6 +29,13 @@
   </component>
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Dart File" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -70,5 +89,19 @@
       <updated>1754194525315</updated>
     </task>
     <servers />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="Dart">
+          <url>file://$PROJECT_DIR$/iot_dashbord/lib/component/common/dialog_form2.dart</url>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="Dart">
+          <url>file://$PROJECT_DIR$/iot_dashbord/lib/screen/timeseries_screen.dart</url>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

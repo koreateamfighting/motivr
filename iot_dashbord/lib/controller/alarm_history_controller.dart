@@ -58,7 +58,7 @@ class AlarmHistoryController {
     required DateTime timestamp,
     required String event,
     required String log,
-    required String location,
+    required String label,
   }) async {
     final url = Uri.parse('$baseUrl3030/api/alarmhistory/cctv');
 
@@ -67,7 +67,7 @@ class AlarmHistoryController {
       'Timestamp': timestamp.toIso8601String(),
       'Event': event,
       'Log': log,
-      'Location': location,
+      'Label': label,
     };
 
     try {

@@ -34,7 +34,7 @@ class _WorkTaskSectionState extends State<WorkTaskSection> {
       context.read<WorkTaskState>().fetchTasks();
     });
 
-    _timer = Timer.periodic(Duration(minutes: 1), (_) {
+    _timer = Timer.periodic(Duration(seconds: 10), (_) {
       context.read<WorkTaskState>().fetchTasks();
     });
   }

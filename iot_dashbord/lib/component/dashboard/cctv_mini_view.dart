@@ -38,7 +38,7 @@ class _CctvMiniViewState extends State<CctvMiniView> {
   void initState() {
     super.initState();
     _fetchCctvAlertData(); // 최초 실행
-    _refreshTimer = Timer.periodic(Duration(minutes: 1), (_) {
+    _refreshTimer = Timer.periodic(Duration(seconds: 10), (_) {
       _fetchCctvAlertData(); // 1분마다 호출
     });
   }

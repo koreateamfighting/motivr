@@ -580,7 +580,7 @@ class _EventInputSectionState extends State<EventInputSection> {
                     timestamp: timestamp,
                     event: _selectedCctvEvent,
                     log: cctvHistoryLogController.text,
-                    location: _selectedLocation,
+                    label: _selectedLocation,
                   );
 
                   if (success) {

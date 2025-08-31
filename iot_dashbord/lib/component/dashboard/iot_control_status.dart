@@ -25,7 +25,7 @@ class _IotControlStatusState extends State<IotControlStatus> {
     // 🔧 최초 한 번: 렌더링 이후 안전하게 호출
 
     // 주기적으로 센서 상태 갱신
-    _timer = Timer.periodic(Duration(minutes: 1), (timer) {
+    _timer = Timer.periodic(Duration(seconds: 10), (timer) {
       _loadSensorStatus(); // 30초마다 상태 갱신
     });
   }
@@ -144,7 +144,7 @@ class _IotControlStatusState extends State<IotControlStatus> {
                             ),
                             PieChartSectionData(
                               value: inspection.toDouble(),
-                              color: const Color(0xFF83C2F1), // 점검 필요
+                              color: const Color(0xFF83C2F1), // 점검
                               radius: 20.w,
                               showTitle: false,
                             ),
@@ -205,7 +205,7 @@ class _IotControlStatusState extends State<IotControlStatus> {
                         const Color(0xFFFF6060),
                         'assets/icons/status_warning_icon.png'),
                     _statusRow(
-                        '점검 필요',
+                        '점검필요',
                         inspection.toInt(),
                         total.toInt(),
                         const Color(0xFF83C2F1),
