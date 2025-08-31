@@ -10,7 +10,7 @@ import 'package:iot_dashboard/component/admin/custom_divider.dart';
 import 'package:iot_dashboard/controller/sensorinfo_controller.dart';
 import 'package:iot_dashboard/model/sensorinfo_model.dart';
 import 'package:iot_dashboard/component/common/dialog_form.dart';
-import 'package:intl/intl.dart';  // DateFormat 임포트 추가
+import 'package:intl/intl.dart'; // DateFormat 임포트 추가
 import 'package:pluto_grid/pluto_grid.dart';
 
 class InputIotRegisterSection extends StatefulWidget {
@@ -22,7 +22,6 @@ class InputIotRegisterSection extends StatefulWidget {
   final TextEditingController? iotRegisterLatitudeController;
   final TextEditingController? iotRegisterLongitudeController;
 
-
   const InputIotRegisterSection({
     Key? key,
     this.iotRegisterRidController,
@@ -32,12 +31,11 @@ class InputIotRegisterSection extends StatefulWidget {
     this.iotRegisterLocationController,
     this.iotRegisterLatitudeController,
     this.iotRegisterLongitudeController,
-
   }) : super(key: key);
 
-
   @override
-  State<InputIotRegisterSection> createState() => _InputIotRegisterSectionState();
+  State<InputIotRegisterSection> createState() =>
+      _InputIotRegisterSectionState();
 }
 
 class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
@@ -61,7 +59,8 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
   final Map<String, SensorInfo> _originalByRid = {};
 
   static const _minRows = 40;
-// 이벤트 타입 <-> 코드 매핑
+
+  // 이벤트 타입 <-> 코드 매핑
   static const Map<String, String> _codeToLabel = {
     '2': '정상',
     '67': '주의',
@@ -72,6 +71,7 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
     '주의': '67',
     '위험': '68',
   };
+
   // 코드 → 라벨 (화면용)
   String _toEventLabel(dynamic v) {
     if (v == null) return '정상';
@@ -80,7 +80,7 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
     return _eventOptions.contains(s) ? s : (_codeToLabel[s] ?? '정상');
   }
 
-// 라벨 → 코드 (서버 저장용)
+  // 라벨 → 코드 (서버 저장용)
   String _toEventCode(dynamic v) {
     if (v == null) return '2'; // 기본 정상
     final s = v.toString();
@@ -88,22 +88,31 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
   }
 
   static const List<String> _eventOptions = ['정상', '주의', '위험'];
+
   @override
   void initState() {
     super.initState();
     _buildColumns();
     _load();
     // 컨트롤러 초기화: 위젯에서 넘어온 게 있으면 사용, 없으면 새로 생성
-    iotRegisterRidController = widget.iotRegisterRidController ?? TextEditingController();
-    iotRegisterLabelController = widget.iotRegisterLabelController ?? TextEditingController();
-    iotRegisterSensorTypeController = widget.iotRegisterSensorTypeController ?? TextEditingController();
-    iotRegisterEventTypeController = widget.iotRegisterEventTypeController ?? TextEditingController();
-    iotRegisterLocationController = widget.iotRegisterLocationController ?? TextEditingController();
-    iotRegisterLatitudeController = widget.iotRegisterLatitudeController ?? TextEditingController();
-    iotRegisterLongitudeController = widget.iotRegisterLongitudeController ?? TextEditingController();
+    iotRegisterRidController =
+        widget.iotRegisterRidController ?? TextEditingController();
+    iotRegisterLabelController =
+        widget.iotRegisterLabelController ?? TextEditingController();
+    iotRegisterSensorTypeController =
+        widget.iotRegisterSensorTypeController ?? TextEditingController();
+    iotRegisterEventTypeController =
+        widget.iotRegisterEventTypeController ?? TextEditingController();
+    iotRegisterLocationController =
+        widget.iotRegisterLocationController ?? TextEditingController();
+    iotRegisterLatitudeController =
+        widget.iotRegisterLatitudeController ?? TextEditingController();
+    iotRegisterLongitudeController =
+        widget.iotRegisterLongitudeController ?? TextEditingController();
 
     // _fetchAllSenSorInfo();
   }
+
   // void _onAnyFieldChanged() {
   //   if (!isEditing) {
   //     setState(() {
@@ -180,8 +189,7 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
     if (g == null) return;
 
     // 셀 또는 블록 선택이 하나라도 있으면 true
-    final has = g.currentCell != null ||
-        g.currentSelectingRows.isNotEmpty;
+    final has = g.currentCell != null || g.currentSelectingRows.isNotEmpty;
 
     if (has != _hasSelection) {
       setState(() => _hasSelection = has);
@@ -194,6 +202,7 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
     _grid!.addListener(_onGridStateChange);
     _onGridStateChange(); // 초기 상태 반영
   }
+
   bool _hasMeaningfulValue(String field, dynamic v) {
     if (v == null) return false;
 
@@ -214,7 +223,6 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
     // 그 외 필드는 비어있지만 않으면 '입력됨'으로 간주
     return true;
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -272,76 +280,85 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
               borderRadius: BorderRadius.circular(6.r),
             ),
             child: _loading
-                ?  Center(child: CircularProgressIndicator(color: Color(0xff3182ce),))
+                ? Center(
+                    child: CircularProgressIndicator(color: Color(0xff3182ce)),
+                  )
                 : PlutoGrid(
-              columns: _columns,
-              rows: _rows,
-              configuration: PlutoGridConfiguration(
-                style: PlutoGridStyleConfig(
-                  gridBackgroundColor: const Color(0xff1b254b),
-                  cellTextStyle: TextStyle(
-                    fontFamily: 'PretendardGOV',
-                    color: Colors.black,
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w400,
+                    columns: _columns,
+                    rows: _rows,
+                    configuration: PlutoGridConfiguration(
+                      style: PlutoGridStyleConfig(
+                        gridBackgroundColor: const Color(0xff1b254b),
+                        cellTextStyle: TextStyle(
+                          fontFamily: 'PretendardGOV',
+                          color: Colors.black,
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        columnTextStyle: TextStyle(
+                          fontFamily: 'PretendardGOV',
+                          color: Colors.black,
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.w800, // 헤더는 살짝 굵게 추천
+                        ),
+                        rowHeight: 55.h,
+                        // 셀(바디) 높이
+                        columnHeight: 90.h,
+                        // 헤더 높이
+                        iconColor: Colors.transparent,
+                      ),
+                    ),
+                    onLoaded: (e) {
+                      _attachGrid(e.stateManager);
+                      _grid?.setCurrentCell(null, -1);
+                      _onGridStateChange();
+                    },
+                    onChanged: (evt) {
+                      final f = evt.column.field;
+
+                      // 1) 위/경도 공백 입력 시 null로 유지
+                      if ((f == 'Latitude' || f == 'Longitude') &&
+                          (evt.value == null ||
+                              evt.value.toString().trim().isEmpty)) {
+                        _grid?.changeCellValue(
+                          evt.row.cells[f]!,
+                          null,
+                          force: true,
+                          notify: true,
+                        );
+                      }
+
+                      // 2) RID & Label이 채워졌고 EventType이 비었으면 자동으로 '정상' 세팅
+                      if (f == 'RID' || f == 'Label') {
+                        final rid = (evt.row.cells['RID']?.value ?? '')
+                            .toString()
+                            .trim();
+                        final label = (evt.row.cells['Label']?.value ?? '')
+                            .toString()
+                            .trim();
+                        final evCell = evt.row.cells['EventType'];
+                        final evVal = (evCell?.value ?? '').toString().trim();
+
+                        if (rid.isNotEmpty &&
+                            label.isNotEmpty &&
+                            evVal.isEmpty) {
+                          _grid?.changeCellValue(
+                            evCell!,
+                            '정상', // 화면 표시용 라벨
+                            force: true,
+                            notify: true,
+                          );
+                        }
+                      }
+                    },
+
+                    mode: PlutoGridMode.normal,
                   ),
-                  columnTextStyle: TextStyle(
-                    fontFamily: 'PretendardGOV',
-                    color: Colors.black,
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.w800, // 헤더는 살짝 굵게 추천
-                  ),
-                  rowHeight: 35.h,     // 셀(바디) 높이
-                  columnHeight: 60.h,  // 헤더 높이
-                  iconColor: Colors.transparent,
-                ),
-              ),
-              onLoaded: (e) {
-                _attachGrid(e.stateManager);
-                _grid?.setCurrentCell(null, -1);
-                _onGridStateChange();
-              },
-              onChanged: (evt) {
-                final f = evt.column.field;
-
-                // 1) 위/경도 공백 입력 시 null로 유지
-                if ((f == 'Latitude' || f == 'Longitude') &&
-                    (evt.value == null || evt.value.toString().trim().isEmpty)) {
-                  _grid?.changeCellValue(
-                    evt.row.cells[f]!,
-                    null,
-                    force: true,
-                    notify: true,
-                  );
-                }
-
-                // 2) RID & Label이 채워졌고 EventType이 비었으면 자동으로 '정상' 세팅
-                if (f == 'RID' || f == 'Label') {
-                  final rid = (evt.row.cells['RID']?.value ?? '').toString().trim();
-                  final label = (evt.row.cells['Label']?.value ?? '').toString().trim();
-                  final evCell = evt.row.cells['EventType'];
-                  final evVal = (evCell?.value ?? '').toString().trim();
-
-                  if (rid.isNotEmpty && label.isNotEmpty && evVal.isEmpty) {
-                    _grid?.changeCellValue(
-                      evCell!,
-                      '정상', // 화면 표시용 라벨
-                      force: true,
-                      notify: true,
-                    );
-                  }
-                }
-              },
-
-              mode: PlutoGridMode.normal,
-            )
-            ,
           ),
         SizedBox(height: 5.h),
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-
             ActionButton(
               '행추가',
               const Color(0xffe98800),
@@ -350,8 +367,11 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
             SizedBox(width: 12.w),
             ActionButton(
               '삭제',
-              _hasSelection ?  const Color(0xffE57373) : const Color(0xff9b9c9d), // 회색
-              onTap: (_loading || !_hasSelection) ? null : _deleteSelected,       // 비활성화
+              _hasSelection ? const Color(0xffE57373) : const Color(0xff9b9c9d),
+              // 회색
+              onTap: (_loading || !_hasSelection)
+                  ? null
+                  : _deleteSelected, // 비활성화
             ),
             SizedBox(width: 12.w),
             ActionButton(
@@ -361,14 +381,10 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
             ),
             SizedBox(width: 400.w),
           ],
-        )
-
-
+        ),
       ],
     );
   }
-
-
 
   // -------------- Columns / Rows --------------
 
@@ -382,8 +398,7 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
       double width = 300,
       PlutoColumnType? type,
       bool sortable = true, // 정렬만 남길지 제어
-      PlutoColumnRenderer? renderer,   // ⬅️ 추가
-
+      PlutoColumnRenderer? renderer, // ⬅️ 추가
     }) {
       return PlutoColumn(
         title: title,
@@ -417,8 +432,10 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
         width: 120.w,
         readOnly: true,
         enableSorting: false,
-        enableColumnDrag: false,   // ← 드래그 아이콘 제거
-        enableContextMenu: false,  // ← 메뉴 아이콘 제거
+        enableColumnDrag: false,
+        // ← 드래그 아이콘 제거
+        enableContextMenu: false,
+        // ← 메뉴 아이콘 제거
         enableFilterMenuItem: false,
         titleTextAlign: PlutoColumnTextAlign.center,
         textAlign: PlutoColumnTextAlign.center,
@@ -432,21 +449,25 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
     );
 
     _columns.addAll([
-      col(field: 'RID',        title: 'RID(필수입력)',       width: 270),
-      col(field: 'Label',      title: '라벨(필수입력',       width: 520),
-      col(field: 'SensorType', title: '센서타입',    width: 500),
+      col(field: 'RID', title: 'RID(필수입력)', width: 270),
+      col(field: 'Label', title: '라벨(필수입력)', width: 520),
+      col(field: 'SensorType', title: '센서타입', width: 500),
       // ⬇️ 드롭다운으로 변경
       col(
         field: 'EventType',
         title: '이벤트 유형',
         width: 320,
-        type: PlutoColumnType.text(),   // ← text로 두고
-        readOnly: true,                 // ← 편집은 우리가 열어줄 다이얼로그로
+        type: PlutoColumnType.text(),
+        // ← text로 두고
+        readOnly: true,
+        // ← 편집은 우리가 열어줄 다이얼로그로
         renderer: (ctx) {
           final label = _toEventLabel(ctx.cell.value);
           Color bg = label == '위험'
               ? Colors.red.shade600
-              : (label == '주의' ? Colors.orange.shade600 : Colors.green.shade600);
+              : (label == '주의'
+                    ? Colors.orange.shade600
+                    : Colors.green.shade600);
 
           return InkWell(
             onTap: () => _openEventSelector(context, ctx),
@@ -463,10 +484,18 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
                 children: [
                   Text(
                     label,
-                    style: TextStyle(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   SizedBox(width: 4.w),
-                  const Icon(Icons.arrow_drop_down, color: Colors.white, size: 20),
+                  const Icon(
+                    Icons.arrow_drop_down,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ],
               ),
             ),
@@ -474,7 +503,7 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
         },
       ),
 
-      col(field: 'Location',   title: '위치',       width: 480),
+      col(field: 'Location', title: '위치', width: 480),
       col(
         field: 'Latitude',
         title: '위도',
@@ -482,7 +511,8 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
         type: PlutoColumnType.number(),
         renderer: (ctx) => Text(
           (ctx.cell.value == null || ctx.cell.value.toString().isEmpty)
-              ? '' : ctx.cell.value.toString(),
+              ? ''
+              : ctx.cell.value.toString(),
           style: TextStyle(fontSize: 18.sp),
           textAlign: TextAlign.center,
         ),
@@ -494,7 +524,8 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
         type: PlutoColumnType.number(),
         renderer: (ctx) => Text(
           (ctx.cell.value == null || ctx.cell.value.toString().isEmpty)
-              ? '' : ctx.cell.value.toString(),
+              ? ''
+              : ctx.cell.value.toString(),
           style: TextStyle(fontSize: 18.sp),
           textAlign: TextAlign.center,
         ),
@@ -503,16 +534,18 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
   }
 
   PlutoRow _rowFromModel(SensorInfo s) {
-    return PlutoRow(cells: {
-      'id':        PlutoCell(value: 0), // 실제 표시는 renderer가 rowIdx+1로 그림
-      'RID': PlutoCell(value: s.rid),
-      'Label': PlutoCell(value: s.label ?? ''),
-      'SensorType': PlutoCell(value: s.sensorType ?? ''),
-      'EventType': PlutoCell(value: _toEventLabel(s.eventType)),
-      'Location': PlutoCell(value: s.location ?? ''),
-      'Latitude': PlutoCell(value: s.latitude),
-      'Longitude': PlutoCell(value: s.longitude),
-    });
+    return PlutoRow(
+      cells: {
+        'id': PlutoCell(value: 0), // 실제 표시는 renderer가 rowIdx+1로 그림
+        'RID': PlutoCell(value: s.rid),
+        'Label': PlutoCell(value: s.label ?? ''),
+        'SensorType': PlutoCell(value: s.sensorType ?? ''),
+        'EventType': PlutoCell(value: _toEventLabel(s.eventType)),
+        'Location': PlutoCell(value: s.location ?? ''),
+        'Latitude': PlutoCell(value: s.latitude),
+        'Longitude': PlutoCell(value: s.longitude),
+      },
+    );
   }
 
   SensorInfo _modelFromRow(PlutoRow r) {
@@ -538,28 +571,32 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
       longitude: _toD(r.cells['Longitude']!.value),
     );
   }
+
   void _ensureMinRows() {
     final need = max(0, _minRows - _rows.length);
     for (int i = 0; i < need; i++) {
-      _rows.add(PlutoRow(cells: {
-        'id':        PlutoCell(value: 0),
-        'RID':       PlutoCell(value: ''),
-        'Label':     PlutoCell(value: ''),
-        'SensorType':PlutoCell(value: ''),
-        'EventType': PlutoCell(value: ''),
-        'Location':  PlutoCell(value: ''),
-        'Latitude':  PlutoCell(value: null),
-        'Longitude': PlutoCell(value: null),
-      }));
+      _rows.add(
+        PlutoRow(
+          cells: {
+            'id': PlutoCell(value: 0),
+            'RID': PlutoCell(value: ''),
+            'Label': PlutoCell(value: ''),
+            'SensorType': PlutoCell(value: ''),
+            'EventType': PlutoCell(value: ''),
+            'Location': PlutoCell(value: ''),
+            'Latitude': PlutoCell(value: null),
+            'Longitude': PlutoCell(value: null),
+          },
+        ),
+      );
     }
   }
 
-
   // -------------- Actions --------------
   Future<void> _openEventSelector(
-      BuildContext context,
-      PlutoColumnRendererContext ctx, // ← 여기!
-      ) async {
+    BuildContext context,
+    PlutoColumnRendererContext ctx, // ← 여기!
+  ) async {
     String current = _toEventLabel(ctx.cell.value);
     String selected = current;
 
@@ -568,7 +605,9 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
       builder: (_) {
         return AlertDialog(
           backgroundColor: const Color(0xff1b254b),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+          ),
           contentPadding: EdgeInsets.all(20.w),
           content: StatefulBuilder(
             builder: (context, setState) => SizedBox(
@@ -582,7 +621,7 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     ..._eventOptions.map(
-                          (opt) => RadioListTile<String>(
+                      (opt) => RadioListTile<String>(
                         value: opt,
                         groupValue: selected,
                         onChanged: (v) => setState(() => selected = v!),
@@ -597,7 +636,10 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
                           ),
                         ),
                         dense: true,
-                        visualDensity: const VisualDensity(horizontal: 0, vertical: -2),
+                        visualDensity: const VisualDensity(
+                          horizontal: 0,
+                          vertical: -2,
+                        ),
                       ),
                     ),
                   ],
@@ -611,32 +653,58 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
               onPressed: () => Navigator.pop(context),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Color(0xff3182ce)),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
                 foregroundColor: Colors.white,
-                textStyle: TextStyle(fontFamily: 'PretendardGOV', fontSize: 18.sp),
+                textStyle: TextStyle(
+                  fontFamily: 'PretendardGOV',
+                  fontSize: 18.sp,
+                ),
               ),
-              child: Text('취소',
-                  style: TextStyle(fontFamily: 'PretendardGOV', fontSize: 18.sp, color: Colors.white)),
+              child: Text(
+                '취소',
+                style: TextStyle(
+                  fontFamily: 'PretendardGOV',
+                  fontSize: 18.sp,
+                  color: Colors.white,
+                ),
+              ),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(context, selected),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xff3182ce),
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-                textStyle: TextStyle(fontFamily: 'PretendardGOV', fontSize: 18.sp),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                textStyle: TextStyle(
+                  fontFamily: 'PretendardGOV',
+                  fontSize: 18.sp,
+                ),
               ),
-              child: Text('확인',
-                  style: TextStyle(fontFamily: 'PretendardGOV', fontSize: 18.sp, color: Colors.white)),
+              child: Text(
+                '확인',
+                style: TextStyle(
+                  fontFamily: 'PretendardGOV',
+                  fontSize: 18.sp,
+                  color: Colors.white,
+                ),
+              ),
             ),
           ],
         );
-
       },
     );
 
     if (result != null) {
-      ctx.stateManager.changeCellValue(ctx.cell, result, force: true, notify: true);
+      ctx.stateManager.changeCellValue(
+        ctx.cell,
+        result,
+        force: true,
+        notify: true,
+      );
     }
   }
 
@@ -652,7 +720,9 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
       _sessionDeletedRids.removeWhere((rid) => !serverRids.contains(rid));
 
       // 세션 블록리스트에 있는 RID는 화면에서 숨김
-      final visible = list.where((e) => !_sessionDeletedRids.contains(e.rid)).toList();
+      final visible = list
+          .where((e) => !_sessionDeletedRids.contains(e.rid))
+          .toList();
 
       _originalByRid
         ..clear()
@@ -674,21 +744,23 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
     }
   }
 
-
   void _addEmptyRow() {
-    final row = PlutoRow(cells: {
-      'id':        PlutoCell(value: 0),
-      'RID':       PlutoCell(value: ''),
-      'Label':     PlutoCell(value: ''),
-      'SensorType':PlutoCell(value: ''),
-      'EventType': PlutoCell(value: ''),
-      'Location':  PlutoCell(value: ''),
-      'Latitude':  PlutoCell(value: null),
-      'Longitude': PlutoCell(value: null),
-    });
+    final row = PlutoRow(
+      cells: {
+        'id': PlutoCell(value: 0),
+        'RID': PlutoCell(value: ''),
+        'Label': PlutoCell(value: ''),
+        'SensorType': PlutoCell(value: ''),
+        'EventType': PlutoCell(value: ''),
+        'Location': PlutoCell(value: ''),
+        'Latitude': PlutoCell(value: null),
+        'Longitude': PlutoCell(value: null),
+      },
+    );
     _grid?.appendRows([row]);
     _reindexAfterFrame();
   }
+
   void _reindexAfterFrame() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final rows = _grid?.rows ?? _rows;
@@ -699,12 +771,11 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
     });
   }
 
-
   Future<void> _deleteSelected() async {
     if (_grid == null) return;
     final selected = _grid!.currentSelectingRows.isNotEmpty
         ? _grid!.currentSelectingRows
-        : (_grid!.currentRow != null ? [ _grid!.currentRow! ] : <PlutoRow>[]);
+        : (_grid!.currentRow != null ? [_grid!.currentRow!] : <PlutoRow>[]);
 
     if (selected.isEmpty) {
       await _showDialog('알림', '삭제할 행을 선택하세요.');
@@ -746,7 +817,7 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
     // 0) 필수값(RID/Label) 사전 검증: 하나라도 누락이면 전체 저장 중단
     final rows = _grid!.rows;
     for (final r in rows) {
-      final rid   = (r.cells['RID']?.value ?? '').toString().trim();
+      final rid = (r.cells['RID']?.value ?? '').toString().trim();
       final label = (r.cells['Label']?.value ?? '').toString().trim();
 
       bool hasOther = false;
@@ -757,11 +828,13 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
 
       // EventType
       final ev = r.cells['EventType']?.value;
-      if (!hasOther && ev != null && ev.toString().trim().isNotEmpty) hasOther = true;
+      if (!hasOther && ev != null && ev.toString().trim().isNotEmpty)
+        hasOther = true;
 
       // Location
       final loc = r.cells['Location']?.value;
-      if (!hasOther && loc != null && loc.toString().trim().isNotEmpty) hasOther = true;
+      if (!hasOther && loc != null && loc.toString().trim().isNotEmpty)
+        hasOther = true;
 
       // Latitude (0/0.0/"0"/"0.0"은 미입력 취급)
       if (!hasOther) {
@@ -797,11 +870,11 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
 
     // 0-1) RID/Label ok 인 행인데 EventType 비었으면 화면/저장 모두 '정상'으로
     for (final r in rows) {
-      final rid   = (r.cells['RID']?.value ?? '').toString().trim();
+      final rid = (r.cells['RID']?.value ?? '').toString().trim();
       final label = (r.cells['Label']?.value ?? '').toString().trim();
       if (rid.isNotEmpty && label.isNotEmpty) {
         final evCell = r.cells['EventType'];
-        final evVal  = (evCell?.value ?? '').toString().trim();
+        final evVal = (evCell?.value ?? '').toString().trim();
         if (evVal.isEmpty) {
           evCell?.value = '정상'; // _modelFromRow에서 코드 '2'로 변환됨
         }
@@ -852,35 +925,29 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
       return;
     }
 
-
     setState(() => _loading = false);
-    await _showDialog('','저장 되었습니다.');
-
-
-
+    await _showDialog('', '저장 되었습니다.');
   }
-
 
   // -------------- Helpers --------------
 
-  Future<void> _showDialog(String title, String msg, {bool reloadAfter = false}) async {
+  Future<void> _showDialog(
+    String title,
+    String msg, {
+    bool reloadAfter = false,
+  }) async {
     await showDialog(
       context: context,
       barrierDismissible: false,
       barrierColor: Colors.transparent, // 배경 어둡게 X
-      builder: (_) => DialogForm(
-        mainText: '$title\n$msg',
-        btnText: '확인',
-        fontSize: 18.sp,
-      ),
+      builder: (_) =>
+          DialogForm(mainText: '$title\n$msg', btnText: '확인', fontSize: 18.sp),
     );
 
     if (reloadAfter && mounted) {
       await _load();
     }
   }
-
-
 
   // @override
   // Widget build(BuildContext context) {
