@@ -262,17 +262,39 @@ class _RealtimeIotAlertState extends State<RealtimeIotAlert> {
     required DateTime occurredAt,
   }) {
     if (!mounted) return;
+
+    // 공백 제거해 구분
+    final norm = severity.replaceAll(RegExp(r'\s+'), '');
+
+    // 경고/위험 -> 빨강, 주의/점검필요 -> 노랑
+    final Color overlayColor = (norm == '경고' || norm == '위험')
+        ? Colors.red.withOpacity(0.25)
+        : Colors.yellow.withOpacity(0.25);
+
     showDialog(
       context: context,
       barrierDismissible: true,
+      barrierColor: overlayColor, // ✅ 핵심: 반투명 경고 배경
       builder: (_) => IotAlarmDialog(
-        severity: severity, // '경고' | '위험' | '점검 필요' | '주의'
+        severity: severity, // '경고' | '위험' | '주의' | '점검 필요'
         rid: rid,
         label: label,
         occurredAt: occurredAt,
         btnText: '확인',
       ),
     );
+  }
+  /// ✅ 반투명 배경색 매핑
+  Color? _overlayForSeverity(String s) {
+    final n = s.replaceAll(RegExp(r'\s+'), '');
+    if (n == '주의') {
+      return const Color(0xFFFFC107).withOpacity(0.25); // 노랑
+    }
+    if (n == '경고' || n == '위험') {
+      return const Color(0xFFEF4444).withOpacity(0.28); // 빨강
+    }
+    // 점검필요 등은 오버레이 없음
+    return null;
   }
 
   @override
