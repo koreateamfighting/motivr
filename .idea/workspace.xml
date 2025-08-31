@@ -5,22 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c319d521-135c-4428-bc87-b7ddd4c5a053" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/common/iot_alarm_dialog.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/common/realtime_iot_alert.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/component/admin/input_event_history_section.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/admin/input_event_history_section.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/component/dashboard/cctv_mini_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/dashboard/cctv_mini_view.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/component/dashboard/iot_control_status.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/dashboard/iot_control_status.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/component/dashboard/notice_section.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/dashboard/notice_section.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/component/dashboard/recent_alarm_section.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/dashboard/recent_alarm_section.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/component/dashboard/work_task_section.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/dashboard/work_task_section.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/controller/alarm_history_controller.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/controller/alarm_history_controller.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/model/alarm_history_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/model/alarm_history_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/screen/admin_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/screen/admin_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/screen/dashboard_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/screen/dashboard_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/screen/detail_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/screen/detail_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/screen/digitaltwin_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/screen/digitaltwin_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/screen/timeseries_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/screen/timeseries_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/component/details/detail_iot_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/details/detail_iot_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iot_dashbord/lib/component/details/iot_data_source.dart" beforeDir="false" afterPath="$PROJECT_DIR$/iot_dashbord/lib/component/details/iot_data_source.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

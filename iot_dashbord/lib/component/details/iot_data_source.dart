@@ -116,7 +116,7 @@ class IotDataSource extends DataGridSource {
                     onChanged: (value) => onFieldChanged?.call(id, indexKey, 'longitude', value),
                     textAlign: TextAlign.right,
                     style: TextStyle(
-                      fontSize: 20.sp,
+                      fontSize: 24.sp,
                       fontFamily: 'PretendardGOV',
                       fontWeight: FontWeight.w500,
                     ),
@@ -351,7 +351,7 @@ class IotDataSource extends DataGridSource {
             style: TextStyle(
               fontFamily: 'PretendardGOV',
               color: Colors.white,
-              fontSize: 32.sp,
+              fontSize: 24.sp,
               fontWeight: FontWeight.w500,
             ),
           ),

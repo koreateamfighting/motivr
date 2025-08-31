@@ -628,13 +628,13 @@ class _DetailIotViewState extends State<DetailIotView> {
                               columns: [
 
                                 GridColumn(columnName: 'id',
-                                    width: 195.w,
+                                    width: 160.w,
                                     label: buildHeader('ID')),
                                 GridColumn(columnName: 'label',
-                                    width: isEditing? 315.w:230.w,
+                                    width: isEditing? 315.w:200.w,
                                     label: buildHeader('라벨명')),
                                 GridColumn(columnName: 'type',
-                                    width: 120.w,
+                                    width: 195.w,
                                     label: buildHeader('유형')),
                                 GridColumn(columnName: 'location',
                                     width: 285.w,
