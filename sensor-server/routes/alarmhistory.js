@@ -12,7 +12,7 @@ router.get('/alarmhistory/iot', async (req, res) => {
     const pool = await poolConnect;
     const result = await pool.request().query(`
       SELECT TOP 100
-        Id, DeviceID, Timestamp, Event, Log, Location, Latitude, Longitude, Type
+        Id, DeviceID, Timestamp, Event, Log, Label, Latitude, Longitude, Type
       FROM AlarmHistory
       WHERE Type = 'iot'
       ORDER BY Timestamp DESC
@@ -31,7 +31,7 @@ router.get('/alarmhistory/cctv', async (req, res) => {
     const pool = await poolConnect;
     const result = await pool.request().query(`
       SELECT TOP 100
-        Id, DeviceID, Timestamp, Event, Log, Location, Latitude, Longitude, Type
+        Id, DeviceID, Timestamp, Event, Log, Label, Latitude, Longitude, Type
       FROM AlarmHistory
       WHERE Type = 'cctv'
       ORDER BY Timestamp DESC
@@ -73,19 +73,11 @@ router.get('/alarmhistory/cctv/alert', async (req, res) => {
 
 
 
+
 // ✅ IoT 알람 히스토리 추가 전용
 router.post('/alarmhistory/iot', async (req, res) => {
-  const {
-    DeviceID,   // RID
-    Label,      // 라벨명
-    Timestamp,
-    Event,
-    Log,
-    Latitude,
-    Longitude
-  } = req.body;
+  const { DeviceID, Label, Timestamp, Event, Log, Latitude, Longitude } = req.body;
 
-  const combinedDeviceId = `${Label} #${DeviceID}`;
   const formattedTime = Timestamp
     ? DateTime.fromISO(Timestamp, { zone: 'Asia/Seoul' }).toFormat('yyyy-LL-dd HH:mm:ss')
     : DateTime.now().setZone('Asia/Seoul').toFormat('yyyy-LL-dd HH:mm:ss');
@@ -94,37 +86,48 @@ router.post('/alarmhistory/iot', async (req, res) => {
     const pool = await poolConnect;
 
     const insertResult = await pool.request()
-      .input('DeviceID', sql.NVarChar, combinedDeviceId)
+      .input('DeviceID', sql.NVarChar, DeviceID)
       .input('Timestamp', sql.VarChar, formattedTime)
       .input('Event', sql.NVarChar, Event)
       .input('Log', sql.NVarChar, Log)
-      .input('Location', sql.NVarChar, Label)
+      .input('Label', sql.NVarChar, Label)
       .input('Latitude', sql.Float, Latitude)
       .input('Longitude', sql.Float, Longitude)
       .input('Type', sql.NVarChar, 'iot')
       .query(`
-        INSERT INTO AlarmHistory (DeviceID, Timestamp, Event, Log, Location, Latitude, Longitude, Type)
+        INSERT INTO AlarmHistory (DeviceID, Timestamp, Event, Log, Label, Latitude, Longitude, Type)
         OUTPUT INSERTED.*
-        VALUES (@DeviceID, @Timestamp, @Event, @Log, @Location, @Latitude, @Longitude, @Type)
+        VALUES (@DeviceID, @Timestamp, @Event, @Log, @Label, @Latitude, @Longitude, @Type)
       `);
 
     const insertedRow = insertResult.recordset[0];
 
-    // ✅ WebSocket 브로드캐스트 조건
-    if (['주의', '경고', '점검필요'].includes(Event)) {
+    // ✅ 방송 조건: '경고', '위험', '점검필요' + '점검 필요'까지 허용
+    const eventRaw = (Event ?? '').toString().trim();
+    const eventNormalized = eventRaw.replace(/\s+/g, ''); // 공백 제거 → '점검필요' 통일
+    const shouldBroadcast = ['경고', '위험', '점검필요'].includes(eventNormalized);
+
+    if (shouldBroadcast) {
       const wss = req.app.get('wss');
       if (wss && wss.clients) {
         const message = {
           type: 'iot-alert',
           data: {
-            ...insertedRow,
-            Timestamp: new Date(`${insertedRow.Timestamp}+09:00`).toISOString()
-          }
+            // ✅ 프론트 1회 팝업 보장용 고유키
+            uid: String(insertedRow.Id),
+            Id: insertedRow.Id,
+            Type: 'iot',
+            DeviceID: insertedRow.DeviceID,
+            Label: insertedRow.Label,
+            Event: eventRaw, // 원문(공백 포함) 그대로 보냄 → 화면 표시는 이 값 사용
+            Timestamp: new Date(`${insertedRow.Timestamp}+09:00`).toISOString(),
+            Latitude: insertedRow.Latitude,
+            Longitude: insertedRow.Longitude,
+          },
         };
 
-        // 모든 클라이언트에게 전송
-        wss.clients.forEach(client => {
-          if (client.readyState === 1) { // OPEN
+        wss.clients.forEach((client) => {
+          if (client.readyState === 1) {
             client.send(JSON.stringify(message));
           }
         });
@@ -138,6 +141,70 @@ router.post('/alarmhistory/iot', async (req, res) => {
   }
 });
 
+// router.post('/alarmhistory/iot', async (req, res) => {
+//   const {
+//     DeviceID,   // RID
+//     Label,      // 라벨명
+//     Timestamp,
+//     Event,
+//     Log,
+//     Latitude,
+//     Longitude
+//   } = req.body;
+
+  
+//   const formattedTime = Timestamp
+//     ? DateTime.fromISO(Timestamp, { zone: 'Asia/Seoul' }).toFormat('yyyy-LL-dd HH:mm:ss')
+//     : DateTime.now().setZone('Asia/Seoul').toFormat('yyyy-LL-dd HH:mm:ss');
+
+//   try {
+//     const pool = await poolConnect;
+
+//     const insertResult = await pool.request()
+//       .input('DeviceID', sql.NVarChar, DeviceID)
+//       .input('Timestamp', sql.VarChar, formattedTime)
+//       .input('Event', sql.NVarChar, Event)
+//       .input('Log', sql.NVarChar, Log)
+//       .input('Label', sql.NVarChar, Label)
+//       .input('Latitude', sql.Float, Latitude)
+//       .input('Longitude', sql.Float, Longitude)
+//       .input('Type', sql.NVarChar, 'iot')
+//       .query(`
+//         INSERT INTO AlarmHistory (DeviceID, Timestamp, Event, Log, Label, Latitude, Longitude, Type)
+//         OUTPUT INSERTED.*
+//         VALUES (@DeviceID, @Timestamp, @Event, @Log, @Label, @Latitude, @Longitude, @Type)
+//       `);
+
+//     const insertedRow = insertResult.recordset[0];
+
+//     // ✅ WebSocket 브로드캐스트 조건
+//     if (['주의', '경고', '점검필요'].includes(Event)) {
+//       const wss = req.app.get('wss');
+//       if (wss && wss.clients) {
+//         const message = {
+//           type: 'iot-alert',
+//           data: {
+//             ...insertedRow,
+//             Timestamp: new Date(`${insertedRow.Timestamp}+09:00`).toISOString()
+//           }
+//         };
+
+//         // 모든 클라이언트에게 전송
+//         wss.clients.forEach(client => {
+//           if (client.readyState === 1) { // OPEN
+//             client.send(JSON.stringify(message));
+//           }
+//         });
+//       }
+//     }
+
+//     res.status(200).json({ message: 'IoT 알람 추가 완료' });
+//   } catch (err) {
+//     console.error('❌ IoT 알람 저장 실패:', err);
+//     res.status(500).json({ error: 'IoT 알람 저장 실패' });
+//   }
+// });
+
 
 
 // ✅ CCTV 알람 히스토리 추가 전용
@@ -147,7 +214,7 @@ router.post('/alarmhistory/cctv', async (req, res) => {
     Timestamp,
     Event,
     Log,
-    Location
+    Label
   } = req.body;
 
   const formattedTime = Timestamp
@@ -162,13 +229,13 @@ router.post('/alarmhistory/cctv', async (req, res) => {
       .input('Timestamp', sql.VarChar, formattedTime)
       .input('Event', sql.NVarChar, Event)
       .input('Log', sql.NVarChar, `[${DeviceID}] ${Log}`)
-      .input('Location', sql.NVarChar, Location)
+      .input('Label', sql.NVarChar, Label)
       .input('Latitude', sql.Float, null)
       .input('Longitude', sql.Float, null)
       .input('Type', sql.NVarChar, 'cctv')
       .query(`
-        INSERT INTO AlarmHistory (DeviceID, Timestamp, Event, Log, Location, Latitude, Longitude, Type)
-        VALUES (@DeviceID, @Timestamp, @Event, @Log, @Location, @Latitude, @Longitude, @Type)
+        INSERT INTO AlarmHistory (DeviceID, Timestamp, Event, Log, Label, Latitude, Longitude, Type)
+        VALUES (@DeviceID, @Timestamp, @Event, @Log, @Label, @Latitude, @Longitude, @Type)
       `);
 
     res.status(200).json({ message: 'CCTV 알람 추가 완료' });
@@ -254,7 +321,7 @@ router.get('/alarmhistory/download-excel-cctv', async (req, res) => {
     const result = await pool.request()
       .input('DeviceID', sql.NVarChar, camId)
       .query(`
-        SELECT DeviceID, Timestamp, Event, Log, Location
+        SELECT DeviceID, Timestamp, Event, Log, Label
         FROM AlarmHistory
         WHERE DeviceID = @DeviceID
           AND Type = 'cctv'
@@ -267,7 +334,7 @@ router.get('/alarmhistory/download-excel-cctv', async (req, res) => {
       { header: 'Timestamp', key: 'Timestamp', style: { numFmt: 'yyyy-mm-dd hh:mm:ss' } },
       { header: 'Event', key: 'Event' },
       { header: 'Log', key: 'Log' },
-      { header: 'Location', key: 'Location' },
+      { header: 'Label', key: 'Label' },
     ];
 
     result.recordset.forEach(row => {
@@ -303,7 +370,7 @@ router.get('/alarmhistory/download-excel-cctv-period-multi', async (req, res) =>
         .input('StartDate', sql.DateTime, new Date(startDate))
         .input('EndDate', sql.DateTime, new Date(endDate))
         .query(`
-          SELECT DeviceID, Timestamp, Event, Log, Location
+          SELECT DeviceID, Timestamp, Event, Log, Label
           FROM AlarmHistory
           WHERE DeviceID = @DeviceID
             AND Type = 'cctv'
@@ -317,7 +384,7 @@ router.get('/alarmhistory/download-excel-cctv-period-multi', async (req, res) =>
         { header: 'Timestamp', key: 'Timestamp', style: { numFmt: 'yyyy-mm-dd hh:mm:ss' } },
         { header: 'Event', key: 'Event' },
         { header: 'Log', key: 'Log' },
-        { header: 'Location', key: 'Location' },
+        { header: 'Label', key: 'Label' },
       ];
 
       result.recordset.forEach(row => {
@@ -369,13 +436,13 @@ router.post('/alarmhistory/cctvlog', async (req, res) => {
       .input('Timestamp', sql.VarChar, timestamp)
       .input('Event', sql.NVarChar, event)
       .input('Log', sql.NVarChar, log)
-      .input('Location', sql.NVarChar, null)
+      .input('Label', sql.NVarChar, null)
       .input('Latitude', sql.Float, null)
       .input('Longitude', sql.Float, null)
       .input('Type', sql.NVarChar, 'cctv')
       .query(`
-        INSERT INTO AlarmHistory (DeviceID, Timestamp, Event, Log, Location, Latitude, Longitude, Type)
-        VALUES (@DeviceID, @Timestamp, @Event, @Log, @Location, @Latitude, @Longitude, @Type)
+        INSERT INTO AlarmHistory (DeviceID, Timestamp, Event, Log, Label, Latitude, Longitude, Type)
+        VALUES (@DeviceID, @Timestamp, @Event, @Log, @Label, @Latitude, @Longitude, @Type)
       `);
 
     res.status(200).json({ message: 'CCTV 알람 저장 완료' });

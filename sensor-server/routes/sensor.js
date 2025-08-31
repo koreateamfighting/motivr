@@ -29,6 +29,29 @@ function toKstDate(value) {
   // fallback: now
   return DateTime.now().plus({ hours: 9 }).toJSDate();
 }
+// ✅ ISO(+오프셋)든 'yyyy-LL-dd HH:mm:ss'든 들어오면 KST 벽시계 문자열로 변환
+function toKstWallClockString(value) {
+  const ZONE = 'Asia/Seoul';
+  let dt = null;
+
+  if (value instanceof Date) {
+    // JS Date -> KST로 해석한 벽시계 시각
+    dt = DateTime.fromJSDate(value).setZone(ZONE);
+  } else if (typeof value === 'string') {
+    // 1) ISO (Z, +09:00 등 오프셋 포함/미포함)
+    let t = DateTime.fromISO(value, { setZone: true });
+    if (t.isValid) {
+      dt = t.setZone(ZONE);
+    } else {
+      // 2) 'yyyy-LL-dd HH:mm:ss' 같은 고정 포맷
+      t = DateTime.fromFormat(value, 'yyyy-LL-dd HH:mm:ss', { zone: ZONE });
+      if (t.isValid) dt = t;
+    }
+  }
+
+  if (!dt) dt = DateTime.now().setZone(ZONE);
+  return dt.toFormat('yyyy-LL-dd HH:mm:ss');
+}
 
 
 /** ✅ SensorInfo 업서트 + Raw 라벨 전파 (RID 단일행 유지) */
@@ -130,30 +153,30 @@ async function upsertSensorInfoAndPropagateLabel({
 /** ✅ AlarmHistory 삽입: Timestamp를 DateTime2로 직접 삽입(변환 X) */
 async function insertAlarmHistoryFromSensorData(data, createAt, transaction = null) {
   const { RID, Label, EventType, Latitude, Longitude } = data;
-  const deviceId = `${Label} #${RID}`;
-
-  // createAt이 문자열 or Date → KST Date로 정규화
-  const tsDate = toKstDate(createAt);
+  const deviceId = String(RID).trim();
+  const labelPrefix = Label ? `[${Label} #${deviceId}]` : `[${deviceId}]`;
+ // ✅ 프론트에서 보낸 시간을 KST "문자열"로 고정 (이 줄이 핵심)
+ const tsStrKst = toKstWallClockString(createAt);
 
   let event = '점검필요';
-  let log = `${deviceId} : 알려지지 않은 로그`;
+  let log = `${labelPrefix} : 알려지지 않은 로그`;
 
   switch (parseInt(EventType)) {
     case 2:
       event = '정상';
-      log = `${deviceId} : 정상 로그`;
+      log = `${labelPrefix} : 정상 로그`;
       break;
     case 5:
       event = '정상';
-      log = `${deviceId} : GPS 정상 수집`;
+      log = `${labelPrefix} : GPS 정상 수집`;
       break;
     case 67:
       event = '주의';
-      log = `${deviceId} : 주의 로그`;
+      log = `${labelPrefix} : 주의 로그`;
       break;
     case 68:
       event = '경고';
-      log = `${deviceId} : 경고 로그`;
+      log = `${labelPrefix} : 경고 로그`;
       break;
   }
 
@@ -184,18 +207,18 @@ async function insertAlarmHistoryFromSensorData(data, createAt, transaction = nu
   const insertRequest = transaction ? transaction.request() : pool.request();
   await insertRequest
     .input('DeviceID', sql.NVarChar(100), deviceId)
-    .input('TimestampKST', sql.DateTime2, tsDate)         // ✅ DateTime2
+    .input('TimestampKST', sql.DateTime2, tsStrKst)         // ✅ DateTime2
     .input('Event', sql.NVarChar(255), event)
     .input('Log', sql.NVarChar(1000), log)
-    .input('Location', sql.NVarChar(255), Label)
+    .input('Label', sql.NVarChar(255), Label)
     .input('Latitude', sql.Float, lat)
     .input('Longitude', sql.Float, lon)
     .input('Type', sql.NVarChar(20), 'iot')
     .query(`
       INSERT INTO AlarmHistory
-      (DeviceID, Timestamp, Event, Log, Location, Latitude, Longitude, Type)
+      (DeviceID, Timestamp, Event, Log, Label, Latitude, Longitude, Type)
       VALUES
-      (@DeviceID, @TimestampKST, @Event, @Log, @Location, @Latitude, @Longitude, @Type)
+      (@DeviceID, @TimestampKST, @Event, @Log, @Label, @Latitude, @Longitude, @Type)
     `);
 }
 
