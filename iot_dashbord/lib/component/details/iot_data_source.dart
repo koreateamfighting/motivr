@@ -40,7 +40,7 @@ class IotDataSource extends DataGridSource {
         DataGridCell<String>(columnName: 'type', value: item.sensortype),
         DataGridCell<String>(
             columnName: 'location',
-            value: '${item.longitude} / ${item.latitude}'),
+            value: '${item.latitude} / ${item.longitude}'),
         DataGridCell<String>(columnName: 'status', value: item.eventtype),
         DataGridCell<String>(columnName: 'battery', value: item.battery),
         DataGridCell<String>(columnName: 'lastUpdated', value: DateFormat('yyyy-MM-dd HH:mm:ss').format(item.createAt),),
@@ -86,17 +86,17 @@ class IotDataSource extends DataGridSource {
         if (field == 'location' && isEditing) {
           final lonKey = '${indexKey}_longitude';
           final latKey = '${indexKey}_latitude';
-
-          if (!fieldControllers.containsKey(lonKey)) {
-            fieldControllers[lonKey] = TextEditingController(
-                text: row.getCells().firstWhere((c) => c.columnName == 'location').value.toString().split('/').first.trim()
-            );
-          }
           if (!fieldControllers.containsKey(latKey)) {
             fieldControllers[latKey] = TextEditingController(
                 text: row.getCells().firstWhere((c) => c.columnName == 'location').value.toString().split('/').last.trim()
             );
           }
+          if (!fieldControllers.containsKey(lonKey)) {
+            fieldControllers[lonKey] = TextEditingController(
+                text: row.getCells().firstWhere((c) => c.columnName == 'location').value.toString().split('/').first.trim()
+            );
+          }
+
 
           return Container(
             height: 63.h,
@@ -108,15 +108,15 @@ class IotDataSource extends DataGridSource {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Longitude
+                // Latitude
                 SizedBox(
                   width: 100.w,
                   child: TextField(
-                    controller: fieldControllers[lonKey],
-                    onChanged: (value) => onFieldChanged?.call(id, indexKey, 'longitude', value),
-                    textAlign: TextAlign.right,
+                    controller: fieldControllers[latKey],
+                    onChanged: (value) => onFieldChanged?.call(id, indexKey, 'latitude', value),
+                    textAlign: TextAlign.left,
                     style: TextStyle(
-                      fontSize: 24.sp,
+                      fontSize: 18.sp,
                       fontFamily: 'PretendardGOV',
                       fontWeight: FontWeight.w500,
                     ),
@@ -133,22 +133,21 @@ class IotDataSource extends DataGridSource {
                   child: Text(
                     '/',
                     style: TextStyle(
-                      fontSize: 20.sp,
+                      fontSize: 18.sp,
                       fontFamily: 'PretendardGOV',
                       fontWeight: FontWeight.w500,
                       color: Colors.black,
                     ),
                   ),
-                ),
-                // Latitude
+                ),    // Longitude
                 SizedBox(
                   width: 100.w,
                   child: TextField(
-                    controller: fieldControllers[latKey],
-                    onChanged: (value) => onFieldChanged?.call(id, indexKey, 'latitude', value),
-                    textAlign: TextAlign.left,
+                    controller: fieldControllers[lonKey],
+                    onChanged: (value) => onFieldChanged?.call(id, indexKey, 'longitude', value),
+                    textAlign: TextAlign.right,
                     style: TextStyle(
-                      fontSize: 20.sp,
+                      fontSize: 18.sp,
                       fontFamily: 'PretendardGOV',
                       fontWeight: FontWeight.w500,
                     ),
@@ -159,6 +158,7 @@ class IotDataSource extends DataGridSource {
                     ),
                   ),
                 ),
+
               ],
             ),
           );

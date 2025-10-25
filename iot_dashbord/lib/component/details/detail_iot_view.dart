@@ -638,7 +638,7 @@ class _DetailIotViewState extends State<DetailIotView> {
                                     label: buildHeader('유형')),
                                 GridColumn(columnName: 'location',
                                     width: 285.w,
-                                    label: buildHeader('설치 위치')),
+                                    label: buildHeader('설치 위치(위/경도)')),
                                 GridColumn(columnName: 'status',
                                     width: 160.w,
                                     label: buildHeader('상태')),

@@ -504,24 +504,32 @@ class _InputIotRegisterSectionState extends State<InputIotRegisterSection> {
       ),
 
       col(field: 'Location', title: '위치', width: 480),
-      col(
+     col(
         field: 'Latitude',
         title: '위도',
         width: 330,
-        type: PlutoColumnType.number(),
-        renderer: (ctx) => Text(
-          (ctx.cell.value == null || ctx.cell.value.toString().isEmpty)
-              ? ''
-              : ctx.cell.value.toString(),
-          style: TextStyle(fontSize: 18.sp),
-          textAlign: TextAlign.center,
+        // ⬇️ 소숫점 허용 포맷 (최대 6자리, 필요시 늘리세요)
+        type: PlutoColumnType.number(
+          format: '0.######',     // <= PlutoGrid v7 계열
+          // decimalPoint: '.',    // (버전에 따라 옵션이 있을 수 있음)
+          // negative: false,
         ),
-      ),
+        renderer: (ctx) => Text(
+    (ctx.cell.value == null || ctx.cell.value.toString().isEmpty)
+    ? ''
+        : ctx.cell.value.toString(),
+    style: TextStyle(fontSize: 18.sp),
+    textAlign: TextAlign.center,
+    ),
+    ),
       col(
         field: 'Longitude',
         title: '경도',
         width: 330,
-        type: PlutoColumnType.number(),
+        // ⬇️ 소숫점 허용 포맷 (최대 6자리)
+        type: PlutoColumnType.number(
+          format: '0.######',     // <= PlutoGrid v7 계열
+        ),
         renderer: (ctx) => Text(
           (ctx.cell.value == null || ctx.cell.value.toString().isEmpty)
               ? ''

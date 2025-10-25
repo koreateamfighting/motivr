@@ -6,6 +6,64 @@ const router = express.Router();
 const dbConfig = require('../dbConfig');
 const { DateTime } = require('luxon');
 const ExcelJS = require('exceljs');
+ // sensor.js 상단 유틸 근처에 추가
+// ✔️ 'unknown'은 사용 불가 라벨로 취급
+const isUsableLabel = (val) => {
+    if (val == null) return false;
+    const t = String(val).trim();
+    if (!t) return false;
+    return t.toLowerCase() !== 'unknown';
+  };
+  
+  // ✔️ 좌표: 양수·정상(한국 기준)일 때만 “신뢰 좌표”
+  const isStrictPositiveCoordPair = (lat, lon) => {
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return false;
+    if (lat <= 0 || lon <= 0) return false;
+    if (lat > 90 || lat < -90) return false;
+    if (lon > 180 || lon < -180) return false;
+    return true;
+  };
+  
+  // ✔️ SensorInfo 단건 조회
+  async function getSensorInfoByRid(rid, trxOrPool = pool) {
+    const r = await (trxOrPool.request ? trxOrPool : pool).request()
+      .input('RID', sql.NVarChar(100), String(rid || '').trim())
+      .query(`
+        SELECT TOP 1 Label, Latitude AS SILat, Longitude AS SILon
+        FROM master.dbo.SenSorInfo
+        WHERE RID = @RID
+      `);
+    return r.recordset[0] || null;
+  }
+  // ✔️ SensorInfo 기반으로 최종 라벨/좌표 산출 + 필요시 SensorInfo 좌표 갱신
+async function resolveLabelAndCoords(rid, reqLabel, reqLat, reqLon, trxOrPool = pool) {
+  const tp = trxOrPool.request ? trxOrPool : pool;
+  const si = await getSensorInfoByRid(rid, trxOrPool);
+  const siLabel = si?.Label ?? null;
+  const siHasStrict = isStrictPositiveCoordPair(si?.SILat ?? NaN, si?.SILon ?? NaN);
+
+  const reqHasStrict = isStrictPositiveCoordPair(Number(reqLat), Number(reqLon));
+  const finalLat = reqHasStrict ? Number(reqLat) : (siHasStrict ? si.SILat : null);
+  const finalLon = reqHasStrict ? Number(reqLon) : (siHasStrict ? si.SILon : null);
+
+  const incomingLabel = isUsableLabel(reqLabel) ? String(reqLabel).trim() : null;
+  const finalLabel = isUsableLabel(siLabel) ? siLabel : incomingLabel; // SensorInfo 우선
+
+  // 요청 좌표가 유효하면 SensorInfo 좌표 갱신
+  if (reqHasStrict) {
+    await (trxOrPool.request ? trxOrPool.request() : pool.request())
+      .input('RID', sql.NVarChar(100), String(rid).trim())
+      .input('Latitude', sql.Float, finalLat)
+      .input('Longitude', sql.Float, finalLon)
+      .query(`
+        UPDATE master.dbo.SenSorInfo
+        SET Latitude = @Latitude, Longitude = @Longitude
+        WHERE RID = @RID
+      `);
+  }
+
+  return { finalLabel, finalLat, finalLon };
+}
 
 /** ✅ 공통 유틸: 'yyyy-LL-dd HH:mm:ss' or ISO → JS Date(KST 기준) */
 /** ✅ UTC/ISO 문자열 → JS Date (KST +9 적용) */
@@ -66,13 +124,18 @@ async function upsertSensorInfoAndPropagateLabel({
   transaction
 }) {
   const normRid = String(rid).trim();
-  const normLabel = (label ?? 'unknown').trim();
+  const incomingLabel = (label ?? '').trim();
   const req = transaction ? transaction.request() : pool.request();
-
+   // 현재 SensorInfo 라벨 조회
+    const si = await getSensorInfoByRid(normRid, transaction ? transaction : pool);
+    const currentLabel = si?.Label ?? null;
+    // 최종 라벨: 요청 라벨이 usable이면 그것, 아니면 기존 유지 (unknown 금지)
+    const finalLabel = isUsableLabel(incomingLabel) ? incomingLabel : (currentLabel ?? null);
+  
   // 1) UPDATE 먼저 (RID 기준)
   const upd = await req
     .input('RID', sql.NVarChar(100), normRid)
-    .input('Label', sql.NVarChar(100), normLabel)
+    .input('Label', sql.NVarChar(100), finalLabel)
     .input('Latitude', sql.Float, lat ?? null)
     .input('Longitude', sql.Float, lon ?? null)
     .input('Location', sql.NVarChar(255), null)
@@ -81,7 +144,7 @@ async function upsertSensorInfoAndPropagateLabel({
     .input('CreateAt', sql.DateTime2, createAt)     // ✅ DateTime2
     .query(`
       UPDATE master.dbo.SenSorInfo
-      SET Label = @Label,
+       SET Label = COALESCE(@Label, Label),
           Latitude = @Latitude,
           Longitude = @Longitude,
           Location = @Location,
@@ -96,7 +159,7 @@ async function upsertSensorInfoAndPropagateLabel({
     try {
       await (transaction ? transaction.request() : pool.request())
         .input('RID', sql.NVarChar(100), normRid)
-        .input('Label', sql.NVarChar(100), normLabel)
+        .input('Label', sql.NVarChar(100), finalLabel ?? 'unknown')
         .input('Latitude', sql.Float, lat ?? null)
         .input('Longitude', sql.Float, lon ?? null)
         .input('Location', sql.NVarChar(255), null)
@@ -113,7 +176,7 @@ async function upsertSensorInfoAndPropagateLabel({
       if (e && (e.number === 2601 || e.number === 2627)) {
         await (transaction ? transaction.request() : pool.request())
           .input('RID', sql.NVarChar(100), normRid)
-          .input('Label', sql.NVarChar(100), normLabel)
+          .input('Label', sql.NVarChar(100), finalLabel)
           .input('Latitude', sql.Float, lat ?? null)
           .input('Longitude', sql.Float, lon ?? null)
           .input('Location', sql.NVarChar(255), null)
@@ -122,7 +185,7 @@ async function upsertSensorInfoAndPropagateLabel({
           .input('CreateAt', sql.DateTime2, createAt) // ✅ DateTime2
           .query(`
             UPDATE master.dbo.SenSorInfo
-            SET Label = @Label,
+             SET Label = COALESCE(@Label, Label),
                 Latitude = @Latitude,
                 Longitude = @Longitude,
                 Location = @Location,
@@ -137,53 +200,82 @@ async function upsertSensorInfoAndPropagateLabel({
     }
   }
 
-  // 3) RawSensorData 라벨 전파 (RID 전체)
-  await (transaction ? transaction.request() : pool.request())
-    .input('RID', sql.NVarChar(100), normRid)
-    .input('Label', sql.NVarChar(100), normLabel)
-    .query(`
-      UPDATE dbo.RawSensorData
-      SET Label = @Label
-      WHERE RID = @RID AND (Label IS NULL OR Label <> @Label);
-    `);
+    // 3) RawSensorData 라벨 전파 (SensorInfo의 최종 라벨 기준으로만)
+    if (finalLabel) {
+       await (transaction ? transaction.request() : pool.request())
+         .input('RID', sql.NVarChar(100), normRid)
+  
+        .input('Label', sql.NVarChar(100), finalLabel)
+         .query(`
+           UPDATE dbo.RawSensorData
+           SET Label = @Label
+           WHERE RID = @RID AND (Label IS NULL OR Label <> @Label);
+         `);
+    }
 }
 
 
 
 /** ✅ AlarmHistory 삽입: Timestamp를 DateTime2로 직접 삽입(변환 X) */
 async function insertAlarmHistoryFromSensorData(data, createAt, transaction = null) {
-  const { RID, Label, EventType, Latitude, Longitude } = data;
+ const { RID, Label, EventType, Latitude, Longitude } = data;
   const deviceId = String(RID).trim();
-  const labelPrefix = Label ? `[${Label} #${deviceId}]` : `[${deviceId}]`;
  // ✅ 프론트에서 보낸 시간을 KST "문자열"로 고정 (이 줄이 핵심)
  const tsStrKst = toKstWallClockString(createAt);
+   // 1) SensorInfo 조회 (동일 트랜잭션/커넥션 사용)
+   const tp = transaction ? transaction : pool;
+   const si = await getSensorInfoByRid(deviceId, tp);
+   const siLabel = si?.Label ?? null;
+   const siHasStrict = isStrictPositiveCoordPair(si?.SILat ?? NaN, si?.SILon ?? NaN);
+ 
+   // 2) 요청 좌표 판정
+   const reqLat = Number(Latitude);
+   const reqLon = Number(Longitude);
+   const reqHasStrict = isStrictPositiveCoordPair(reqLat, reqLon);
+ 
+   // 3) 최종 좌표: 요청(양수·정상) > SensorInfo(양수·정상) > (기존 AlarmHistory 최신)
+   let lat = reqHasStrict ? reqLat : (siHasStrict ? si.SILat : null);
+   let lon = reqHasStrict ? reqLon : (siHasStrict ? si.SILon : null);
+ 
+   // 4) 요청 좌표가 유효하면 SensorInfo 좌표 갱신 (IoT만 대상)
+   if (reqHasStrict) {
+     await (transaction ? transaction.request() : pool.request())
+       .input('RID', sql.NVarChar(100), deviceId)
+       .input('Latitude', sql.Float, reqLat)
+       .input('Longitude', sql.Float, reqLon)
+       .query(`
+         UPDATE master.dbo.SenSorInfo
+         SET Latitude = @Latitude, Longitude = @Longitude
+         WHERE RID = @RID
+       `);
+   }
+  
+    let event = '점검필요';
+ 
+   let baseMsg = '알려지지 않은 로그';
 
-  let event = '점검필요';
-  let log = `${labelPrefix} : 알려지지 않은 로그`;
 
   switch (parseInt(EventType)) {
     case 2:
       event = '정상';
-      log = `${labelPrefix} : 정상 로그`;
+      baseMsg = '정상 로그';
       break;
     case 5:
       event = '정상';
-      log = `${labelPrefix} : GPS 정상 수집`;
+      baseMsg = 'GPS 정상 수집';
       break;
     case 67:
       event = '주의';
-      log = `${labelPrefix} : 주의 로그`;
+      baseMsg = '주의 로그';
       break;
     case 68:
       event = '경고';
-      log = `${labelPrefix} : 경고 로그`;
+      baseMsg = '경고 로그';
       break;
   }
 
   await poolConnect;
   const poolRequest = transaction ? transaction.request() : pool.request();
-
-  // 이전 값 유지 로직
   const lastGeoQuery = `
     SELECT TOP 1 Latitude, Longitude
     FROM AlarmHistory
@@ -192,9 +284,6 @@ async function insertAlarmHistoryFromSensorData(data, createAt, transaction = nu
     ORDER BY Timestamp DESC
   `;
 
-  let lat = Latitude;
-  let lon = Longitude;
-
   if (lat == null || lon == null) {
     const prev = await poolRequest
       .input('DeviceID', sql.NVarChar(100), deviceId)
@@ -202,7 +291,16 @@ async function insertAlarmHistoryFromSensorData(data, createAt, transaction = nu
     if (lat == null) lat = prev.recordset[0]?.Latitude ?? null;
     if (lon == null) lon = prev.recordset[0]?.Longitude ?? null;
   }
-
+    // 6) 최종 라벨: SensorInfo가 우선, 그 다음 요청 라벨(usable), 아니면 null
+    const incomingLabel = isUsableLabel(Label) ? String(Label).trim() : null;
+    const finalLabel = isUsableLabel(siLabel) ? siLabel : incomingLabel;
+  
+    // 7) 로그 문자열 구성: '#라벨명 [RID] : 메시지' (라벨 없으면 '[RID] : 메시지')
+    const log =
+      finalLabel
+        ? `${finalLabel} [${deviceId}] : ${baseMsg}`
+        : `[${deviceId}] : ${baseMsg}`;
+  
   // INSERT (CONVERT 제거, DateTime2 직입력)
   const insertRequest = transaction ? transaction.request() : pool.request();
   await insertRequest
@@ -210,7 +308,7 @@ async function insertAlarmHistoryFromSensorData(data, createAt, transaction = nu
     .input('TimestampKST', sql.DateTime2, tsStrKst)         // ✅ DateTime2
     .input('Event', sql.NVarChar(255), event)
     .input('Log', sql.NVarChar(1000), log)
-    .input('Label', sql.NVarChar(255), Label)
+    .input('Label', sql.NVarChar(255), finalLabel)
     .input('Latitude', sql.Float, lat)
     .input('Longitude', sql.Float, lon)
     .input('Type', sql.NVarChar(20), 'iot')
@@ -265,7 +363,9 @@ router.post('/sensor', async (req, res) => {
   try {
     await poolConnect;
     await t.begin();
-
+        const { finalLabel, finalLat, finalLon } = await resolveLabelAndCoords(
+            data.RID, label, data.Latitude, data.Longitude, t
+          );
     // 1) RawSensorData INSERT
     await t.request()
       .input('RID', sql.NVarChar(100), String(data.RID))
@@ -279,9 +379,9 @@ router.post('/sensor', async (req, res) => {
       .input('Z_MM', sql.Float, data.Z_MM)
       .input('BatteryVoltage', sql.Float, data.BatteryVoltage)
       .input('BatteryLevel', sql.Float, data.BatteryLevel)
-      .input('Latitude', sql.Float, data.Latitude)
-      .input('Longitude', sql.Float, data.Longitude)
-      .input('Label', sql.NVarChar(100), label)
+            .input('Latitude', sql.Float, finalLat)
+            .input('Longitude', sql.Float, finalLon)
+            .input('Label', sql.NVarChar(100), finalLabel ?? null)
       .input('CreateAt', sql.DateTime2, createAtDate)   // ✅ DateTime2
       .query(`
         INSERT INTO dbo.RawSensorData
@@ -295,9 +395,9 @@ router.post('/sensor', async (req, res) => {
     // 2) SenSorInfo 업서트 (RID 기준)
     await t.request()
       .input('RID', sql.NVarChar(100), String(data.RID))
-      .input('Label', sql.NVarChar(100), label)
-      .input('Latitude', sql.Float, data.Latitude ?? null)
-      .input('Longitude', sql.Float, data.Longitude ?? null)
+           .input('Label', sql.NVarChar(100), finalLabel ?? 'unknown')
+            .input('Latitude', sql.Float, finalLat)
+            .input('Longitude', sql.Float, finalLon)
       .input('Location', sql.NVarChar(255), data.Location ?? null)
       .input('SensorType', sql.NVarChar(100), data.SensorType != null ? String(data.SensorType) : null)
       .input('EventType', sql.NVarChar(100), data.EventType != null ? String(data.EventType) : null)
@@ -308,8 +408,8 @@ router.post('/sensor', async (req, res) => {
         ON (tgt.RID = src.RID)
         WHEN MATCHED THEN
           UPDATE SET
-            Label = @Label,
-            Latitude = @Latitude,
+         Label = COALESCE(NULLIF(@Label, 'unknown'), Label),
+          Latitude = @Latitude,
             Longitude = @Longitude,
             Location = @Location,
             SensorType = @SensorType,
@@ -321,17 +421,24 @@ router.post('/sensor', async (req, res) => {
       `);
 
     // 3) 라벨 전파
-    await t.request()
-      .input('RID', sql.NVarChar(100), String(data.RID))
-      .input('Label', sql.NVarChar(100), label)
-      .query(`
-        UPDATE dbo.RawSensorData
-        SET Label = @Label
-        WHERE RID = @RID AND (Label IS NULL OR Label <> @Label);
-      `);
+      if (finalLabel) {
+          await t.request()
+            .input('RID', sql.NVarChar(100), String(data.RID))
+            .input('Label', sql.NVarChar(100), finalLabel)
+              .query(`
+                UPDATE dbo.RawSensorData
+                SET Label = @Label
+                WHERE RID = @RID AND (Label IS NULL OR Label <> @Label);
+              `);
+          }
 
-    // 4) AlarmHistory 삽입 (동일 트랜잭션)
-    await insertAlarmHistoryFromSensorData(data, createAtDate, t);
+    
+         // 4) AlarmHistory 삽입 (동일 트랜잭션)
+         await insertAlarmHistoryFromSensorData(
+          
+           { ...data, Label: finalLabel, Latitude: finalLat, Longitude: finalLon },
+                createAtDate, t
+               );
 
     await t.commit();
 
@@ -360,8 +467,8 @@ router.post('/sensor', async (req, res) => {
     if (diffMinutes <= 30) {
       await pool.request()
         .input('RID', sql.NVarChar(100), String(data.RID))
-        .input('Latitude', sql.Float, data.Latitude ?? null)
-        .input('Longitude', sql.Float, data.Longitude ?? null)
+         .input('Latitude', sql.Float, finalLat)
+         .input('Longitude', sql.Float, finalLon)
         .input('SensorType', sql.NVarChar(100), data.SensorType ?? null)
         .input('EventType', sql.NVarChar(100), data.EventType != null ? String(data.EventType) : null)
         .query(`
@@ -447,12 +554,15 @@ router.put('/sensor', async (req, res) => {
   try {
     await poolConnect;
     await t.begin();
-
+       // ✅ 0) SensorInfo 기반 최종 라벨/좌표
+       const { finalLabel, finalLat, finalLon } = await resolveLabelAndCoords(
+         data.RID, label, data.Latitude, data.Longitude, t
+       );
     // 1) 대상 행 업데이트
     const result = await t.request()
       .input('IndexKey', sql.UniqueIdentifier, data.IndexKey)
       .input('RID', sql.NVarChar(100), String(data.RID))
-      .input('Label', sql.NVarChar(100), label)
+      .input('Label', sql.NVarChar(100), finalLabel ?? null)
       .input('SensorType', sql.NVarChar(100), data.SensorType != null ? String(data.SensorType) : null)
       .input('EventType', sql.NVarChar(100), data.EventType != null ? String(data.EventType) : null)
       .input('X_Deg', sql.Float, data.X_Deg)
@@ -463,8 +573,8 @@ router.put('/sensor', async (req, res) => {
       .input('Z_MM', sql.Float, data.Z_MM)
       .input('BatteryVoltage', sql.Float, data.BatteryVoltage)
       .input('BatteryLevel', sql.Float, data.BatteryLevel)
-      .input('Latitude', sql.Float, data.Latitude)
-      .input('Longitude', sql.Float, data.Longitude)
+      .input('Latitude', sql.Float, finalLat)
+           .input('Longitude', sql.Float, finalLon)
       .input('CreateAt', sql.DateTime2, createAtDate)   // ✅ DateTime2
       .query(`
         UPDATE dbo.RawSensorData
@@ -484,9 +594,9 @@ router.put('/sensor', async (req, res) => {
     // 2) SenSorInfo 업서트 + Raw 라벨 전파
     await upsertSensorInfoAndPropagateLabel({
       rid: data.RID,
-      label,
-      lat: data.Latitude,
-      lon: data.Longitude,
+           label: finalLabel ?? 'unknown',
+           lat: finalLat,
+           lon: finalLon,
       sensorType: data.SensorType,
       eventType: data.EventType,
       createAt: createAtDate,   // ✅ JS Date 전달
@@ -494,7 +604,10 @@ router.put('/sensor', async (req, res) => {
     });
 
     // 3) AlarmHistory도 갱신
-    await insertAlarmHistoryFromSensorData(data, createAtDate, t);
+       await insertAlarmHistoryFromSensorData(
+         { ...data, Label: finalLabel, Latitude: finalLat, Longitude: finalLon },
+           createAtDate, t
+         );
 
     await t.commit();
     res.status(200).json({ message: '센서 데이터 업데이트 완료', data });

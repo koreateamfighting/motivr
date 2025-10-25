@@ -25,8 +25,8 @@ class _IotControlStatusState extends State<IotControlStatus> {
     // 🔧 최초 한 번: 렌더링 이후 안전하게 호출
 
     // 주기적으로 센서 상태 갱신
-    _timer = Timer.periodic(Duration(seconds: 10), (timer) {
-      _loadSensorStatus(); // 30초마다 상태 갱신
+    _timer = Timer.periodic(Duration(seconds: 60), (timer) {
+      _loadSensorStatus(); // 60초마다 상태 갱신
     });
   }
   @override

@@ -14,8 +14,8 @@ class WorkTaskAndNotice extends StatefulWidget {
 }
 
 class _WorkTaskAndNoticeState extends State<WorkTaskAndNotice> {
-  bool showWorkTask = true;
-  bool showNotice = false;
+  bool showWorkTask = false;
+  bool showNotice = true;
 
   void toggleWorkTask() {
     setState(() {

@@ -249,9 +249,10 @@ router.post('/alarmhistory/iot', async (req, res) => {
       const finalLabel = incomingLabel || sensorLabel || null;
 
       const labelForTag = sensorLabel || finalLabel || null; // SensorInfo 우선
-      const baseLog = `[${DeviceID}] ${Log ?? ''}`.trim();
-      const logWithLabel = labelForTag ? `#${labelForTag} : ${baseLog}` : baseLog;
 
+        const msg = (Log ?? '').toString().trim();
+        const baseLog = `[${DeviceID}] : ${msg}`;
+        const logWithLabel = labelForTag ? `#${labelForTag} [${DeviceID}] : ${msg}` : baseLog;
       // 6) INSERT (+ OUTPUT)
       const insertResult = await pool.request()
         .input('DeviceID', sql.NVarChar, DeviceID)
