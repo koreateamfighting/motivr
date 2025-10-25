@@ -5,7 +5,82 @@ const dbConfig = require('../dbConfig');
 const { DateTime } = require('luxon');
 const { pool, poolConnect } = require('../db'); 
 const ExcelJS = require('exceljs');
+// 라벨 사용 가능 여부
+const isUsableLabel = (val) => {
+  if (val == null) return false;
+  const t = String(val).trim();
+  if (!t) return false;
+  return t.toLowerCase() !== 'unknown';
+};
 
+// RID(DeviceID)로 SensorInfo에서 라벨 조회
+async function getSensorLabelByRID(pool, deviceId) {
+  const r = await pool.request()
+    .input('RID', sql.NVarChar(100), String(deviceId || '').trim())
+    .query(`
+      SELECT TOP 1 Label
+      FROM master.dbo.SenSorInfo
+      WHERE RID = @RID
+    `);
+  const raw = r.recordset[0]?.Label ?? null;
+  return isUsableLabel(raw) ? String(raw).trim() : null;
+}
+// 기존 isValidCoordPair → '양수만 저장' 규칙으로 강화
+const isStrictPositiveCoordPair = (lat, lon) => {
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return false;
+  // (0,0) 예외 + "둘 다 0보다 큼" 조건
+  if (lat <= 0 || lon <= 0) return false;
+  // 정상 범위
+  if (lat > 90 || lat < -90) return false;
+  if (lon > 180 || lon < -180) return false;
+  return true;
+};
+
+// SensorInfo 조회 동일
+async function getSensorInfo(pool, deviceId) {
+  const r = await pool.request()
+    .input('RID', sql.NVarChar(100), String(deviceId || '').trim())
+    .query(`
+      SELECT TOP 1 Label, Latitude AS SILat, Longitude AS SILon
+      FROM master.dbo.SenSorInfo
+      WHERE RID = @RID
+    `);
+  return r.recordset[0] || null;
+}
+
+// 요청 좌표가 "양수·정상"일 때만 SensorInfo 갱신/삽입
+async function upsertSensorCoordsIfValid(pool, deviceId, lat, lon, fallbackLabelFromReq = null) {
+  if (!isStrictPositiveCoordPair(lat, lon)) return;
+
+  const existing = await getSensorInfo(pool, deviceId);
+  if (existing) {
+    const hasStrict = isStrictPositiveCoordPair(existing.SILat, existing.SILon);
+    const needUpdate = !hasStrict || existing.SILat !== lat || existing.SILon !== lon;
+    if (needUpdate) {
+      await pool.request()
+        .input('RID', sql.NVarChar(100), String(deviceId || '').trim())
+        .input('Latitude', sql.Float, lat)
+        .input('Longitude', sql.Float, lon)
+        .query(`
+          UPDATE master.dbo.SenSorInfo
+          SET Latitude = @Latitude, Longitude = @Longitude
+          WHERE RID = @RID
+        `);
+    }
+  } else {
+    const nowKst = DateTime.now().setZone('Asia/Seoul').toFormat('yyyy-LL-dd HH:mm:ss');
+    await pool.request()
+      .input('RID', sql.NVarChar(100), String(deviceId || '').trim())
+      .input('Label', sql.NVarChar(100), isUsableLabel(fallbackLabelFromReq) ? String(fallbackLabelFromReq).trim() : 'unknown')
+      .input('Latitude', sql.Float, lat)
+      .input('Longitude', sql.Float, lon)
+      .input('CreateAt', sql.VarChar, nowKst)
+      .query(`
+        INSERT INTO master.dbo.SenSorInfo (RID, Label, Latitude, Longitude, CreateAt)
+        VALUES (@RID, @Label, @Latitude, @Longitude, @CreateAt)
+      `);
+  }
+}
 // 🔎 type = 'iot' 알람 조회
 router.get('/alarmhistory/iot', async (req, res) => {
   try {
@@ -72,75 +147,6 @@ router.get('/alarmhistory/cctv/alert', async (req, res) => {
 });
 
 
-
-
-// ✅ IoT 알람 히스토리 추가 전용
-router.post('/alarmhistory/iot', async (req, res) => {
-  const { DeviceID, Label, Timestamp, Event, Log, Latitude, Longitude } = req.body;
-
-  const formattedTime = Timestamp
-    ? DateTime.fromISO(Timestamp, { zone: 'Asia/Seoul' }).toFormat('yyyy-LL-dd HH:mm:ss')
-    : DateTime.now().setZone('Asia/Seoul').toFormat('yyyy-LL-dd HH:mm:ss');
-
-  try {
-    const pool = await poolConnect;
-
-    const insertResult = await pool.request()
-      .input('DeviceID', sql.NVarChar, DeviceID)
-      .input('Timestamp', sql.VarChar, formattedTime)
-      .input('Event', sql.NVarChar, Event)
-      .input('Log', sql.NVarChar, Log)
-      .input('Label', sql.NVarChar, Label)
-      .input('Latitude', sql.Float, Latitude)
-      .input('Longitude', sql.Float, Longitude)
-      .input('Type', sql.NVarChar, 'iot')
-      .query(`
-        INSERT INTO AlarmHistory (DeviceID, Timestamp, Event, Log, Label, Latitude, Longitude, Type)
-        OUTPUT INSERTED.*
-        VALUES (@DeviceID, @Timestamp, @Event, @Log, @Label, @Latitude, @Longitude, @Type)
-      `);
-
-    const insertedRow = insertResult.recordset[0];
-
-    // ✅ 방송 조건: '경고', '위험', '점검필요' + '점검 필요'까지 허용
-    const eventRaw = (Event ?? '').toString().trim();
-    const eventNormalized = eventRaw.replace(/\s+/g, ''); // 공백 제거 → '점검필요' 통일
-    const shouldBroadcast = ['경고', '위험', '점검필요'].includes(eventNormalized);
-
-    if (shouldBroadcast) {
-      const wss = req.app.get('wss');
-      if (wss && wss.clients) {
-        const message = {
-          type: 'iot-alert',
-          data: {
-            // ✅ 프론트 1회 팝업 보장용 고유키
-            uid: String(insertedRow.Id),
-            Id: insertedRow.Id,
-            Type: 'iot',
-            DeviceID: insertedRow.DeviceID,
-            Label: insertedRow.Label,
-            Event: eventRaw, // 원문(공백 포함) 그대로 보냄 → 화면 표시는 이 값 사용
-            Timestamp: new Date(`${insertedRow.Timestamp}+09:00`).toISOString(),
-            Latitude: insertedRow.Latitude,
-            Longitude: insertedRow.Longitude,
-          },
-        };
-
-        wss.clients.forEach((client) => {
-          if (client.readyState === 1) {
-            client.send(JSON.stringify(message));
-          }
-        });
-      }
-    }
-
-    res.status(200).json({ message: 'IoT 알람 추가 완료' });
-  } catch (err) {
-    console.error('❌ IoT 알람 저장 실패:', err);
-    res.status(500).json({ error: 'IoT 알람 저장 실패' });
-  }
-});
-
 // router.post('/alarmhistory/iot', async (req, res) => {
 //   const {
 //     DeviceID,   // RID
@@ -152,7 +158,7 @@ router.post('/alarmhistory/iot', async (req, res) => {
 //     Longitude
 //   } = req.body;
 
-  
+
 //   const formattedTime = Timestamp
 //     ? DateTime.fromISO(Timestamp, { zone: 'Asia/Seoul' }).toFormat('yyyy-LL-dd HH:mm:ss')
 //     : DateTime.now().setZone('Asia/Seoul').toFormat('yyyy-LL-dd HH:mm:ss');
@@ -206,6 +212,105 @@ router.post('/alarmhistory/iot', async (req, res) => {
 // });
 
 
+// ✅ IoT 알람 히스토리 추가 전용
+router.post('/alarmhistory/iot', async (req, res) => {
+  const { DeviceID, Label, Timestamp, Event, Log, Latitude, Longitude } = req.body;
+
+  const formattedTime = Timestamp
+    ? DateTime.fromISO(Timestamp, { zone: 'Asia/Seoul' }).toFormat('yyyy-LL-dd HH:mm:ss')
+    : DateTime.now().setZone('Asia/Seoul').toFormat('yyyy-LL-dd HH:mm:ss');
+
+    try {
+      const pool = await poolConnect;
+
+      // 1) SensorInfo 조회 (라벨/좌표)
+      const si = await getSensorInfo(pool, DeviceID);
+      const sensorLabel = si && isUsableLabel(si.Label) ? String(si.Label).trim() : null;
+
+      // 기존 좌표가 '양수·정상'인지
+      const siHasStrict = si && isStrictPositiveCoordPair(si.SILat, si.SILon);
+
+      // 2) 요청 좌표 판정 (0,0 및 0 이하 → 무시)
+      const reqLat = Number(Latitude);
+      const reqLon = Number(Longitude);
+      const reqHasStrict = isStrictPositiveCoordPair(reqLat, reqLon);
+
+      // 3) 최종 좌표 결정: 요청(양수·정상) > SensorInfo(양수·정상) > null
+      const finalLat = reqHasStrict ? reqLat : (siHasStrict ? si.SILat : null);
+      const finalLon = reqHasStrict ? reqLon : (siHasStrict ? si.SILon : null);
+
+      // 4) 요청 좌표가 '양수·정상'일 때에만 SensorInfo 좌표 최신화(업서트)
+      if (reqHasStrict) {
+        await upsertSensorCoordsIfValid(pool, DeviceID, finalLat, finalLon, Label);
+      }
+
+      // 5) 라벨 결정 + Log 접두 구성
+      const incomingLabel = isUsableLabel(Label) ? String(Label).trim() : null;
+      const finalLabel = incomingLabel || sensorLabel || null;
+
+      const labelForTag = sensorLabel || finalLabel || null; // SensorInfo 우선
+      const baseLog = `[${DeviceID}] ${Log ?? ''}`.trim();
+      const logWithLabel = labelForTag ? `#${labelForTag} : ${baseLog}` : baseLog;
+
+      // 6) INSERT (+ OUTPUT)
+      const insertResult = await pool.request()
+        .input('DeviceID', sql.NVarChar, DeviceID)
+        .input('Timestamp', sql.VarChar, formattedTime)
+        .input('Event', sql.NVarChar, Event)
+        .input('Log', sql.NVarChar, logWithLabel )
+        .input('Label', sql.NVarChar, finalLabel)
+        .input('Latitude', sql.Float, finalLat)
+        .input('Longitude', sql.Float, finalLon)
+        .input('Type', sql.NVarChar, 'iot')
+        .query(`
+          INSERT INTO AlarmHistory (DeviceID, Timestamp, Event, Log, Label, Latitude, Longitude, Type)
+          OUTPUT INSERTED.*
+          VALUES (@DeviceID, @Timestamp, @Event, @Log, @Label, @Latitude, @Longitude, @Type)
+        `);
+
+      const insertedRow = insertResult.recordset[0];
+
+      // ✅ 방송 조건: '경고', '위험', '점검필요' + '점검 필요'까지 허용
+      const eventRaw = (Event ?? '').toString().trim();
+      const eventNormalized = eventRaw.replace(/\s+/g, ''); // 공백 제거 → '점검필요' 통일
+      const shouldBroadcast = ['경고', '위험', '점검필요'].includes(eventNormalized);
+
+    if (shouldBroadcast) {
+      const wss = req.app.get('wss');
+      if (wss && wss.clients) {
+        const message = {
+          type: 'iot-alert',
+          data: {
+            // ✅ 프론트 1회 팝업 보장용 고유키
+            uid: String(insertedRow.Id),
+            Id: insertedRow.Id,
+            Type: 'iot',
+            DeviceID: insertedRow.DeviceID,
+            Label: insertedRow.Label,
+            Event: eventRaw, // 원문(공백 포함) 그대로 보냄 → 화면 표시는 이 값 사용
+            Timestamp: new Date(`${insertedRow.Timestamp}+09:00`).toISOString(),
+            Latitude: insertedRow.Latitude,
+            Longitude: insertedRow.Longitude,
+          },
+        };
+
+        wss.clients.forEach((client) => {
+          if (client.readyState === 1) {
+            client.send(JSON.stringify(message));
+          }
+        });
+      }
+    }
+
+    res.status(200).json({ message: 'IoT 알람 추가 완료' });
+  } catch (err) {
+    console.error('❌ IoT 알람 저장 실패:', err);
+    res.status(500).json({ error: 'IoT 알람 저장 실패' });
+  }
+});
+
+
+
 
 // ✅ CCTV 알람 히스토리 추가 전용
 router.post('/alarmhistory/cctv', async (req, res) => {
@@ -221,8 +326,16 @@ router.post('/alarmhistory/cctv', async (req, res) => {
     ? DateTime.fromISO(Timestamp, { zone: 'Asia/Seoul' }).toFormat('yyyy-LL-dd HH:mm:ss')
     : DateTime.now().setZone('Asia/Seoul').toFormat('yyyy-LL-dd HH:mm:ss');
 
+    const isUsableLabel = (val) => {
+      if (val == null) return false;
+      const t = String(val).trim();
+      if (!t) return false;
+      return t.toLowerCase() !== 'unknown';
+    };
+
   try {
     const pool = await poolConnect;
+
 
     await pool.request()
       .input('DeviceID', sql.NVarChar, DeviceID)
