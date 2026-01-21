@@ -1,0 +1,36 @@
+디지털 트윈의 기본
+
+웹 기반 
+목적 :사용자가 들어와서 관제도 하고, 변경도 하는 양방향 디지털 트윈
+
+3d 환경도 보기
+
+
+데이터를 받아
+시각화를 반영해서 대시보드 형 웹을 만드는것인가
+
+================
+1. 계정 - json 생성후 관리
+2. 
+
+========================================================
+
+
+
+- json 초안
+- 흐름도 (기술에 대한 흐름도)
+
+
+클라이언트  - 주식회사 한림기술
+
+매주 수요일 14시 회의;
+
+
+
+
+
+
+
+
+<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3177.5785188096725!2d127.09437752670763!3d37.210239294477205!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x357b45005eb0bb47%3A0xd85f0759e42f3045!2z64-Z7YOEU0tWMeyEvO2EsCDsp4Dsi53sgrDsl4XshLzthLA!5e0!3m2!1sko!2skr!4v1744184171483!5m2!1sko!2skr" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+

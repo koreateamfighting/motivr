@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>IoT 센서 데이터 수동 입력</title>
+</head>
+<body>
+  <h2>IoT 파싱 데이터 입력</h2>
+  <form id="sensorForm">
+    <label>RID: <input name="RID" required /></label><br />
+    <label>SensorType: <input name="SensorType" required /></label><br />
+    <label>EventType: <input name="EventType" required /></label><br />
+    <label>X_Deg: <input name="X_Deg" type="number" step="any" /></label><br />
+    <label>Y_Deg: <input name="Y_Deg" type="number" step="any" /></label><br />
+    <label>Z_Deg: <input name="Z_Deg" type="number" step="any" /></label><br />
+    <label>X_MM: <input name="X_MM" type="number" step="any" /></label><br />
+    <label>Y_MM: <input name="Y_MM" type="number" step="any" /></label><br />
+    <label>Z_MM: <input name="Z_MM" type="number" step="any" /></label><br />
+    <label>BatteryVoltage: <input name="BatteryVoltage" type="number" step="any" /></label><br />
+    <label>BatteryLevel: <input name="BatteryLevel" type="number" step="any" /></label><br />
+    <label>Latitude: <input name="Latitude" type="number" step="any" /></label><br />
+    <label>Longitude: <input name="Longitude" type="number" step="any" /></label><br />
+    <button type="submit">전송</button>
+  </form>
+
+  <pre id="result" style="background:#f1f1f1;padding:10px;"></pre>
+
+  <script>
+    document.getElementById('sensorForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const form = e.target;
+
+      const payload = {
+        RID: form.RID.value,
+        SensorType: form.SensorType.value,
+        EventType: form.EventType.value,
+        X_Deg: parseFloat(form.X_Deg.value) || null,
+        Y_Deg: parseFloat(form.Y_Deg.value) || null,
+        Z_Deg: parseFloat(form.Z_Deg.value) || null,
+        X_MM: parseFloat(form.X_MM.value) || null,
+        Y_MM: parseFloat(form.Y_MM.value) || null,
+        Z_MM: parseFloat(form.Z_MM.value) || null,
+        BatteryVoltage: parseFloat(form.BatteryVoltage.value) || null,
+        BatteryLevel: parseFloat(form.BatteryLevel.value) || null,
+        Latitude: parseFloat(form.Latitude.value) || null,
+        Longitude: parseFloat(form.Longitude.value) || null,
+      };
+
+      try {
+        const res = await fetch('/api/sensor', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const text = await res.text();
+        console.log('[서버 응답]', text);
+
+        try {
+          const data = JSON.parse(text);
+          document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+          alert('전송 성공!');
+        } catch {
+          alert('응답 파싱 실패: ' + text);
+        }
+      } catch (err) {
+        console.error('❌ 오류:', err);
+        alert('서버 전송 오류 발생');
+      }
+    });
+  </script>
+</body>
+</html>

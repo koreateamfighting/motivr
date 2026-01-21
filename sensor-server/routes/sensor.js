@@ -1,0 +1,940 @@
+const express = require('express');
+// sensor.js
+const { sql, poolConnect, pool } = require('../db'); // ✅ 수정!
+
+const router = express.Router();
+const dbConfig = require('../dbConfig');
+const { DateTime } = require('luxon');
+const ExcelJS = require('exceljs');
+ // sensor.js 상단 유틸 근처에 추가
+// ✔️ 'unknown'은 사용 불가 라벨로 취급
+const isUsableLabel = (val) => {
+    if (val == null) return false;
+    const t = String(val).trim();
+    if (!t) return false;
+    return t.toLowerCase() !== 'unknown';
+  };
+  
+  // ✔️ 좌표: 양수·정상(한국 기준)일 때만 “신뢰 좌표”
+  const isStrictPositiveCoordPair = (lat, lon) => {
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return false;
+    if (lat <= 0 || lon <= 0) return false;
+    if (lat > 90 || lat < -90) return false;
+    if (lon > 180 || lon < -180) return false;
+    return true;
+  };
+  
+  // ✔️ SensorInfo 단건 조회
+  async function getSensorInfoByRid(rid, trxOrPool = pool) {
+    const r = await (trxOrPool.request ? trxOrPool : pool).request()
+      .input('RID', sql.NVarChar(100), String(rid || '').trim())
+      .query(`
+        SELECT TOP 1 Label, Latitude AS SILat, Longitude AS SILon
+        FROM master.dbo.SenSorInfo
+        WHERE RID = @RID
+      `);
+    return r.recordset[0] || null;
+  }
+  // ✔️ SensorInfo 기반으로 최종 라벨/좌표 산출 + 필요시 SensorInfo 좌표 갱신
+async function resolveLabelAndCoords(rid, reqLabel, reqLat, reqLon, trxOrPool = pool) {
+  const tp = trxOrPool.request ? trxOrPool : pool;
+  const si = await getSensorInfoByRid(rid, trxOrPool);
+  const siLabel = si?.Label ?? null;
+  const siHasStrict = isStrictPositiveCoordPair(si?.SILat ?? NaN, si?.SILon ?? NaN);
+
+  const reqHasStrict = isStrictPositiveCoordPair(Number(reqLat), Number(reqLon));
+  const finalLat = reqHasStrict ? Number(reqLat) : (siHasStrict ? si.SILat : null);
+  const finalLon = reqHasStrict ? Number(reqLon) : (siHasStrict ? si.SILon : null);
+
+  const incomingLabel = isUsableLabel(reqLabel) ? String(reqLabel).trim() : null;
+  const finalLabel = isUsableLabel(siLabel) ? siLabel : incomingLabel; // SensorInfo 우선
+
+  // 요청 좌표가 유효하면 SensorInfo 좌표 갱신
+  if (reqHasStrict) {
+    await (trxOrPool.request ? trxOrPool.request() : pool.request())
+      .input('RID', sql.NVarChar(100), String(rid).trim())
+      .input('Latitude', sql.Float, finalLat)
+      .input('Longitude', sql.Float, finalLon)
+      .query(`
+        UPDATE master.dbo.SenSorInfo
+        SET Latitude = @Latitude, Longitude = @Longitude
+        WHERE RID = @RID
+      `);
+  }
+
+  return { finalLabel, finalLat, finalLon };
+}
+
+/** ✅ 공통 유틸: 'yyyy-LL-dd HH:mm:ss' or ISO → JS Date(KST 기준) */
+/** ✅ UTC/ISO 문자열 → JS Date (KST +9 적용) */
+function toKstDate(value) {
+  if (value instanceof Date) return DateTime.fromJSDate(value).plus({ hours: 9 }).toJSDate();
+
+  if (typeof value === 'string') {
+    // ISO (예: 2025-08-27T23:28:24.163)
+    const tryISO = DateTime.fromISO(value, { setZone: true });
+    if (tryISO.isValid) {
+      return tryISO.plus({ hours: 9 }).toJSDate(); // ✅ 9시간 추가
+    }
+
+    // 'yyyy-LL-dd HH:mm:ss'
+    const tryFmt = DateTime.fromFormat(value, 'yyyy-LL-dd HH:mm:ss');
+    if (tryFmt.isValid) {
+      return tryFmt.plus({ hours: 9 }).toJSDate(); // ✅ 9시간 추가
+    }
+  }
+
+  // fallback: now
+  return DateTime.now().plus({ hours: 9 }).toJSDate();
+}
+// ✅ ISO(+오프셋)든 'yyyy-LL-dd HH:mm:ss'든 들어오면 KST 벽시계 문자열로 변환
+function toKstWallClockString(value) {
+  const ZONE = 'Asia/Seoul';
+  let dt = null;
+
+  if (value instanceof Date) {
+    // JS Date -> KST로 해석한 벽시계 시각
+    dt = DateTime.fromJSDate(value).setZone(ZONE);
+  } else if (typeof value === 'string') {
+    // 1) ISO (Z, +09:00 등 오프셋 포함/미포함)
+    let t = DateTime.fromISO(value, { setZone: true });
+    if (t.isValid) {
+      dt = t.setZone(ZONE);
+    } else {
+      // 2) 'yyyy-LL-dd HH:mm:ss' 같은 고정 포맷
+      t = DateTime.fromFormat(value, 'yyyy-LL-dd HH:mm:ss', { zone: ZONE });
+      if (t.isValid) dt = t;
+    }
+  }
+
+  if (!dt) dt = DateTime.now().setZone(ZONE);
+  return dt.toFormat('yyyy-LL-dd HH:mm:ss');
+}
+
+
+/** ✅ SensorInfo 업서트 + Raw 라벨 전파 (RID 단일행 유지) */
+async function upsertSensorInfoAndPropagateLabel({
+  rid,
+  label,
+  lat,
+  lon,
+  sensorType,
+  eventType,
+  createAt,        // ← JS Date 로 받음
+  transaction
+}) {
+  const normRid = String(rid).trim();
+  const incomingLabel = (label ?? '').trim();
+  const req = transaction ? transaction.request() : pool.request();
+   // 현재 SensorInfo 라벨 조회
+    const si = await getSensorInfoByRid(normRid, transaction ? transaction : pool);
+    const currentLabel = si?.Label ?? null;
+    // 최종 라벨: 요청 라벨이 usable이면 그것, 아니면 기존 유지 (unknown 금지)
+    const finalLabel = isUsableLabel(incomingLabel) ? incomingLabel : (currentLabel ?? null);
+  
+  // 1) UPDATE 먼저 (RID 기준)
+  const upd = await req
+    .input('RID', sql.NVarChar(100), normRid)
+    .input('Label', sql.NVarChar(100), finalLabel)
+    .input('Latitude', sql.Float, lat ?? null)
+    .input('Longitude', sql.Float, lon ?? null)
+    .input('Location', sql.NVarChar(255), null)
+    .input('SensorType', sql.NVarChar(100), sensorType != null ? String(sensorType).trim() : null)
+    .input('EventType', sql.NVarChar(100), eventType != null ? String(eventType).trim() : null)
+    .input('CreateAt', sql.DateTime2, createAt)     // ✅ DateTime2
+    .query(`
+      UPDATE master.dbo.SenSorInfo
+       SET Label = COALESCE(@Label, Label),
+          Latitude = @Latitude,
+          Longitude = @Longitude,
+          Location = @Location,
+          SensorType = @SensorType,
+          EventType = @EventType,
+          CreateAt = @CreateAt
+      WHERE RID = @RID
+    `);
+
+  if (upd.rowsAffected[0] === 0) {
+    // 2) INSERT, 동시성 유니크 충돌 시 UPDATE로 보정
+    try {
+      await (transaction ? transaction.request() : pool.request())
+        .input('RID', sql.NVarChar(100), normRid)
+        .input('Label', sql.NVarChar(100), finalLabel ?? 'unknown')
+        .input('Latitude', sql.Float, lat ?? null)
+        .input('Longitude', sql.Float, lon ?? null)
+        .input('Location', sql.NVarChar(255), null)
+        .input('SensorType', sql.NVarChar(100), sensorType != null ? String(sensorType).trim() : null)
+        .input('EventType', sql.NVarChar(100), eventType != null ? String(eventType).trim() : null)
+        .input('CreateAt', sql.DateTime2, createAt) // ✅ DateTime2
+        .query(`
+          INSERT INTO master.dbo.SenSorInfo
+          (RID, Label, Latitude, Longitude, Location, SensorType, EventType, CreateAt)
+          VALUES
+          (@RID, @Label, @Latitude, @Longitude, @Location, @SensorType, @EventType, @CreateAt)
+        `);
+    } catch (e) {
+      if (e && (e.number === 2601 || e.number === 2627)) {
+        await (transaction ? transaction.request() : pool.request())
+          .input('RID', sql.NVarChar(100), normRid)
+          .input('Label', sql.NVarChar(100), finalLabel)
+          .input('Latitude', sql.Float, lat ?? null)
+          .input('Longitude', sql.Float, lon ?? null)
+          .input('Location', sql.NVarChar(255), null)
+          .input('SensorType', sql.NVarChar(100), sensorType != null ? String(sensorType).trim() : null)
+          .input('EventType', sql.NVarChar(100), eventType != null ? String(eventType).trim() : null)
+          .input('CreateAt', sql.DateTime2, createAt) // ✅ DateTime2
+          .query(`
+            UPDATE master.dbo.SenSorInfo
+             SET Label = COALESCE(@Label, Label),
+                Latitude = @Latitude,
+                Longitude = @Longitude,
+                Location = @Location,
+                SensorType = @SensorType,
+                EventType = @EventType,
+                CreateAt = @CreateAt
+            WHERE RID = @RID
+          `);
+      } else {
+        throw e;
+      }
+    }
+  }
+
+    // 3) RawSensorData 라벨 전파 (SensorInfo의 최종 라벨 기준으로만)
+    if (finalLabel) {
+       await (transaction ? transaction.request() : pool.request())
+         .input('RID', sql.NVarChar(100), normRid)
+  
+        .input('Label', sql.NVarChar(100), finalLabel)
+         .query(`
+           UPDATE dbo.RawSensorData
+           SET Label = @Label
+           WHERE RID = @RID AND (Label IS NULL OR Label <> @Label);
+         `);
+    }
+}
+
+
+
+/** ✅ AlarmHistory 삽입: Timestamp를 DateTime2로 직접 삽입(변환 X) */
+async function insertAlarmHistoryFromSensorData(data, createAt, transaction = null) {
+ const { RID, Label, EventType, Latitude, Longitude } = data;
+  const deviceId = String(RID).trim();
+ // ✅ 프론트에서 보낸 시간을 KST "문자열"로 고정 (이 줄이 핵심)
+ const tsStrKst = toKstWallClockString(createAt);
+   // 1) SensorInfo 조회 (동일 트랜잭션/커넥션 사용)
+   const tp = transaction ? transaction : pool;
+   const si = await getSensorInfoByRid(deviceId, tp);
+   const siLabel = si?.Label ?? null;
+   const siHasStrict = isStrictPositiveCoordPair(si?.SILat ?? NaN, si?.SILon ?? NaN);
+ 
+   // 2) 요청 좌표 판정
+   const reqLat = Number(Latitude);
+   const reqLon = Number(Longitude);
+   const reqHasStrict = isStrictPositiveCoordPair(reqLat, reqLon);
+ 
+   // 3) 최종 좌표: 요청(양수·정상) > SensorInfo(양수·정상) > (기존 AlarmHistory 최신)
+   let lat = reqHasStrict ? reqLat : (siHasStrict ? si.SILat : null);
+   let lon = reqHasStrict ? reqLon : (siHasStrict ? si.SILon : null);
+ 
+   // 4) 요청 좌표가 유효하면 SensorInfo 좌표 갱신 (IoT만 대상)
+   if (reqHasStrict) {
+     await (transaction ? transaction.request() : pool.request())
+       .input('RID', sql.NVarChar(100), deviceId)
+       .input('Latitude', sql.Float, reqLat)
+       .input('Longitude', sql.Float, reqLon)
+       .query(`
+         UPDATE master.dbo.SenSorInfo
+         SET Latitude = @Latitude, Longitude = @Longitude
+         WHERE RID = @RID
+       `);
+   }
+  
+    let event = '점검필요';
+ 
+   let baseMsg = '알려지지 않은 로그';
+
+
+  switch (parseInt(EventType)) {
+    case 2:
+      event = '정상';
+      baseMsg = '정상 로그';
+      break;
+    case 5:
+      event = '정상';
+      baseMsg = 'GPS 정상 수집';
+      break;
+    case 67:
+      event = '주의';
+      baseMsg = '주의 로그';
+      break;
+    case 68:
+      event = '경고';
+      baseMsg = '경고 로그';
+      break;
+  }
+
+  await poolConnect;
+  const poolRequest = transaction ? transaction.request() : pool.request();
+  const lastGeoQuery = `
+    SELECT TOP 1 Latitude, Longitude
+    FROM AlarmHistory
+    WHERE DeviceID = @DeviceID
+      AND Type = 'iot'
+    ORDER BY Timestamp DESC
+  `;
+
+  if (lat == null || lon == null) {
+    const prev = await poolRequest
+      .input('DeviceID', sql.NVarChar(100), deviceId)
+      .query(lastGeoQuery);
+    if (lat == null) lat = prev.recordset[0]?.Latitude ?? null;
+    if (lon == null) lon = prev.recordset[0]?.Longitude ?? null;
+  }
+    // 6) 최종 라벨: SensorInfo가 우선, 그 다음 요청 라벨(usable), 아니면 null
+    const incomingLabel = isUsableLabel(Label) ? String(Label).trim() : null;
+    const finalLabel = isUsableLabel(siLabel) ? siLabel : incomingLabel;
+  
+    // 7) 로그 문자열 구성: '#라벨명 [RID] : 메시지' (라벨 없으면 '[RID] : 메시지')
+    const log =
+      finalLabel
+        ? `${finalLabel} [${deviceId}] : ${baseMsg}`
+        : `[${deviceId}] : ${baseMsg}`;
+  
+  // INSERT (CONVERT 제거, DateTime2 직입력)
+  const insertRequest = transaction ? transaction.request() : pool.request();
+  await insertRequest
+    .input('DeviceID', sql.NVarChar(100), deviceId)
+    .input('TimestampKST', sql.DateTime2, tsStrKst)         // ✅ DateTime2
+    .input('Event', sql.NVarChar(255), event)
+    .input('Log', sql.NVarChar(1000), log)
+    .input('Label', sql.NVarChar(255), finalLabel)
+    .input('Latitude', sql.Float, lat)
+    .input('Longitude', sql.Float, lon)
+    .input('Type', sql.NVarChar(20), 'iot')
+    .query(`
+      INSERT INTO AlarmHistory
+      (DeviceID, Timestamp, Event, Log, Label, Latitude, Longitude, Type)
+      VALUES
+      (@DeviceID, @TimestampKST, @Event, @Log, @Label, @Latitude, @Longitude, @Type)
+    `);
+}
+
+
+// 헬스 체크
+router.get('/health', (req, res) => {
+  const currentTime = DateTime.now().setZone('Asia/Seoul').toISO(); // 서울 시간대로 설정
+  res.status(200).json({ status: 'ok', time: currentTime });
+});
+// 모든 센서 데이터 조회 (옵션: ?limit=1000)
+router.get('/sensor-data', async (req, res) => {
+  const limit = parseInt(req.query.limit || '1000'); // 기본 1000건 제한
+
+  try {
+     await poolConnect;
+     const result = await pool.request()
+     .input('limit', sql.Int, limit)
+     .query(`
+       SELECT TOP (@limit)
+          IndexKey,RID,Label, SensorType, EventType, X_Deg, Y_Deg, Z_Deg,X_MM, Y_MM, Z_MM,
+         BatteryVoltage, BatteryLevel, Latitude, Longitude, CreateAt
+       FROM RawSensorData WITH (INDEX(IDX_RawSensorData_CreateAt))
+       ORDER BY CreateAt DESC
+     `);
+
+    res.status(200).json({ message: '전체 센서 데이터 조회 성공', data: result.recordset });
+  } catch (err) {
+    console.error('❌ 전체 센서 데이터 조회 실패:', err);
+    res.status(500).json({ error: 'DB 조회 실패' });
+  }
+});
+
+
+
+// 센서 데이터 수신 후 유니티 클라이언트
+router.post('/sensor', async (req, res) => {
+  const data = req.body;
+
+  const label = data.Label ?? 'unknown';
+  const createAtDate = toKstDate(data.CreateAt); // ✅ JS Date
+  if (!data.RID) return res.status(400).json({ error: 'RID 누락' });
+
+  const t = new sql.Transaction(pool);
+  try {
+    await poolConnect;
+    await t.begin();
+        const { finalLabel, finalLat, finalLon } = await resolveLabelAndCoords(
+            data.RID, label, data.Latitude, data.Longitude, t
+          );
+    // 1) RawSensorData INSERT
+    await t.request()
+      .input('RID', sql.NVarChar(100), String(data.RID))
+      .input('SensorType', sql.NVarChar(100), data.SensorType != null ? String(data.SensorType) : null)
+      .input('EventType', sql.NVarChar(100), data.EventType != null ? String(data.EventType) : null)
+      .input('X_Deg', sql.Float, data.X_Deg)
+      .input('Y_Deg', sql.Float, data.Y_Deg)
+      .input('Z_Deg', sql.Float, data.Z_Deg)
+      .input('X_MM', sql.Float, data.X_MM)
+      .input('Y_MM', sql.Float, data.Y_MM)
+      .input('Z_MM', sql.Float, data.Z_MM)
+      .input('BatteryVoltage', sql.Float, data.BatteryVoltage)
+      .input('BatteryLevel', sql.Float, data.BatteryLevel)
+            .input('Latitude', sql.Float, finalLat)
+            .input('Longitude', sql.Float, finalLon)
+            .input('Label', sql.NVarChar(100), finalLabel ?? 'unknown')
+      .input('CreateAt', sql.DateTime2, createAtDate)   // ✅ DateTime2
+      .query(`
+        INSERT INTO dbo.RawSensorData
+        (RID, SensorType, EventType, X_Deg, Y_Deg, Z_Deg, X_MM, Y_MM, Z_MM,
+         BatteryVoltage, BatteryLevel, Latitude, Longitude, Label, CreateAt)
+        VALUES
+        (@RID, @SensorType, @EventType, @X_Deg, @Y_Deg, @Z_Deg, @X_MM, @Y_MM, @Z_MM,
+         @BatteryVoltage, @BatteryLevel, @Latitude, @Longitude, @Label, @CreateAt)
+      `);
+
+    // 2) SenSorInfo 업서트 (RID 기준)
+    await t.request()
+      .input('RID', sql.NVarChar(100), String(data.RID))
+           .input('Label', sql.NVarChar(100), finalLabel ?? 'unknown')
+            .input('Latitude', sql.Float, finalLat)
+            .input('Longitude', sql.Float, finalLon)
+      .input('Location', sql.NVarChar(255), data.Location ?? null)
+      .input('SensorType', sql.NVarChar(100), data.SensorType != null ? String(data.SensorType) : null)
+      .input('EventType', sql.NVarChar(100), data.EventType != null ? String(data.EventType) : null)
+      .input('CreateAt', sql.DateTime2, createAtDate)   // ✅ DateTime2
+      .query(`
+        MERGE master.dbo.SenSorInfo AS tgt
+        USING (SELECT @RID AS RID) AS src
+        ON (tgt.RID = src.RID)
+        WHEN MATCHED THEN
+          UPDATE SET
+         Label = COALESCE(NULLIF(@Label, 'unknown'), Label),
+          Latitude = @Latitude,
+            Longitude = @Longitude,
+            Location = @Location,
+            SensorType = @SensorType,
+            EventType = @EventType,
+            CreateAt = @CreateAt
+        WHEN NOT MATCHED THEN
+          INSERT (RID, Label, Latitude, Longitude, Location, SensorType, EventType, CreateAt)
+          VALUES (@RID, @Label, @Latitude, @Longitude, @Location, @SensorType, @EventType, @CreateAt);
+      `);
+
+    // 3) 라벨 전파
+      if (finalLabel) {
+          await t.request()
+            .input('RID', sql.NVarChar(100), String(data.RID))
+            .input('Label', sql.NVarChar(100), finalLabel)
+              .query(`
+                UPDATE dbo.RawSensorData
+                SET Label = @Label
+                WHERE RID = @RID AND (Label IS NULL OR Label <> @Label);
+              `);
+          }
+
+    
+         // 4) AlarmHistory 삽입 (동일 트랜잭션)
+         await insertAlarmHistoryFromSensorData(
+          
+           { ...data, Label: finalLabel, Latitude: finalLat, Longitude: finalLon },
+                createAtDate, t
+               );
+
+    await t.commit();
+
+    console.log('✅ 센서 데이터 수신:', JSON.stringify(data, null, 2));
+
+    // WebSocket 브로드캐스트
+    const wss = req.app.get('wss');
+    if (wss && wss.clients) {
+      const payload = {
+        type: 'iotSensorUpdate',
+        source: 'server',
+        data: {
+          ...data,
+          CreateAt: data.CreateAt
+        }
+      };
+      wss.clients.forEach(client => {
+        if (client.readyState === 1) client.send(JSON.stringify(payload));
+      });
+    }
+
+    // (선택) 최근 데이터면 SenSorInfo 가벼운 갱신
+    const diffMinutes = DateTime.now().setZone('Asia/Seoul')
+      .diff(DateTime.fromJSDate(createAtDate), 'minutes').minutes;
+
+    if (diffMinutes <= 30) {
+      await pool.request()
+        .input('RID', sql.NVarChar(100), String(data.RID))
+         .input('Latitude', sql.Float, finalLat)
+         .input('Longitude', sql.Float, finalLon)
+        .input('SensorType', sql.NVarChar(100), data.SensorType ?? null)
+        .input('EventType', sql.NVarChar(100), data.EventType != null ? String(data.EventType) : null)
+        .query(`
+          UPDATE master.dbo.SenSorInfo
+          SET Latitude = @Latitude,
+              Longitude = @Longitude,
+              SensorType = @SensorType,
+              EventType = @EventType
+          WHERE RID = @RID;
+        `);
+    }
+
+    return res.status(200).json({ message: '저장 성공', data });
+  } catch (err) {
+    try { if (t._aborted !== true) await t.rollback(); } catch (_) {}
+    console.error('❌ DB 오류:', err);
+    return res.status(500).json({ error: 'DB 저장 실패' });
+  }
+});
+
+
+router.post('/test_submit_data', (req, res) => {
+  const WebSocket = require('ws');
+  const wss = req.app.get('wss');
+
+  const data = req.body;
+
+  const payload = {
+    type: 'iotSensorUpdate',
+    source: 'client',
+    data
+  };
+
+  // 🔁 WebSocket으로 클라이언트 데이터만 브로드캐스트
+  wss.clients.forEach(client => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(payload));
+    }
+  });
+
+  return res.status(200).json({ message: 'WebSocket broadcast 성공', data });
+});
+
+// router.get('/progress', async (req, res) => {
+//   try {
+//      await poolConnect; // ✅ 추가
+//     const result = await pool.request().query(`
+//       SELECT TOP 1 progress FROM WorkProgress ORDER BY updated_at DESC
+//     `);
+//     res.json({ progress: result.recordset[0]?.progress || 0 });
+//   } catch (err) {
+//     console.error('❌ Progress fetch error:', err); // ✅ 에러 로깅도 추가
+//     res.status(500).send('DB Error');
+//   }
+// });
+
+// router.post('/progress', async (req, res) => {
+//   const { progress } = req.body;
+//   try {
+//      await poolConnect; // ❗이 줄이 없으면 에러!
+//     await pool.request()
+//       .input('progress', sql.Float, progress)
+//       .query(`
+//         INSERT INTO WorkProgress (progress, updated_at) VALUES (@progress, GETDATE())
+//       `);
+//     res.sendStatus(200);
+//   } catch (err) {
+//     console.error('❌ DB 저장 실패:', err); // 디버깅 출력 추가
+//     res.status(500).send('DB Error');
+//   }
+// });
+
+router.put('/sensor', async (req, res) => {
+  const data = req.body;
+  if (!data.IndexKey) return res.status(400).json({ error: 'IndexKey 누락' });
+  if (!data.RID)      return res.status(400).json({ error: 'RID 누락' });
+
+  // ✅ JS Date로 정규화
+  const createAtDate = toKstDate(data.CreateAt);
+  const label = data.Label ?? 'unknown';
+
+  const t = new sql.Transaction(pool);
+  try {
+    await poolConnect;
+    await t.begin();
+       // ✅ 0) SensorInfo 기반 최종 라벨/좌표
+       const { finalLabel, finalLat, finalLon } = await resolveLabelAndCoords(
+         data.RID, label, data.Latitude, data.Longitude, t
+       );
+    // 1) 대상 행 업데이트
+    const result = await t.request()
+      .input('IndexKey', sql.UniqueIdentifier, data.IndexKey)
+      .input('RID', sql.NVarChar(100), String(data.RID))
+      .input('Label', sql.NVarChar(100), finalLabel ?? 'unknown')
+      .input('SensorType', sql.NVarChar(100), data.SensorType != null ? String(data.SensorType) : null)
+      .input('EventType', sql.NVarChar(100), data.EventType != null ? String(data.EventType) : null)
+      .input('X_Deg', sql.Float, data.X_Deg)
+      .input('Y_Deg', sql.Float, data.Y_Deg)
+      .input('Z_Deg', sql.Float, data.Z_Deg)
+      .input('X_MM', sql.Float, data.X_MM)
+      .input('Y_MM', sql.Float, data.Y_MM)
+      .input('Z_MM', sql.Float, data.Z_MM)
+      .input('BatteryVoltage', sql.Float, data.BatteryVoltage)
+      .input('BatteryLevel', sql.Float, data.BatteryLevel)
+      .input('Latitude', sql.Float, finalLat)
+           .input('Longitude', sql.Float, finalLon)
+      .input('CreateAt', sql.DateTime2, createAtDate)   // ✅ DateTime2
+      .query(`
+        UPDATE dbo.RawSensorData
+        SET Label=@Label, SensorType=@SensorType, EventType=@EventType,
+            X_Deg=@X_Deg, Y_Deg=@Y_Deg, Z_Deg=@Z_Deg,
+            X_MM=@X_MM, Y_MM=@Y_MM, Z_MM=@Z_MM,
+            BatteryVoltage=@BatteryVoltage, BatteryLevel=@BatteryLevel,
+            Latitude=@Latitude, Longitude=@Longitude, CreateAt=@CreateAt
+        WHERE IndexKey=@IndexKey
+      `);
+
+    if (result.rowsAffected[0] === 0) {
+      await t.rollback();
+      return res.status(404).json({ error: '일치하는 센서 데이터가 없습니다' });
+    }
+
+    // 2) SenSorInfo 업서트 + Raw 라벨 전파
+    await upsertSensorInfoAndPropagateLabel({
+      rid: data.RID,
+           label: finalLabel ?? 'unknown',
+           lat: finalLat,
+           lon: finalLon,
+      sensorType: data.SensorType,
+      eventType: data.EventType,
+      createAt: createAtDate,   // ✅ JS Date 전달
+      transaction: t
+    });
+
+    // 3) AlarmHistory도 갱신
+       await insertAlarmHistoryFromSensorData(
+         { ...data, Label: finalLabel, Latitude: finalLat, Longitude: finalLon },
+           createAtDate, t
+         );
+
+    await t.commit();
+    res.status(200).json({ message: '센서 데이터 업데이트 완료', data });
+  } catch (err) {
+    if (t._aborted !== true) { try { await t.rollback(); } catch {} }
+    console.error('❌ 센서 데이터 업데이트 실패:', err);
+    res.status(500).json({ error: 'DB 업데이트 실패' });
+  }
+});
+
+router.post('/sensor/delete', async (req, res) => {
+  const { indexKey } = req.body;
+  if (!indexKey) return res.status(400).json({ error: 'indexKey는 필수입니다.' });
+
+  try {
+    await poolConnect;
+    const result = await pool.request()
+      .input('IndexKey', sql.VarChar(100), indexKey)
+      .query(`
+        DELETE FROM RawSensorData
+        WHERE IndexKey = @IndexKey
+      `);
+    if (result.rowsAffected[0] === 0) {
+      return res.status(404).json({ error: '삭제할 데이터가 없습니다.' });
+    }
+    return res.status(200).json({ message: '삭제 완료' });
+  } catch (err) {
+    console.error('❌ 센서 데이터 삭제 실패:', err);
+    return res.status(500).json({ error: 'DB 삭제 실패' });
+  }
+});
+
+router.get('/rid-count', async (req, res) => {
+  try {
+    await poolConnect;
+    const result = await pool.request().query(`
+      SELECT COUNT(*) AS count
+      FROM (
+        SELECT DISTINCT RID, Label
+        FROM RawSensorData
+      ) AS UniqueRIDLabel
+    `);
+    res.status(200).json({ count: result.recordset[0].count });
+  } catch (err) {
+    console.error('❌ RID+Label 카운트 조회 실패:', err);
+    res.status(500).json({ error: 'DB 조회 실패' });
+  }
+})
+
+router.get('/sensor-status-summary', async (req, res) => {
+  try {
+    await poolConnect;
+    const result = await pool.request().query(`
+      WITH Latest AS (
+        SELECT
+          RID, EventType, X_Deg, Y_Deg, Z_Deg, CreateAt,
+          ROW_NUMBER() OVER (PARTITION BY RID ORDER BY CreateAt DESC) AS rn
+        FROM RawSensorData WITH (INDEX=IDX_RawSensorData_Latest)
+      )
+      SELECT 
+        RID, EventType, X_Deg, Y_Deg, Z_Deg, CreateAt,
+        DATEDIFF(MINUTE, CreateAt, GETDATE()) AS MinutesAgo
+      FROM Latest
+      WHERE rn = 1
+    `);
+
+  const statusCount = { normal: 0, caution: 0, danger: 0, needInspection: 0 };
+
+  for (const row of result.recordset) {
+    const minutesAgo = row.MinutesAgo;
+    const degs = [row.X_Deg, row.Y_Deg, row.Z_Deg].map(d => Math.abs(d ?? 0));
+    const maxDeg = Math.max(...degs);
+    const eventType = parseInt(row.EventType);
+
+    if (minutesAgo > 60) {
+      statusCount.needInspection++;
+    } else if (eventType === 68) {
+      if (maxDeg >= 5) statusCount.danger++; else statusCount.normal++;
+    } else if (eventType === 67) {
+      if (maxDeg >= 3) statusCount.caution++; else statusCount.normal++;
+    } else {
+      statusCount.normal++;
+    }
+  }
+
+  res.json({ ...statusCount, total: result.recordset.length });
+  } catch (err) {
+    console.error('❌ 센서 상태 요약 오류:', err);
+    res.status(500).json({ error: 'DB 오류' });
+  }
+});
+
+
+router.get('/sensor-data-by-period', async (req, res) => {
+  const { startDate, endDate } = req.query;
+
+  if (!startDate || !endDate) {
+    return res.status(400).json({ error: 'startDate, endDate are required' });
+  }
+
+  // ✅ 입력 로그
+  console.log(`📥 센서 조회 요청: startDate=${startDate}, endDate=${endDate}`);
+
+  try {
+     await poolConnect;
+    const result = await pool.request()
+    .input('startDate', sql.VarChar(19), startDate)
+    .input('endDate',   sql.VarChar(19), endDate)
+      .query(`
+        SELECT *
+        FROM RawSensorData
+        WHERE CreateAt >= @startDate AND CreateAt <= @endDate
+        ORDER BY CreateAt ASC
+      `);
+
+    const rows = result.recordset;
+    // console.log(`📤 총 ${rows.length}건 조회됨`);
+
+    // // ✅ 앞에서 20개만 출력 (너무 많으면 줄여서 로그)
+    // rows.slice(21, 40).forEach((row, idx) => {
+    //   console.log(`🔹 [${idx + 1}] RID=${row.RID}, EventType=${row.EventType}, CreateAt=${row.CreateAt}`);
+    // });
+
+    res.status(200).json({ data: rows });
+  } catch (err) {
+    console.error('❌ sensor-data-by-period 오류:', err);
+    res.status(500).json({ error: 'DB 조회 실패' });
+  }
+});
+
+
+router.get('/download-excel', async (req, res) => {
+  const { startDate, endDate, rids } = req.query;
+
+  if (!startDate || !endDate || !rids) {
+    return res.status(400).json({ error: 'startDate, endDate, rids 모두 필요합니다.' });
+  }
+
+  const ridList = rids.split(',').map(r => r.trim());
+
+  try {
+    await poolConnect;
+    const ExcelJS = require('exceljs');
+    const workbook = new ExcelJS.Workbook();
+    const resultMap = {}; // ✅ rid → Label 매핑
+
+    for (const rid of ridList) {
+      const result = await pool.request()
+        .input('startDate', sql.VarChar, startDate)
+        .input('endDate', sql.VarChar, endDate)
+        .input('rid', sql.VarChar, rid)
+        .query(`
+          SELECT Label,RID, SensorType, EventType, X_Deg, Y_Deg, Z_Deg,
+                 BatteryVoltage, BatteryLevel, Latitude, Longitude, CreateAt
+          FROM RawSensorData
+          WHERE RID = @rid
+            AND CreateAt >= @startDate
+            AND CreateAt <= @endDate
+          ORDER BY CreateAt ASC
+        `);
+
+      if (result.recordset.length > 0) {
+        resultMap[rid] = result.recordset[0]; // ✅ 첫 row에서 Label 확보
+      }
+
+      const sheet = workbook.addWorksheet(rid);
+      sheet.columns = [
+        { header: 'Label', key: 'Label' },
+        { header: 'RID', key: 'RID' },
+        { header: 'SensorType', key: 'SensorType' },
+        { header: 'EventType', key: 'EventType' },
+        { header: 'X_Deg', key: 'X_Deg' },
+        { header: 'Y_Deg', key: 'Y_Deg' },
+        { header: 'Z_Deg', key: 'Z_Deg' },
+        { header: 'BatteryVoltage', key: 'BatteryVoltage' },
+        { header: 'BatteryLevel', key: 'BatteryLevel' },
+        { header: 'Latitude', key: 'Latitude' },
+        { header: 'Longitude', key: 'Longitude' },
+        {
+          header: 'CreateAt',
+          key: 'CreateAt',
+          style: { numFmt: 'yyyy-mm-dd hh:mm:ss' },
+        },
+      ];
+
+      result.recordset.forEach(row => {
+        sheet.addRow(row);
+      });
+    }
+
+    // ✅ 파일 이름 구성
+    const safeStart = startDate.replace(/[: ]/g, '-');
+    const safeEnd = endDate.replace(/[: ]/g, '-');
+    let filename = '';
+
+    if (ridList.length === 1) {
+      const rid = ridList[0];
+      const label = resultMap[rid]?.Label || 'nolabel';
+      const safeLabel = label.replace(/[^a-zA-Z0-9가-힣_-]/g, '');
+      filename = `${safeLabel}_${rid}_${safeStart}_${safeEnd}_iotdata.xlsx`;
+    } else {
+      const first = ridList[0];
+      const last = ridList[ridList.length - 1];
+      filename = `${first}_to_${last}_${safeStart}_${safeEnd}_iotdata.xlsx`;
+    }
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (err) {
+    console.error('❌ 엑셀 다운로드 실패:', err);
+    res.status(500).json({ error: '엑셀 다운로드 실패' });
+  }
+});
+
+
+router.get('/download-excel-rid-only', async (req, res) => {
+  const { rid } = req.query;
+
+  if (!rid) {
+    return res.status(400).json({ error: 'rid 파라미터가 필요합니다.' });
+  }
+
+  try {
+    await poolConnect;
+    const ExcelJS = require('exceljs');
+    const workbook = new ExcelJS.Workbook();
+
+    const result = await pool.request()
+      .input('rid', sql.VarChar, rid)
+      .query(`
+        SELECT Label,RID, SensorType, EventType, X_Deg, Y_Deg, Z_Deg,
+               BatteryVoltage, BatteryLevel, Latitude, Longitude, CreateAt
+        FROM RawSensorData
+        WHERE RID = @rid
+        ORDER BY CreateAt ASC
+      `);
+
+    const sheet = workbook.addWorksheet(rid);
+
+    sheet.columns = [
+      { header: 'Label', key: 'Label' },
+      { header: 'RID', key: 'RID' },
+      { header: 'SensorType', key: 'SensorType' },
+      { header: 'EventType', key: 'EventType' },
+      { header: 'X_Deg', key: 'X_Deg' },
+      { header: 'Y_Deg', key: 'Y_Deg' },
+      { header: 'Z_Deg', key: 'Z_Deg' },
+      { header: 'BatteryVoltage', key: 'BatteryVoltage' },
+      { header: 'BatteryLevel', key: 'BatteryLevel' },
+      { header: 'Latitude', key: 'Latitude' },
+      { header: 'Longitude', key: 'Longitude' },
+      {
+        header: 'CreateAt',
+        key: 'CreateAt',
+        style: { numFmt: 'yyyy-mm-dd hh:mm:ss' },
+      },
+    ];
+
+    result.recordset.forEach(row => {
+      sheet.addRow(row);
+    });
+
+    // ✅ 파일명에 label 포함
+    const label = result.recordset[0]?.Label || 'nolabel';
+    const safeLabel = label.replace(/[^a-zA-Z0-9가-힣_-]/g, '');
+    const filename = `${safeLabel}_${rid}_iotdata.xlsx`;
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (err) {
+    console.error('❌ 엑셀 다운로드 실패:', err);
+    res.status(500).json({ error: '엑셀 다운로드 실패' });
+  }
+});
+
+
+
+// webgl측에서 모든 센서 정보 조회를 하기 위한 목적으로 만든 api (SenSorInfo 테이블 전체)
+router.get('/sensor-info', async (req, res) => {
+  try {
+    await poolConnect;
+
+    const result = await pool.request().query(`
+      SELECT 
+        IndexKey, RID, Label, Latitude, Longitude,
+        Location, SensorType, EventType, CreateAt
+      FROM master.dbo.SenSorInfo
+      ORDER BY CreateAt DESC
+    `);
+
+    res.status(200).json({ message: '센서 정보 조회 성공', data: result.recordset });
+  } catch (err) {
+    console.error('❌ SenSorInfo 조회 실패:', err);
+    res.status(500).json({ error: '센서 정보 조회 실패' });
+  }
+});
+
+//RID+LABEL별로 각각 최신의 데이터를 유니티에서 받게끔 해주는 api
+router.get('/sensor-latest-by-group', async (req, res) => {
+  try {
+    await poolConnect;
+
+    const result = await pool.request().query(`
+      WITH RankedSensorData AS (
+        SELECT *,
+               ROW_NUMBER() OVER (PARTITION BY RID, Label ORDER BY CreateAt DESC) AS rn
+        FROM RawSensorData
+      )
+      SELECT *
+      FROM RankedSensorData
+      WHERE rn = 1
+      ORDER BY CreateAt DESC
+    `);
+
+    res.status(200).json({ message: 'RID+Label별 최신 센서 데이터', data: result.recordset });
+  } catch (err) {
+    console.error('❌ sensor-latest-by-group 조회 실패:', err);
+    res.status(500).json({ error: 'DB 조회 실패' });
+  }
+});
+
+
+
+module.exports = router;
