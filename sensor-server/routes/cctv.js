@@ -105,21 +105,30 @@ async function startHlsProcess(cam) {
 
   console.log(`🎬 [${cam}] HLS 스트림 시작`);
   const ffmpeg = spawn('ffmpeg', [
-    // 입력
+    // 입력 (RTSP)
     '-rtsp_transport', 'tcp',
+    '-rtsp_flags', 'prefer_tcp',
+    '-buffer_size', '1024000',
     '-i', rtspUrl,
-    // 재인코딩 (키프레임 강제 삽입)
+    // 인코딩
     '-c:v', 'libx264',
     '-preset', 'ultrafast',
     '-tune', 'zerolatency',
-    '-g', '60',                           // 2초마다 키프레임 (30fps 기준)
-    '-an',
+    '-b:v', '1500k',                      // 비트레이트 고정
+    '-maxrate', '1500k',
+    '-bufsize', '3000k',
+    '-g', '50',                           // 키프레임 간격
+    '-keyint_min', '50',
+    '-sc_threshold', '0',
+    '-an',                                // 오디오 제거
+    '-vsync', 'cfr',                      // 프레임 동기화
+    '-max_muxing_queue_size', '1024',
     // HLS
     '-f', 'hls',
     '-hls_time', '2',
-    '-hls_list_size', '5',
+    '-hls_list_size', '6',
     '-hls_flags', 'delete_segments+omit_endlist',
-    '-hls_segment_type', 'mpegts',
+    '-start_number', '1',
     outputPath,
   ]);
 

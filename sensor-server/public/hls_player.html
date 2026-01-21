@@ -18,57 +18,57 @@
 
     if (Hls.isSupported()) {
   const hls = new Hls({
-    lowLatencyMode: true,
-    liveSyncDurationCount: 2,           // 라이브 엣지에서 2 세그먼트 뒤 (4초)
-    liveMaxLatencyDurationCount: 5,     // 최대 5 세그먼트 지연 허용 (10초)
-    maxLiveSyncPlaybackRate: 1.3,       // 지연 시 1.3배속으로 따라잡기
-    maxBufferLength: 10,                // 버퍼 10초
-    maxMaxBufferLength: 15,
-    backBufferLength: 0,
+    // 안정성 우선 설정
+    lowLatencyMode: false,
+    liveSyncDurationCount: 3,           // 라이브 엣지에서 3 세그먼트 뒤 (6초)
+    liveMaxLatencyDurationCount: 10,    // 최대 10 세그먼트 지연 허용
+    maxLiveSyncPlaybackRate: 1.2,
+    maxBufferLength: 30,                // 버퍼 넉넉하게
+    maxMaxBufferLength: 60,
+    backBufferLength: 10,
     enableWorker: true,
-    fragLoadingTimeOut: 10000,          // 세그먼트 로딩 타임아웃 10초
-    manifestLoadingTimeOut: 10000,
-    levelLoadingTimeOut: 10000,
+    fragLoadingTimeOut: 20000,
+    fragLoadingMaxRetry: 6,
+    fragLoadingRetryDelay: 1000,
+    manifestLoadingTimeOut: 20000,
+    manifestLoadingMaxRetry: 4,
+    levelLoadingTimeOut: 20000,
+    startLevel: -1,
   });
 
   hls.loadSource(`/hls/${cam}.m3u8`);
   hls.attachMedia(video);
 
   hls.on(Hls.Events.MANIFEST_PARSED, () => {
-    hls.startLoad(-1);
     video.play();
   });
 
-  // 지연이 심해지면 라이브 엣지로 점프
+  // 지연 체크 및 라이브 엣지 점프
   setInterval(() => {
-    if (video.buffered.length > 0) {
+    if (video.buffered.length > 0 && !video.paused) {
       const liveEdge = video.buffered.end(video.buffered.length - 1);
       const latency = liveEdge - video.currentTime;
 
-      // 10초 이상 뒤처지면 라이브 엣지로 점프
-      if (latency > 10) {
+      // 20초 이상 뒤처지면 라이브 엣지로 점프
+      if (latency > 20) {
         console.log(`⏩ 지연 ${latency.toFixed(1)}초 → 라이브 엣지로 점프`);
-        video.currentTime = liveEdge - 2;
+        video.currentTime = liveEdge - 4;
       }
     }
-  }, 5000);
+  }, 10000);
 
   hls.on(Hls.Events.ERROR, (e, d) => {
-    console.error('🚨 HLS.js Error:', d.type, d.details);
+    console.warn('HLS Error:', d.type, d.details);
     if (d.fatal) {
       switch(d.type) {
         case Hls.ErrorTypes.NETWORK_ERROR:
-          console.log('🔄 네트워크 오류, 재시도...');
-          hls.startLoad();
+          setTimeout(() => hls.startLoad(), 2000);
           break;
         case Hls.ErrorTypes.MEDIA_ERROR:
-          console.log('🔄 미디어 오류, 복구 시도...');
           hls.recoverMediaError();
           break;
         default:
-          console.log('🔄 치명적 오류, 전체 재시작...');
-          hls.destroy();
-          location.reload();
+          setTimeout(() => location.reload(), 3000);
           break;
       }
     }
