@@ -105,29 +105,54 @@ async function startHlsProcess(cam) {
 
   console.log(`🎬 [${cam}] HLS 스트림 시작`);
   const ffmpeg = spawn('ffmpeg', [
+    // 입력
     '-rtsp_transport', 'tcp',
     '-i', rtspUrl,
+    // 재인코딩 (키프레임 강제 삽입)
     '-c:v', 'libx264',
     '-preset', 'ultrafast',
     '-tune', 'zerolatency',
+    '-g', '60',                           // 2초마다 키프레임 (30fps 기준)
+    '-an',
+    // HLS
     '-f', 'hls',
-   // cctv.js 내부 spawn 옵션에서 다음처럼 수정
-'-hls_time', '2',
-'-hls_list_size', '6',
-'-hls_flags', 'delete_segments+omit_endlist',
-'-hls_delete_threshold', '1', // ⬅️ 오래된 세그먼트 즉시 삭제
-
-    
+    '-hls_time', '2',
+    '-hls_list_size', '5',
+    '-hls_flags', 'delete_segments+omit_endlist',
+    '-hls_segment_type', 'mpegts',
     outputPath,
   ]);
 
   ffmpeg.stderr.on('data', data => {
-    console.error(`[${cam}] ffmpeg stderr: ${data}`);
+    const msg = data.toString();
+    // 일반적인 디코딩 경고는 무시, 심각한 오류만 로깅
+    if (!msg.includes('error while decoding') && !msg.includes('left block unavailable')) {
+      console.error(`[${cam}] ffmpeg: ${msg}`);
+    }
   });
 
-  ffmpeg.on('close', code => {
-    console.log(`📴 [${cam}] ffmpeg 종료 (code: ${code})`);
+  ffmpeg.on('close', (code, signal) => {
+    console.log(`📴 [${cam}] ffmpeg 종료 (code:${code}, signal:${signal})`);
     delete ffmpegProcesses[cam];
+
+    // 비정상 종료 시 자동 재시작 (최대 3회)
+    if (code !== 0 && signal !== 'SIGKILL') {
+      const restartKey = `restart_${cam}`;
+      const restartCount = (global[restartKey] || 0) + 1;
+      global[restartKey] = restartCount;
+
+      if (restartCount <= 3) {
+        console.log(`🔄 [${cam}] 재시작 예약 (${restartCount}/3)...`);
+        setTimeout(() => startHlsProcess(cam), 3000);
+      } else {
+        console.error(`❌ [${cam}] 재시작 3회 실패, 수동 확인 필요`);
+        // 10분 후 카운터 리셋
+        setTimeout(() => { global[restartKey] = 0; }, 600000);
+      }
+    } else {
+      // 정상 종료 시 카운터 리셋
+      global[`restart_${cam}`] = 0;
+    }
   });
 
   ffmpegProcesses[cam] = ffmpeg;
@@ -152,10 +177,15 @@ async function startMotionDetect(cam) {
     await axios.post('http://localhost:5001/start', {
       cam_id: cam,
       url: streamUrl,
-    });
+    }, { timeout: 5000 });
     console.log(`🚀 ${cam} 감지 요청 완료`);
   } catch (err) {
-    console.error(`❌ ${cam} 감지 요청 실패:`, err.message);
+    // motion-server가 실행 중이 아닐 때는 경고만 출력
+    if (err.code === 'ECONNREFUSED') {
+      console.warn(`⚠️ [${cam}] motion-server 미실행 (5001 포트)`);
+    } else {
+      console.error(`❌ ${cam} 감지 요청 실패: ${err.message}`);
+    }
   }
 }
 
@@ -356,21 +386,93 @@ router.get('/fetch-onvif/:cam', async (req, res) => {
 });
 
 
+// CCTV 스트림 전체 재시작 함수
+async function restartAllHlsStreams() {
+  console.log('🔄 [CCTV 재시작] 모든 HLS 스트림 재시작 시작...');
 
+  // 1. 기존 ffmpeg 프로세스 모두 종료
+  const runningCams = Object.keys(ffmpegProcesses);
+  console.log(`📋 현재 실행 중인 카메라: ${runningCams.length}개 - [${runningCams.join(', ')}]`);
+
+  for (const cam of runningCams) {
+    const proc = ffmpegProcesses[cam];
+    if (proc) {
+      proc.kill('SIGKILL');
+      console.log(`🛑 [${cam}] ffmpeg 종료`);
+      delete ffmpegProcesses[cam];
+    }
+  }
+
+  // 2. 잠시 대기 (프로세스 정리 시간)
+  await new Promise(resolve => setTimeout(resolve, 2000));
+
+  // 3. DB에서 활성 카메라 목록 가져오기
+  try {
+    const cams = await getCamerasFromDb();
+    const camIds = Object.keys(cams);
+    console.log(`📷 DB에서 가져온 카메라: ${camIds.length}개 - [${camIds.join(', ')}]`);
+
+    // 4. 각 카메라에 대해 HLS 스트림 재시작
+    for (const camId of camIds) {
+      await startHlsProcess(camId);
+      await startMotionDetect(camId);
+      // 각 카메라 시작 간 약간의 딜레이
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
+    console.log('✅ [CCTV 재시작] 모든 HLS 스트림 재시작 완료');
+  } catch (err) {
+    console.error('❌ [CCTV 재시작] 카메라 목록 조회 실패:', err);
+  }
+}
+
+// 수동으로 모든 CCTV 재시작하는 API
+router.get('/restart-all', async (req, res) => {
+  console.log('🔄 [API] 수동 CCTV 전체 재시작 요청');
+  try {
+    await restartAllHlsStreams();
+    res.json({ success: true, message: '모든 CCTV 스트림 재시작 완료' });
+  } catch (err) {
+    console.error('❌ 재시작 실패:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 현재 실행 중인 스트림 상태 확인 API
+router.get('/status', (req, res) => {
+  const runningCams = Object.keys(ffmpegProcesses);
+  res.json({
+    running: runningCams.length,
+    cameras: runningCams,
+  });
+});
 
 // ✅ export
 module.exports = {
   router,
   startHlsProcess,
-  startMotionDetect, // ✅ 이게 꼭 있어야 import 가능
+  startMotionDetect,
+  restartAllHlsStreams,
 };
 
 
-
+// 매일 AM 6:56 (한국시간) CCTV 전체 재시작 스케줄러
 schedule.scheduleJob('56 6 * * *', async () => {
-  console.log('⏰ [스케줄러] 6 56분 - .ts 파일 삭제 및 PM2 재시작 시작');
+  console.log('⏰ [스케줄러] 6시 56분 - CCTV 재시작 및 정리 작업 시작');
 
-  // 1. .ts 삭제
+  // 1. 기존 ffmpeg 프로세스 모두 종료
+  console.log('🛑 [1단계] 기존 ffmpeg 프로세스 종료...');
+  for (const cam of Object.keys(ffmpegProcesses)) {
+    const proc = ffmpegProcesses[cam];
+    if (proc) {
+      proc.kill('SIGKILL');
+      console.log(`   - ${cam} 종료됨`);
+      delete ffmpegProcesses[cam];
+    }
+  }
+
+  // 2. .ts, .m3u8 파일 삭제 (깨끗하게 정리)
+  console.log('🧹 [2단계] HLS 파일 정리...');
   fs.readdir(hlsFolder, (err, files) => {
     if (err) {
       console.error('❌ 디렉토리 읽기 오류:', err);
@@ -378,47 +480,60 @@ schedule.scheduleJob('56 6 * * *', async () => {
     }
 
     files
-      .filter(file => file.endsWith('.ts'))
+      .filter(file => file.endsWith('.ts') || file.endsWith('.m3u8'))
       .forEach(file => {
         const filePath = path.join(hlsFolder, file);
         fs.unlink(filePath, err => {
           if (err) console.error(`❌ ${file} 삭제 실패:`, err);
-          else console.log(`🧹 ${file} 삭제됨`);
+          else console.log(`   - ${file} 삭제됨`);
         });
       });
   });
 
-  // 2. LastRecorded = 오늘 날짜의 06:56:00
+  // 3. LastRecorded 업데이트
+  console.log('📝 [3단계] LastRecorded 업데이트...');
   try {
     const now = new Date();
     now.setHours(6, 56, 0, 0);
-    const formatted = now.toISOString().slice(0, 23); // 'YYYY-MM-DDTHH:MM:SS.mmm'
+    const formatted = now.toISOString().slice(0, 23);
 
     const pool = await sql.connect(dbConfig);
     await pool.request().query(`
       UPDATE CctvStatus
       SET LastRecorded = '${formatted}'
     `);
-    console.log(`✅ LastRecorded 업데이트 완료: ${formatted}`);
+    console.log(`   ✅ LastRecorded: ${formatted}`);
   } catch (err) {
     console.error('❌ LastRecorded 업데이트 실패:', err);
   }
 
-  // 3. pm2 재시작
+  // 4. PM2 재시작 (motion-server)
+  console.log('🔄 [4단계] PM2 서비스 재시작...');
   exec('pm2 restart motion-server', (error2, stdout2, stderr2) => {
     if (error2) {
-      console.error('❌ PM2 2번 재시작 실패:', stderr2);
-      return;
+      console.error('❌ motion-server 재시작 실패:', stderr2);
+    } else {
+      console.log('   ✅ motion-server 재시작 완료');
     }
-    console.log('✅ PM2 2번 재시작 완료:', stdout2);
-  
-    // 2번이 성공했을 때만 1번 재시작
-    exec('pm2 restart cctv-server', (error1, stdout1, stderr1) => {
-      if (error1) {
-        console.error('❌ PM2 1번 재시작 실패:', stderr1);
-      } else {
-        console.log('✅ PM2 1번 재시작 완료:', stdout1);
-      }
-    });
   });
+
+  // 5. 잠시 대기 후 HLS 스트림 재시작
+  console.log('⏳ [5단계] 5초 대기 후 HLS 스트림 재시작...');
+  setTimeout(async () => {
+    try {
+      const cams = await getCamerasFromDb();
+      const camIds = Object.keys(cams);
+      console.log(`📷 [6단계] ${camIds.length}개 카메라 HLS 스트림 시작...`);
+
+      for (const camId of camIds) {
+        await startHlsProcess(camId);
+        await startMotionDetect(camId);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
+      console.log('🎉 [스케줄러] 6시 56분 작업 완료!');
+    } catch (err) {
+      console.error('❌ HLS 스트림 재시작 실패:', err);
+    }
+  }, 5000);
 });

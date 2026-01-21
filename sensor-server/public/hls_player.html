@@ -18,27 +18,60 @@
 
     if (Hls.isSupported()) {
   const hls = new Hls({
-    liveSyncDurationCount: 2,
-    maxLiveSyncPlaybackRate: 1.5,
-    maxBufferLength: 10,
     lowLatencyMode: true,
+    liveSyncDurationCount: 2,           // 라이브 엣지에서 2 세그먼트 뒤 (4초)
+    liveMaxLatencyDurationCount: 5,     // 최대 5 세그먼트 지연 허용 (10초)
+    maxLiveSyncPlaybackRate: 1.3,       // 지연 시 1.3배속으로 따라잡기
+    maxBufferLength: 10,                // 버퍼 10초
+    maxMaxBufferLength: 15,
+    backBufferLength: 0,
+    enableWorker: true,
+    fragLoadingTimeOut: 10000,          // 세그먼트 로딩 타임아웃 10초
+    manifestLoadingTimeOut: 10000,
+    levelLoadingTimeOut: 10000,
   });
 
   hls.loadSource(`/hls/${cam}.m3u8`);
   hls.attachMedia(video);
 
   hls.on(Hls.Events.MANIFEST_PARSED, () => {
-    hls.startLoad(-1); // ✅ 최신 세그먼트부터 시작
-    hls.currentLevel = hls.levels.length - 1; // ✅ 최상 화질 고정
+    hls.startLoad(-1);
     video.play();
   });
 
-  hls.on(Hls.Events.FRAG_LOADED, (e, data) => {
-    console.log(`✅ segment loaded: ${data.frag.sn}`);
-  });
+  // 지연이 심해지면 라이브 엣지로 점프
+  setInterval(() => {
+    if (video.buffered.length > 0) {
+      const liveEdge = video.buffered.end(video.buffered.length - 1);
+      const latency = liveEdge - video.currentTime;
+
+      // 10초 이상 뒤처지면 라이브 엣지로 점프
+      if (latency > 10) {
+        console.log(`⏩ 지연 ${latency.toFixed(1)}초 → 라이브 엣지로 점프`);
+        video.currentTime = liveEdge - 2;
+      }
+    }
+  }, 5000);
 
   hls.on(Hls.Events.ERROR, (e, d) => {
-    console.error('🚨 HLS.js Error:', d);
+    console.error('🚨 HLS.js Error:', d.type, d.details);
+    if (d.fatal) {
+      switch(d.type) {
+        case Hls.ErrorTypes.NETWORK_ERROR:
+          console.log('🔄 네트워크 오류, 재시도...');
+          hls.startLoad();
+          break;
+        case Hls.ErrorTypes.MEDIA_ERROR:
+          console.log('🔄 미디어 오류, 복구 시도...');
+          hls.recoverMediaError();
+          break;
+        default:
+          console.log('🔄 치명적 오류, 전체 재시작...');
+          hls.destroy();
+          location.reload();
+          break;
+      }
+    }
   });
 }
 
